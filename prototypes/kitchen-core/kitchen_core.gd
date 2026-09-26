@@ -45,10 +45,8 @@ const RECIPE_TIER := {
 	"iced": "simple", "black": "medium", "green": "medium",
 	"black_lemon": "complex", "green_lemon": "complex",
 }
-const DRINK_NAMES := {
-	"iced": "Холодный чай", "black": "Чёрный", "green": "Зелёный",
-	"black_lemon": "Чёрный с лимоном", "green_lemon": "Зелёный с лимоном",
-}
+const Text := preload("res://prototypes/kitchen-core/kitchen_text.gd")
+const SETTINGS_PATH := "user://kitchen_core.cfg"
 const LEAVES := ["black_leaf", "green_leaf"]
 # One colour per recipe step (icons later). Stations are painted in the colour
 # of the step they add, orders and cups show their steps as coloured squares.
@@ -66,10 +64,6 @@ const STATION_STEP := {
 	"kettle100": "water100", "kettle80": "water80", "lemon": "lemon",
 }
 const GUEST_COLOR := Color(0.75, 0.7, 0.65)
-const STEP_NAMES := {
-	"cup": "чашка", "iced_tea": "холодный чай", "black_leaf": "чёрный лист", "green_leaf": "зелёный лист",
-	"water100": "кипяток", "water80": "вода 80°", "lemon": "лимон",
-}
 
 # Layout: portrait rectangle with a wide 2x4 island in the middle. "side" says
 # which face the barista works from; each island column faces its own aisle.
@@ -83,22 +77,22 @@ const WALL_HEIGHT := 0.7
 const ISLAND_GAP := 0.08  # visual gap between neighbouring island boxes
 const SLOT_PAD := 0.03  # empty slots are pads this far proud of the countertop
 const STATIONS := [
-	{"id": "cups", "label": "Чашки", "pos": Vector3(-2.5, 0, -7.0), "side": "back"},
-	{"id": "green_leaf", "label": "Зелёный", "pos": Vector3(0.0, 0, -7.0), "side": "back"},
-	{"id": "black_leaf", "label": "Чёрный", "pos": Vector3(2.5, 0, -7.0), "side": "back"},
-	{"id": "kettle100", "label": "100°", "pos": Vector3(-3.5, 0, -4.25), "side": "left", "size": Vector2(1.0, 1.5)},
-	{"id": "slot_left", "label": "", "pos": Vector3(-3.5, 0, -1.75), "side": "left", "size": Vector2(1.0, 1.5), "color": SLOT_COLOR},
-	{"id": "trash", "label": "Мусорка", "pos": Vector3(-3.5, 0, 0.75), "side": "left", "size": Vector2(1.0, 1.5), "color": Color(0.4, 0.4, 0.4)},
-	{"id": "kettle80", "label": "80°", "pos": Vector3(3.5, 0, -4.25), "side": "right", "size": Vector2(1.0, 1.5)},
-	{"id": "slot_right", "label": "", "pos": Vector3(3.5, 0, -1.75), "side": "right", "size": Vector2(1.0, 1.5), "color": SLOT_COLOR},
+	{"id": "cups", "pos": Vector3(-2.5, 0, -7.0), "side": "back"},
+	{"id": "green_leaf", "pos": Vector3(0.0, 0, -7.0), "side": "back"},
+	{"id": "black_leaf", "pos": Vector3(2.5, 0, -7.0), "side": "back"},
+	{"id": "kettle100", "pos": Vector3(-3.5, 0, -4.25), "side": "left", "size": Vector2(1.0, 1.5)},
+	{"id": "slot_left", "pos": Vector3(-3.5, 0, -1.75), "side": "left", "size": Vector2(1.0, 1.5), "color": SLOT_COLOR},
+	{"id": "trash", "pos": Vector3(-3.5, 0, 0.75), "side": "left", "size": Vector2(1.0, 1.5), "color": Color(0.4, 0.4, 0.4)},
+	{"id": "kettle80", "pos": Vector3(3.5, 0, -4.25), "side": "right", "size": Vector2(1.0, 1.5)},
+	{"id": "slot_right", "pos": Vector3(3.5, 0, -1.75), "side": "right", "size": Vector2(1.0, 1.5), "color": SLOT_COLOR},
 	# Island, 2x4: each column is worked from its own aisle.
-	{"id": "iced_tea", "label": "Холодный", "pos": Vector3(-0.5, 0, -4.5), "side": "island_left"},
-	{"id": "slot_island_l1", "label": "", "pos": Vector3(-0.5, 0, -3.5), "side": "island_left", "color": SLOT_COLOR},
-	{"id": "slot_island_l2", "label": "", "pos": Vector3(-0.5, 0, -2.5), "side": "island_left", "color": SLOT_COLOR},
-	{"id": "slot_island_l3", "label": "", "pos": Vector3(-0.5, 0, -1.5), "side": "island_left", "color": SLOT_COLOR},
-	{"id": "slot_island_r1", "label": "", "pos": Vector3(0.5, 0, -4.5), "side": "island_right", "color": SLOT_COLOR},
-	{"id": "slot_island_r2", "label": "", "pos": Vector3(0.5, 0, -3.5), "side": "island_right", "color": SLOT_COLOR},
-	{"id": "lemon", "label": "Лимон", "pos": Vector3(0.5, 0, -1.5), "side": "island_right"},
+	{"id": "iced_tea", "pos": Vector3(-0.5, 0, -4.5), "side": "island_left"},
+	{"id": "slot_island_l1", "pos": Vector3(-0.5, 0, -3.5), "side": "island_left", "color": SLOT_COLOR},
+	{"id": "slot_island_l2", "pos": Vector3(-0.5, 0, -2.5), "side": "island_left", "color": SLOT_COLOR},
+	{"id": "slot_island_l3", "pos": Vector3(-0.5, 0, -1.5), "side": "island_left", "color": SLOT_COLOR},
+	{"id": "slot_island_r1", "pos": Vector3(0.5, 0, -4.5), "side": "island_right", "color": SLOT_COLOR},
+	{"id": "slot_island_r2", "pos": Vector3(0.5, 0, -3.5), "side": "island_right", "color": SLOT_COLOR},
+	{"id": "lemon", "pos": Vector3(0.5, 0, -1.5), "side": "island_right"},
 ]
 
 # Unusable wall blocks filling the gaps between wall stations (placeholder —
@@ -159,6 +153,15 @@ var _boost_register_label: Label
 var _boost_speed_label: Label
 var _game_over_box: CenterContainer
 var _game_over_label: Label
+var _game_over_kind := ""  # "", "round" or "closed" — re-rendered on language switch
+var _game_over_new_best := false
+var _new_day_button: Button
+var _lang_button: Button
+var _guide: Control
+var _guide_title: Label
+var _guide_text: RichTextLabel
+var _guide_button: Button
+var _guide_open := false
 
 var _elapsed := 0.0
 var _spawn_timer := 0.0
@@ -174,6 +177,8 @@ static var _register := 0
 static var _best_points := 0
 static var _register_level := 0
 static var _speed_level := 0
+static var _lang := ""  # "en" | "ru"; loaded from SETTINGS_PATH, English by default
+static var _guide_seen := false  # the guide opens once per launch, not on every round
 
 var _held: Array = []
 var _target_kind := ""          # "", "station" or "guest"
@@ -190,6 +195,8 @@ var _guests: Array = [null, null, null, null]
 
 
 func _ready() -> void:
+	if _lang == "":
+		_load_lang()
 	var root := get_tree().root
 	root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
@@ -216,14 +223,19 @@ func _ready() -> void:
 	_spawn_timer = TUNING.first_guest_delay
 	if _register_full():
 		_running = false
-		_game_over_label.text = "Касса полна.\nЧайная закрыта до завтра.\n\nРекорд: %d" % _best_points
+		_game_over_kind = "closed"
+		_render_game_over()
 		_again_button.visible = false
 		_game_over_box.visible = true
+	_apply_language()
+	if not _guide_seen and not "--no-guide" in OS.get_cmdline_user_args():
+		_guide_seen = true
+		_show_guide()
 	_maybe_take_screenshot()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not _running:
+	if not _running or _guide_open:
 		return
 	var mb := event as InputEventMouseButton
 	if mb and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
@@ -277,7 +289,7 @@ func _physics_process(_delta: float) -> void:
 
 
 func _process(delta: float) -> void:
-	if _running:
+	if _running and not _guide_open:
 		_elapsed += delta
 		_update_spawning(delta)
 		_update_guests(delta)
@@ -312,7 +324,7 @@ func _on_guest_tapped(slot: int) -> void:
 	var g: Dictionary = _guests[slot]
 	if _held != RECIPES[g.recipe]:
 		_flash(g.mat, g.base_color)
-		_show_hint("Гость ждёт: %s (%s)" % [DRINK_NAMES[g.recipe], _held_to_text(RECIPES[g.recipe])])
+		_show_hint(_t("guest_wants") % [_t("drink_" + g.recipe), _held_to_text(RECIPES[g.recipe])])
 		return
 	_set_target("guest", slot, _find_path(Vector3(GUEST_X[slot], 0, SERVE_Z)))
 
@@ -605,7 +617,7 @@ func _spawn_guest(slot: int) -> void:
 	var order_row := _make_step_row(2.3)
 	body.add_child(order_row)
 	_fill_step_row(order_row, RECIPES[recipe])
-	var label := _label3d("%d мон." % TUNING.prices[RECIPE_TIER[recipe]], 20)
+	var label := _label3d(_t("price") % TUNING.prices[RECIPE_TIER[recipe]], 20)
 	label.position = Vector3(0, 2.8, 0)
 	body.add_child(label)
 
@@ -621,6 +633,7 @@ func _spawn_guest(slot: int) -> void:
 	_guests[slot] = {
 		"recipe": recipe, "patience": patience, "max": patience,
 		"body": body, "mat": mat, "base_color": color, "bar": bar, "bar_mat": bar_mat,
+		"price_label": label,
 	}
 
 
@@ -663,18 +676,26 @@ func _remove_guest(slot: int) -> void:
 func _game_over() -> void:
 	_running = false
 	_target_kind = ""
-	var new_best := _points > _best_points
+	_game_over_new_best = _points > _best_points
 	_best_points = maxi(_best_points, _points)
-	var text := "Партия окончена\n\nВремя: %d с\nОбслужено: %d\nМонет за партию: %d\nОчки: %d%s\nРекорд: %d" % [
-		int(_elapsed), _served, _coins, _points, "  — новый рекорд!" if new_best else "", _best_points]
-	text += "\nБусты: касса ур. %d, скорость ур. %d" % [_register_level, _speed_level]
-	if _coins_missed > 0:
-		text += "\nНе влезло в кассу: %d" % _coins_missed
-	if _register_full():
-		text += "\n\nКасса полна.\nЧайная закрыта до завтра."
-	_game_over_label.text = text
+	_game_over_kind = "round"
+	_render_game_over()
 	_again_button.visible = not _register_full()
 	_game_over_box.visible = true
+
+
+func _render_game_over() -> void:
+	if _game_over_kind == "closed":
+		_game_over_label.text = _t("closed_start") % _best_points
+		return
+	var text: String = _t("round_over") % [
+		int(_elapsed), _served, _coins, _points, _t("new_best") if _game_over_new_best else "", _best_points]
+	text += _t("boosts_line") % [_register_level, _speed_level]
+	if _coins_missed > 0:
+		text += _t("missed") % _coins_missed
+	if _register_full():
+		text += _t("closed")
+	_game_over_label.text = text
 
 
 func _register_full() -> bool:
@@ -703,11 +724,11 @@ func _update_labels() -> void:
 		var st: Dictionary = _stations[id]
 		match k.state:
 			"empty":
-				st.label.text = st.base_text
+				st.label.text = _station_name(id)
 			"brewing":
-				st.label.text = "%.1f с\n%s" % [k.t, st.base_text]
+				st.label.text = _t("brewing") % [k.t, _station_name(id)]
 			"done":
-				st.label.text = "ГОТОВО\n%s" % st.base_text
+				st.label.text = _t("ready") % _station_name(id)
 		st.cup_mesh.visible = k.state != "empty"
 		if st.shown != k.steps:
 			_fill_step_row(st.row, k.steps)
@@ -726,15 +747,15 @@ func _update_labels() -> void:
 	_barista_cup.visible = not _held.is_empty()
 
 	_register_bar.value = _register
-	_register_label.text = "Касса полна — играй на рекорд" if _register_full() else "Касса: %d / %d" % [
+	_register_label.text = _t("register_full") if _register_full() else _t("register") % [
 		_register, _capacity()]
 	_register_bar.max_value = _capacity()
-	_boost_register_label.text = "Касса: ур. %d (%d)" % [_register_level, _capacity()]
-	_boost_speed_label.text = "Скорость: ур. %d (×%.2f)" % [_speed_level, _speed()]
+	_boost_register_label.text = _t("boost_register") % [_register_level, _capacity()]
+	_boost_speed_label.text = _t("boost_speed") % [_speed_level, _speed()]
 	# A bigger register reopens a closed shop — the future purchase moment.
 	if _game_over_box.visible and not _register_full() and not _again_button.visible:
 		_again_button.visible = true
-	_hud_label.text = "Время: %d с    Ушли: %d/%d\nМонеты: %d    Очки: %d\nСложность: %d%%    FPS: %d" % [
+	_hud_label.text = _t("hud") % [
 		int(_elapsed), _strikes, TUNING.max_strikes, _coins, _points, roundi(_ramp() * 100),
 		Engine.get_frames_per_second()]
 
@@ -742,7 +763,7 @@ func _update_labels() -> void:
 func _held_to_text(steps: Array) -> String:
 	var names: PackedStringArray = []
 	for s: String in steps:
-		names.append(STEP_NAMES[s])
+		names.append(_t("step_" + s))
 	return " + ".join(names)
 
 
@@ -800,7 +821,7 @@ func _build_station(def: Dictionary) -> void:
 	_add_box(body, Vector3(foot.x + grow, top, foot.y + grow), Vector3(0, top / 2.0, 0), color, true)
 	var mat: StandardMaterial3D = (body.get_child(1) as MeshInstance3D).material_override
 
-	var label := _label3d(def.label, 32)
+	var label := _label3d(_station_name(def.id), 32)
 	label.position = Vector3(0, 1.7, 0)
 	body.add_child(label)
 
@@ -819,7 +840,7 @@ func _build_station(def: Dictionary) -> void:
 		"island_right":
 			interacts = [p + Vector3(reach, 0, 0)]
 	_stations[def.id] = {
-		"mat": mat, "base_color": color, "label": label, "base_text": def.label,
+		"mat": mat, "base_color": color, "label": label,
 		"interacts": interacts,
 	}
 
@@ -929,15 +950,31 @@ func _build_hud() -> void:
 	_game_over_label.add_theme_font_size_override("font_size", 28)
 	vbox.add_child(_game_over_label)
 	_again_button = Button.new()
-	_again_button.text = "Ещё раз"
 	_again_button.add_theme_font_size_override("font_size", 28)
 	_again_button.pressed.connect(func() -> void: get_tree().reload_current_scene())
 	vbox.add_child(_again_button)
-	var new_day := Button.new()
-	new_day.text = "Новый день (тест)"
-	new_day.add_theme_font_size_override("font_size", 20)
-	new_day.pressed.connect(_new_day)
-	vbox.add_child(new_day)
+	_new_day_button = Button.new()
+	_new_day_button.add_theme_font_size_override("font_size", 20)
+	_new_day_button.pressed.connect(_new_day)
+	vbox.add_child(_new_day_button)
+
+	# Top right: reopen the guide, switch language.
+	var corner := HBoxContainer.new()
+	corner.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	corner.offset_left = -132
+	corner.offset_right = -12
+	corner.offset_top = 10
+	corner.add_theme_constant_override("separation", 8)
+	layer.add_child(corner)
+	var help := _small_button("?")
+	help.pressed.connect(_show_guide)
+	corner.add_child(help)
+	_lang_button = _small_button("")
+	_lang_button.pressed.connect(func() -> void:
+		_set_lang(Text.LANGS[(Text.LANGS.find(_lang) + 1) % Text.LANGS.size()]))
+	corner.add_child(_lang_button)
+
+	_build_guide()
 
 	# The register: always on screen, in the free band above the kitchen.
 	_register_bar = ProgressBar.new()
@@ -1099,23 +1136,159 @@ func _show_hint(text: String) -> void:
 
 
 func _why_not(id: String) -> String:
-	var name: String = _stations[id].base_text
+	var name := _station_name(id)
 	if id in _slots:
-		return "Нечего поставить — руки пустые"
+		return _t("why_slot")
 	match id:
 		"cups":
-			return "Руки заняты — поставь чашку в слот или выкинь"
+			return _t("why_cups")
 		"iced_tea", "black_leaf", "green_leaf":
-			return "Сначала возьми чашку" if _held.is_empty() else "%s: нужна пустая чашка" % name
+			return _t("why_take_cup") if _held.is_empty() else _t("why_empty_cup") % name
 		"lemon":
-			return "Лимон: нужен заваренный чай"
+			return _t("why_lemon")
 		"trash":
-			return "Руки пустые"
+			return _t("why_trash")
 		"kettle100", "kettle80":
 			if _kettles[id].state == "empty":
-				return "%s: нужна чашка с листом" % name
-			return "%s занят — для замены нужна чашка с листом" % name
-	return "Нельзя"
+				return _t("why_kettle_empty") % name
+			return _t("why_kettle_busy") % name
+	return _t("why_no")
+
+
+# --- Language and guide -----------------------------------------------------
+
+## Text for key in the current language.
+func _t(key: String) -> String:
+	return Text.TEXT[key][Text.LANGS.find(_lang)]
+
+
+## Sign over a station; empty slots have none.
+func _station_name(id: String) -> String:
+	return "" if id.begins_with("slot") else _t("st_" + id)
+
+
+## `-- --lang=ru` overrides the saved choice (dev aid for screenshots).
+func _load_lang() -> void:
+	_lang = "en"
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) == OK:
+		_lang = cfg.get_value("ui", "lang", "en")
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--lang="):
+			_lang = arg.trim_prefix("--lang=")
+	if not _lang in Text.LANGS:
+		_lang = "en"
+
+
+func _set_lang(lang: String) -> void:
+	_lang = lang
+	var cfg := ConfigFile.new()
+	cfg.set_value("ui", "lang", lang)
+	cfg.save(SETTINGS_PATH)
+	_apply_language()
+
+
+## Refreshes every text that is not rebuilt each frame.
+func _apply_language() -> void:
+	for id: String in _stations:
+		_stations[id].label.text = _station_name(id)
+	for g: Variant in _guests:
+		if g != null:
+			g.price_label.text = _t("price") % TUNING.prices[RECIPE_TIER[g.recipe]]
+	_again_button.text = _t("again")
+	_new_day_button.text = _t("new_day")
+	_lang_button.text = _t("lang_button")
+	if _game_over_kind != "":
+		_render_game_over()
+	_guide_title.text = _t("guide_title")
+	_guide_button.text = _t("guide_play") if _elapsed == 0.0 else _t("guide_continue")
+	var swatches := {}
+	for step: String in STEP_COLORS:
+		var hex: String = STEP_COLORS[step].to_html(false)
+		swatches[step] = "[bgcolor=#%s][color=#%s]MM[/color][/bgcolor]" % [hex, hex]
+	_guide_text.text = _t("guide_body").format(swatches)
+	for b: Button in _guide.find_children("lang_*", "Button", true, false):
+		b.disabled = b.name == "lang_" + _lang
+
+
+func _show_guide() -> void:
+	_guide_open = true
+	_guide.visible = true
+	_pending_tap = null
+	_guide_button.text = _t("guide_play") if _elapsed == 0.0 else _t("guide_continue")
+	# After the text is laid out, or the container keeps a stale offset.
+	var scroll := _guide.find_child("Scroll", true, false) as ScrollContainer
+	scroll.set_deferred("scroll_vertical", 0)
+
+
+func _close_guide() -> void:
+	_guide_open = false
+	_guide.visible = false
+
+
+## Full-screen guide over the kitchen; the game is paused while it is open.
+func _build_guide() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 10  # above the HUD
+	add_child(layer)
+	_guide = PanelContainer.new()
+	_guide.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_guide.mouse_filter = Control.MOUSE_FILTER_STOP
+	_guide.visible = false
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.12, 0.1, 0.09, 0.97)
+	bg.set_content_margin_all(20)
+	_guide.add_theme_stylebox_override("panel", bg)
+	layer.add_child(_guide)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 14)
+	_guide.add_child(vbox)
+
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 8)
+	vbox.add_child(top)
+	_guide_title = Label.new()
+	_guide_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_guide_title.add_theme_font_size_override("font_size", 32)
+	top.add_child(_guide_title)
+	for lang: String in Text.LANGS:
+		var b := _small_button("English" if lang == "en" else "Русский")
+		b.name = "lang_" + lang
+		b.custom_minimum_size.x = 110
+		b.pressed.connect(_set_lang.bind(lang))
+		top.add_child(b)
+
+	var scroll := ScrollContainer.new()
+	scroll.name = "Scroll"
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	vbox.add_child(scroll)
+	_guide_text = RichTextLabel.new()
+	_guide_text.bbcode_enabled = true
+	_guide_text.fit_content = true
+	_guide_text.scroll_active = false
+	_guide_text.mouse_filter = Control.MOUSE_FILTER_PASS  # let drags scroll the container
+	_guide_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_guide_text.add_theme_font_size_override("normal_font_size", 21)
+	_guide_text.add_theme_font_size_override("bold_font_size", 22)
+	_guide_text.add_theme_constant_override("paragraph_separation", 6)
+	scroll.add_child(_guide_text)
+
+	_guide_button = Button.new()
+	_guide_button.custom_minimum_size.y = 60
+	_guide_button.focus_mode = Control.FOCUS_NONE
+	_guide_button.add_theme_font_size_override("font_size", 28)
+	_guide_button.pressed.connect(_close_guide)
+	vbox.add_child(_guide_button)
+
+
+func _small_button(text: String) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.custom_minimum_size = Vector2(56, 44)
+	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_font_size_override("font_size", 22)
+	return b
 
 
 ## Dev aid: `-- --shot=/path.png` saves a frame after a few seconds and quits.
