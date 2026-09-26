@@ -3,6 +3,7 @@ config_version=5
 [application]
 
 config/name="tea-game"
+run/main_scene="res://prototypes/kitchen-core/kitchen_core.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [rendering]

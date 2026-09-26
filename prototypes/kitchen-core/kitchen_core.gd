@@ -32,70 +32,100 @@ const TUNING := {
 	"first_guest_delay": 1.0,
 }
 
+# Drinks by difficulty tier: the tier sets price and spawn weight (TUNING),
+# the drink within a tier is picked evenly. Black tea brews at 100°, green at 80°.
 const RECIPES := {
-	"simple": ["cup", "ready_tea"],
-	"medium": ["cup", "leaf", "water100"],
-	"complex": ["cup", "leaf", "water80", "additive"],
+	"iced": ["cup", "iced_tea"],
+	"black": ["cup", "black_leaf", "water100"],
+	"green": ["cup", "green_leaf", "water80"],
+	"black_lemon": ["cup", "black_leaf", "water100", "lemon"],
+	"green_lemon": ["cup", "green_leaf", "water80", "lemon"],
 }
-const DRINK_NAMES := {"simple": "Термос", "medium": "Заварной", "complex": "Особый"}
+const RECIPE_TIER := {
+	"iced": "simple", "black": "medium", "green": "medium",
+	"black_lemon": "complex", "green_lemon": "complex",
+}
+const DRINK_NAMES := {
+	"iced": "Холодный чай", "black": "Чёрный", "green": "Зелёный",
+	"black_lemon": "Чёрный с лимоном", "green_lemon": "Зелёный с лимоном",
+}
+const LEAVES := ["black_leaf", "green_leaf"]
 # One colour per recipe step (icons later). Stations are painted in the colour
 # of the step they add, orders and cups show their steps as coloured squares.
 const STEP_COLORS := {
 	"cup": Color(0.95, 0.95, 0.95),
-	"ready_tea": Color(0.6, 0.35, 0.85),
-	"leaf": Color(0.3, 0.7, 0.3),
+	"iced_tea": Color(0.6, 0.35, 0.85),
+	"black_leaf": Color(0.7, 0.4, 0.15),
+	"green_leaf": Color(0.3, 0.7, 0.3),
 	"water100": Color(0.9, 0.3, 0.3),
 	"water80": Color(0.3, 0.5, 0.95),
-	"additive": Color(0.95, 0.85, 0.25),
+	"lemon": Color(0.95, 0.85, 0.25),
 }
 const STATION_STEP := {
-	"cups": "cup", "thermos": "ready_tea", "leaf": "leaf",
-	"kettle100": "water100", "kettle80": "water80", "additive": "additive",
+	"cups": "cup", "iced_tea": "iced_tea", "black_leaf": "black_leaf", "green_leaf": "green_leaf",
+	"kettle100": "water100", "kettle80": "water80", "lemon": "lemon",
 }
 const GUEST_COLOR := Color(0.75, 0.7, 0.65)
 const STEP_NAMES := {
-	"cup": "чашка", "ready_tea": "термос", "leaf": "лист",
-	"water100": "кипяток", "water80": "вода 80°", "additive": "добавка",
+	"cup": "чашка", "iced_tea": "холодный чай", "black_leaf": "чёрный лист", "green_leaf": "зелёный лист",
+	"water100": "кипяток", "water80": "вода 80°", "lemon": "лимон",
 }
 
 # Layout: portrait rectangle with a wide 2x4 island in the middle. "side" says
 # which face the barista works from; each island column faces its own aisle.
 # Ids starting with "slot" are empty counter slots: put a cup down, pick it up.
+# Optional "size" is the x/z footprint in metres (default 1x1); side-wall
+# stations are longer along the wall so they don't read as slivers from the
+# tilted camera.
 const SLOT_COLOR := Color(0.4, 0.28, 0.2)
-const WALL_COLOR := Color(0.3, 0.24, 0.2)
+const WALL_COLOR := Color(0.26, 0.21, 0.18)
+const WALL_HEIGHT := 0.7
+const ISLAND_GAP := 0.08  # visual gap between neighbouring island boxes
+const SLOT_PAD := 0.03  # empty slots are pads this far proud of the countertop
 const STATIONS := [
-	{"id": "cups", "label": "Чашки", "pos": Vector3(-2.0, 0, -7.0), "side": "back"},
-	{"id": "leaf", "label": "Лист", "pos": Vector3(1.5, 0, -7.0), "side": "back"},
-	{"id": "kettle100", "label": "100°", "pos": Vector3(-3.5, 0, -4.5), "side": "left"},
-	{"id": "slot_left", "label": "", "pos": Vector3(-3.5, 0, -2.0), "side": "left", "color": SLOT_COLOR},
-	{"id": "trash", "label": "Мусорка", "pos": Vector3(-3.5, 0, 0.5), "side": "left", "color": Color(0.4, 0.4, 0.4)},
-	{"id": "kettle80", "label": "80°", "pos": Vector3(3.5, 0, -4.5), "side": "right"},
-	{"id": "slot_right", "label": "", "pos": Vector3(3.5, 0, -2.0), "side": "right", "color": SLOT_COLOR},
+	{"id": "cups", "label": "Чашки", "pos": Vector3(-2.5, 0, -7.0), "side": "back"},
+	{"id": "green_leaf", "label": "Зелёный", "pos": Vector3(0.0, 0, -7.0), "side": "back"},
+	{"id": "black_leaf", "label": "Чёрный", "pos": Vector3(2.5, 0, -7.0), "side": "back"},
+	{"id": "kettle100", "label": "100°", "pos": Vector3(-3.5, 0, -4.25), "side": "left", "size": Vector2(1.0, 1.5)},
+	{"id": "slot_left", "label": "", "pos": Vector3(-3.5, 0, -1.75), "side": "left", "size": Vector2(1.0, 1.5), "color": SLOT_COLOR},
+	{"id": "trash", "label": "Мусорка", "pos": Vector3(-3.5, 0, 0.75), "side": "left", "size": Vector2(1.0, 1.5), "color": Color(0.4, 0.4, 0.4)},
+	{"id": "kettle80", "label": "80°", "pos": Vector3(3.5, 0, -4.25), "side": "right", "size": Vector2(1.0, 1.5)},
+	{"id": "slot_right", "label": "", "pos": Vector3(3.5, 0, -1.75), "side": "right", "size": Vector2(1.0, 1.5), "color": SLOT_COLOR},
 	# Island, 2x4: each column is worked from its own aisle.
-	{"id": "thermos", "label": "Термос", "pos": Vector3(-0.5, 0, -4.5), "side": "island_left"},
+	{"id": "iced_tea", "label": "Холодный", "pos": Vector3(-0.5, 0, -4.5), "side": "island_left"},
 	{"id": "slot_island_l1", "label": "", "pos": Vector3(-0.5, 0, -3.5), "side": "island_left", "color": SLOT_COLOR},
 	{"id": "slot_island_l2", "label": "", "pos": Vector3(-0.5, 0, -2.5), "side": "island_left", "color": SLOT_COLOR},
 	{"id": "slot_island_l3", "label": "", "pos": Vector3(-0.5, 0, -1.5), "side": "island_left", "color": SLOT_COLOR},
 	{"id": "slot_island_r1", "label": "", "pos": Vector3(0.5, 0, -4.5), "side": "island_right", "color": SLOT_COLOR},
 	{"id": "slot_island_r2", "label": "", "pos": Vector3(0.5, 0, -3.5), "side": "island_right", "color": SLOT_COLOR},
-	{"id": "slot_island_r3", "label": "", "pos": Vector3(0.5, 0, -2.5), "side": "island_right", "color": SLOT_COLOR},
-	{"id": "additive", "label": "Добавка", "pos": Vector3(0.5, 0, -1.5), "side": "island_right"},
+	{"id": "lemon", "label": "Лимон", "pos": Vector3(0.5, 0, -1.5), "side": "island_right"},
 ]
 
 # Unusable wall blocks filling the gaps between wall stations (placeholder —
 # what goes there is decided later). Centre on the floor and x/z size in metres;
 # edges sit on the 0.5 m grid lines like the stations.
+# Countertops are the visual for the whole wall run: x/z centre and size. 1.1 m
+# deep, so the 1.2 m station boxes stand 5 cm proud and faces never coincide.
+const COUNTERTOPS := [
+	{"pos": Vector2(0.0, -7.0), "size": Vector2(8.1, 1.1)},
+	{"pos": Vector2(-3.5, -2.225), "size": Vector2(1.1, 8.45)},
+	{"pos": Vector2(3.5, -2.225), "size": Vector2(1.1, 8.45)},
+	{"pos": Vector2(0.0, -3.0), "size": Vector2(1.9, 3.9)},  # island
+]
 const WALLS := [
-	{"pos": Vector3(-3.25, 0, -7.0), "size": Vector2(1.5, 1.0)},
-	{"pos": Vector3(-0.25, 0, -7.0), "size": Vector2(2.5, 1.0)},
-	{"pos": Vector3(3.0, 0, -7.0), "size": Vector2(2.0, 1.0)},
+	{"pos": Vector3(-3.5, 0, -7.0), "size": Vector2(1.0, 1.0)},
+	{"pos": Vector3(-1.25, 0, -7.0), "size": Vector2(1.5, 1.0)},
+	{"pos": Vector3(1.25, 0, -7.0), "size": Vector2(1.5, 1.0)},
+	{"pos": Vector3(3.5, 0, -7.0), "size": Vector2(1.0, 1.0)},
 	{"pos": Vector3(-3.5, 0, -5.75), "size": Vector2(1.0, 1.5)},
-	{"pos": Vector3(-3.5, 0, -3.25), "size": Vector2(1.0, 1.5)},
-	{"pos": Vector3(-3.5, 0, -0.75), "size": Vector2(1.0, 1.5)},
-	{"pos": Vector3(-3.5, 0, 1.5), "size": Vector2(1.0, 1.0)},
+	{"pos": Vector3(-3.5, 0, -3.0), "size": Vector2(1.0, 1.0)},
+	{"pos": Vector3(-3.5, 0, -0.5), "size": Vector2(1.0, 1.0)},
+	{"pos": Vector3(-3.5, 0, 1.75), "size": Vector2(1.0, 0.5)},
 	{"pos": Vector3(3.5, 0, -5.75), "size": Vector2(1.0, 1.5)},
-	{"pos": Vector3(3.5, 0, -3.25), "size": Vector2(1.0, 1.5)},
-	{"pos": Vector3(3.5, 0, 0.25), "size": Vector2(1.0, 3.5)},
+	{"pos": Vector3(3.5, 0, -3.0), "size": Vector2(1.0, 1.0)},
+	{"pos": Vector3(3.5, 0, 0.5), "size": Vector2(1.0, 3.0)},
+	# Bare island countertop behind the lemon: no slot, but still not walkable.
+	{"pos": Vector3(0.5, 0, -2.5), "size": Vector2(1.0, 1.0)},
 ]
 
 const GUEST_X := [-2.4, -0.8, 0.8, 2.4]
@@ -171,16 +201,13 @@ func _ready() -> void:
 	_build_world()
 	for def: Dictionary in STATIONS:
 		_build_station(def)
-	for w: Dictionary in WALLS:
-		var block := Node3D.new()
-		block.position = w.pos
-		add_child(block)
-		# Match the 1.2 m visual depth of station boxes and sit a bit lower, so
-		# stations read as full-size where they overlap the wall.
-		# Along the wall, stop 0.1 m short at each end: that is where the wider
-		# station boxes reach, and coplanar faces would cover their edges.
-		var visual := Vector3(1.2 if w.size.x == 1.0 else w.size.x - 0.2, 0.95, 1.2 if w.size.y == 1.0 else w.size.y - 0.2)
-		_add_box(block, visual, Vector3(0, 0.475, 0), WALL_COLOR, false)
+	# WALLS only block movement; visually each wall is one continuous low
+	# countertop running under its stations.
+	var countertop := Node3D.new()
+	add_child(countertop)
+	for run: Dictionary in COUNTERTOPS:
+		_add_box(countertop, Vector3(run.size.x, WALL_HEIGHT, run.size.y),
+			Vector3(run.pos.x, WALL_HEIGHT / 2.0, run.pos.y), WALL_COLOR, false)
 	for id: String in ["kettle100", "kettle80"]:
 		_kettles[id] = {"state": "empty", "t": 0.0, "steps": []}
 	_build_grid()
@@ -215,7 +242,7 @@ func _physics_process(_delta: float) -> void:
 	var best_kind := ""
 	var best_id: Variant = null
 	for def: Dictionary in STATIONS:
-		var d := screen_pos.distance_to(_camera.unproject_position(def.pos + Vector3(0, 1.0, 0)))
+		var d := screen_pos.distance_to(_camera.unproject_position(def.pos + Vector3(0, _station_top(def), 0)))
 		if d < best_dist:
 			best_dist = d
 			best_kind = "station"
@@ -310,18 +337,18 @@ func _can_use_station(id: String) -> bool:
 	match id:
 		"cups":
 			return _held.is_empty()
-		"thermos", "leaf":
+		"iced_tea", "black_leaf", "green_leaf":
 			return _held == ["cup"]
-		"additive":
-			return _held == ["cup", "leaf", "water80"]
+		"lemon":
+			return _has_brewed_tea()
 		"trash":
 			return not _held.is_empty()
 		"kettle100", "kettle80":
 			var k: Dictionary = _kettles[id]
 			if k.state == "empty":
-				return _held == ["cup", "leaf"]
+				return _has_leaf_cup()
 			# Busy kettle: take the tea, or swap in a new cup with leaf.
-			return _held.is_empty() or _held == ["cup", "leaf"]
+			return _held.is_empty() or _has_leaf_cup()
 	if id in _slots:
 		# Put down, pick up, or swap what's in hand with what's on the slot.
 		return not (_held.is_empty() and _slots[id].cup.is_empty())
@@ -363,7 +390,7 @@ func _perform_target() -> bool:
 
 	var id: String = _target_id
 	var kettle: Dictionary = _kettles.get(id, {})
-	if not kettle.is_empty() and kettle.state == "brewing" and (_held.is_empty() or _held == ["cup", "leaf"]):
+	if not kettle.is_empty() and kettle.state == "brewing" and (_held.is_empty() or _has_leaf_cup()):
 		return false  # wait at the kettle until the tea is ready
 	if not _can_use_station(id):
 		_flash(_stations[id].mat, _stations[id].base_color)
@@ -373,12 +400,10 @@ func _perform_target() -> bool:
 	match id:
 		"cups":
 			_held = ["cup"]
-		"thermos":
-			_held.append("ready_tea")
-		"leaf":
-			_held.append("leaf")
-		"additive":
-			_held.append("additive")
+		"iced_tea", "black_leaf", "green_leaf":
+			_held.append(STATION_STEP[id])
+		"lemon":
+			_held.append("lemon")
 		"trash":
 			_held = []
 		"kettle100", "kettle80":
@@ -413,7 +438,8 @@ func _build_grid() -> void:
 		for y in GRID_CELLS.y:
 			var c := _cell_center(Vector2i(x, y))
 			for def: Dictionary in STATIONS:
-				if absf(c.x - def.pos.x) < 0.5 and absf(c.z - def.pos.z) < 0.5:
+				var half := _footprint(def) / 2.0
+				if absf(c.x - def.pos.x) < half.x and absf(c.z - def.pos.z) < half.y:
 					_grid.set_point_solid(Vector2i(x, y), true)
 			for w: Dictionary in WALLS:
 				if absf(c.x - w.pos.x) < w.size.x / 2.0 and absf(c.z - w.pos.z) < w.size.y / 2.0:
@@ -477,7 +503,7 @@ func _clear_line(a: Vector3, b: Vector3) -> bool:
 	var b2 := Vector2(b.x, b.z)
 	var margin := Vector2(BODY_RADIUS, BODY_RADIUS)
 	for def: Dictionary in STATIONS:
-		if _segment_hits_box(a2, b2, Vector2(def.pos.x, def.pos.z), Vector2(0.5, 0.5) + margin):
+		if _segment_hits_box(a2, b2, Vector2(def.pos.x, def.pos.z), _footprint(def) / 2.0 + margin):
 			return false
 	for w: Dictionary in WALLS:
 		if _segment_hits_box(a2, b2, Vector2(w.pos.x, w.pos.z), w.size / 2.0 + margin):
@@ -549,15 +575,18 @@ func _update_spawning(delta: float) -> void:
 func _pick_recipe() -> String:
 	var weights := {}
 	var total := 0.0
-	for r: String in RECIPES:
-		weights[r] = lerpf(TUNING.weights_start[r], TUNING.weights_end[r], _ramp())
-		total += weights[r]
+	for t: String in TUNING.weights_start:
+		weights[t] = lerpf(TUNING.weights_start[t], TUNING.weights_end[t], _ramp())
+		total += weights[t]
+	var tier := "simple"
 	var roll := randf() * total
-	for r: String in RECIPES:
-		roll -= weights[r]
+	for t: String in weights:
+		roll -= weights[t]
 		if roll <= 0.0:
-			return r
-	return "simple"
+			tier = t
+			break
+	var drinks: Array = RECIPES.keys().filter(func(d: String) -> bool: return RECIPE_TIER[d] == tier)
+	return drinks.pick_random()
 
 
 func _spawn_guest(slot: int) -> void:
@@ -576,7 +605,7 @@ func _spawn_guest(slot: int) -> void:
 	var order_row := _make_step_row(2.3)
 	body.add_child(order_row)
 	_fill_step_row(order_row, RECIPES[recipe])
-	var label := _label3d("%d мон." % TUNING.prices[recipe], 20)
+	var label := _label3d("%d мон." % TUNING.prices[RECIPE_TIER[recipe]], 20)
 	label.position = Vector3(0, 2.8, 0)
 	body.add_child(label)
 
@@ -614,7 +643,7 @@ func _update_guests(delta: float) -> void:
 
 func _serve(slot: int) -> void:
 	var g: Dictionary = _guests[slot]
-	var price: int = TUNING.prices[g.recipe]
+	var price: int = TUNING.prices[RECIPE_TIER[g.recipe]]
 	var ratio := maxf(g.patience / g.max, 0.0)
 	var paid := clampi(_capacity() - _register, 0, price)
 	_register += paid
@@ -760,7 +789,15 @@ func _build_station(def: Dictionary) -> void:
 	body.set_meta("kind", "station")
 	body.set_meta("id", def.id)
 	add_child(body)
-	_add_box(body, Vector3(1.2, 1.0, 1.2), Vector3(0, 0.5, 0), color, true)
+	# Wall stations overhang their footprint by 0.1 m to stand proud of the
+	# lower wall run; island boxes shrink instead, leaving a seam between cells.
+	# Empty slots are just a marked pad on the countertop, not a block.
+	var foot := _footprint(def)
+	var grow := -ISLAND_GAP if String(def.side).begins_with("island") else 0.2
+	var top := _station_top(def)
+	if String(def.id).begins_with("slot"):
+		grow = -0.12
+	_add_box(body, Vector3(foot.x + grow, top, foot.y + grow), Vector3(0, top / 2.0, 0), color, true)
 	var mat: StandardMaterial3D = (body.get_child(1) as MeshInstance3D).material_override
 
 	var label := _label3d(def.label, 32)
@@ -797,16 +834,37 @@ func _build_station(def: Dictionary) -> void:
 		cyl.height = 0.3
 		cup_mesh.mesh = cyl
 		cup_mesh.material_override = _mat(Color(0.3, 0.8, 0.9))
-		cup_mesh.position = Vector3(0, 1.15, 0)
+		cup_mesh.position = Vector3(0, top + 0.15, 0)
 		cup_mesh.visible = false
 		body.add_child(cup_mesh)
-		var row := _make_step_row(1.55)
+		var row := _make_step_row(top + 0.55)
 		body.add_child(row)
 		if is_slot:
 			_slots[def.id] = {"cup": [], "mesh": cup_mesh, "row": row, "shown": null}
 		else:
 			label.position.y = 2.35  # keep the brew timer clear of the step row
 			_stations[def.id].merge({"cup_mesh": cup_mesh, "row": row, "shown": null})
+
+
+## A cup with leaf in it, ready for a kettle.
+func _has_leaf_cup() -> bool:
+	return _held.size() == 2 and _held[0] == "cup" and _held[1] in LEAVES
+
+
+## A brewed cup (any leaf, any water), ready for lemon.
+func _has_brewed_tea() -> bool:
+	return _held.size() == 3 and _held[0] == "cup" and _held[1] in LEAVES \
+		and _held[2] in ["water100", "water80"]
+
+
+## Height of a station's top surface: empty slots sit flush with the countertop.
+func _station_top(def: Dictionary) -> float:
+	return WALL_HEIGHT + SLOT_PAD if String(def.id).begins_with("slot") else 1.0
+
+
+## x/z footprint of a station in metres.
+func _footprint(def: Dictionary) -> Vector2:
+	return def.get("size", Vector2.ONE)
 
 
 func _build_barista() -> void:
@@ -1047,10 +1105,10 @@ func _why_not(id: String) -> String:
 	match id:
 		"cups":
 			return "Руки заняты — поставь чашку в слот или выкинь"
-		"thermos", "leaf":
+		"iced_tea", "black_leaf", "green_leaf":
 			return "Сначала возьми чашку" if _held.is_empty() else "%s: нужна пустая чашка" % name
-		"additive":
-			return "Добавка: нужна чашка с листом и водой 80°"
+		"lemon":
+			return "Лимон: нужен заваренный чай"
 		"trash":
 			return "Руки пустые"
 		"kettle100", "kettle80":
