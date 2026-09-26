@@ -1,0 +1,59 @@
+TEA RUSH — КОРОТКО ОБ ИГРЕ
+==========================
+
+ИДЕЯ В ОДНОЙ ФРАЗЕ
+Ты работаешь бариста в маленькой чайной в час пик. Гости идут потоком, нужно быстро заваривать и подавать чай, пока они не ушли. Это короткая, суетливая и азартная игра прямо в Telegram.
+
+КАК ИГРАТЬ
+- Гость приходит и делает заказ. Игрок собирает напиток по шагам: берёт чайный лист, наливает воду нужной температуры, кладёт добавку, выбирает посуду и отдаёт чашку.
+- Чем сложнее напиток, тем больше за него платят. Простой чай делается в 1 шаг и стоит дёшево, сложный делается в 5 шагов и стоит дорого. Игрок постоянно решает, взять один дорогой заказ или успеть два дешёвых.
+- Партия не заканчивается сама. Со временем гостей становится больше, и становится всё жарче. Если три гостя ушли без чая, партия окончена.
+- Одна партия длится около 2 минут.
+
+ГЛАВНАЯ ФИШКА: КАССА НА ПРИЛАВКЕ
+Все заработанные монеты падают в кассу, и она видна на экране. У кассы есть вместимость, то есть дневной лимит. Когда касса заполнилась, чайная закрывается до завтра. Обычно это около 5 партий, примерно 10 минут в день. Получается ежедневный ритуал: зашёл, заполнил кассу, вернулся завтра.
+
+ДВЕ РАЗНЫЕ НАГРАДЫ
+- Монеты (Tea Coin) платят за работу. Их ограничивает касса.
+- Очки дают за мастерство, они идут в рекорд и таблицу лидеров. Их ничто не ограничивает. Даже когда касса полна, текущую партию можно доиграть ради рекорда.
+
+КАК ЗАРАБАТЫВАЕМ
+Играть можно бесплатно. Бесплатный игрок видит, сколько монет он «заработал бы», но вывести их не может. Это главный стимул к покупке. Покупка даёт настоящие монеты, доступ к лидерборду и прокачку: касса становится вместительнее, бариста работает быстрее. Рекорд купить нельзя: соревнование идёт в лигах между игроками одного уровня. В будущем монеты могут стать токеном.
+
+ДЛЯ КОГО
+Люди 18–35 лет, которые играют в Telegram с телефона и уже знают игры с дневным лимитом. Им нужен короткий ежедневный ритуал, где важен настоящий скилл и есть соревнование.
+
+НА ЧТО ПОХОЖЕ
+Overcooked (хаос на кухне) + Cooking Fever (короткие партии на телефоне) + Telegram-игры с дневным лимитом. Отличие от других Telegram-игр в том, что здесь нужно реально уметь играть, а не просто тапать.
+
+
+------------------------------------------------------------
+
+
+TEA RUSH — THE GAME IN BRIEF
+============================
+
+THE IDEA IN ONE SENTENCE
+You're a barista in a small tea shop during the rush hour. Guests keep coming, and you have to brew and serve tea fast before they walk out. It's a short, hectic, exciting game that runs right inside Telegram.
+
+HOW IT PLAYS
+- A guest arrives and places an order. The player makes the drink step by step: picks the tea leaf, pours water at the right temperature, adds an extra, chooses the cup, and serves it.
+- The more complex the drink, the more it pays. A simple tea takes 1 step and is cheap; a complex one takes 5 steps and is expensive. The player keeps deciding: take one expensive order, or squeeze in two cheap ones?
+- A round never ends on its own. Over time more guests arrive and things get more intense. If three guests leave without their tea, the round is over.
+- One round lasts about 2 minutes.
+
+THE KEY HOOK: THE CASH REGISTER ON THE COUNTER
+Every coin you earn drops into the cash register, which is always visible on screen. The register has a capacity, which is the daily earning limit. Once it's full, the tea shop closes until tomorrow. That's usually about 5 rounds, roughly 10 minutes a day. It becomes a daily ritual: come in, fill the register, come back tomorrow.
+
+TWO SEPARATE REWARDS
+- Coins (Tea Coin) are paid for work. The register limits them.
+- Points are earned for skill and go toward your high score and the leaderboard. Nothing limits them. Even when the register is full, you can finish the current round to chase a record.
+
+HOW WE MAKE MONEY
+The game is free to play. A free player sees how many coins they "would have earned," but can't withdraw them. That's the main reason to buy. A purchase unlocks real coins, the leaderboard, and upgrades: a bigger register and a faster barista. High scores can't be bought: players compete in leagues against others at the same level. In the future, coins may become a token.
+
+WHO IT'S FOR
+People aged 18–35 who play games in Telegram on their phones and already know daily-limit games. They want a short daily ritual that rewards real skill and offers competition.
+
+WHAT IT'S LIKE
+Overcooked (kitchen chaos) + Cooking Fever (short rounds on mobile) + Telegram daily-limit games. Unlike other Telegram games, this one takes real skill, not just tapping.
