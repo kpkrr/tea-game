@@ -228,8 +228,8 @@
 | ---- | ---- |
 | **Recommended Engine** | Godot 4.7.2 (уже закреплён в проекте; web-экспорт) |
 | **Key Technical Challenges** | Размер и загрузка web-сборки в Telegram WebView; серверный учёт кассы и монет; валидация очков |
-| **Art Style** | 2D (определяется в `/art-bible`) |
-| **Art Pipeline Complexity** | Low–Medium (custom 2D, мало ассетов) |
+| **Art Style** | 2.5D: 3D low-poly сцена, фиксированная камера под углом (как Overcooked); детали в `/art-bible` |
+| **Art Pipeline Complexity** | Medium (low-poly 3D-модели, мало ассетов) |
 | **Audio Needs** | Moderate (сочный фидбек важен для «хаоса») |
 | **Networking** | Client-Server (бэкенд для кассы, монет, лидерборда); в MVP — нет |
 | **Content Volume** | MVP: 1 кухня, 3 напитка; Alpha: 6–8 напитков |
