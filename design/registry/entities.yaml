@@ -40,7 +40,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-09-27"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -142,7 +142,59 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: kitchen_slot_count
+    status: active
+    source: design/gdd/kitchen-station-layout.md
+    referenced_by:
+      - design/gdd/kitchen-station-layout.md
+    value: 7
+    unit: slots
+    notes: "5 on the island + 1 at each side wall"
+    added: 2026-09-27
+    revised: ""
+
+  - name: viewport_aspect_min
+    status: active
+    source: design/gdd/kitchen-station-layout.md
+    referenced_by:
+      - design/gdd/kitchen-station-layout.md
+    value: 0.45
+    unit: width/height ratio (9:20, tall phone portrait)
+    notes: "Provisional owner — move source to Platform Integration GDD once written"
+    added: 2026-09-27
+    revised: ""
+
+  - name: viewport_aspect_max
+    status: active
+    source: design/gdd/kitchen-station-layout.md
+    referenced_by:
+      - design/gdd/kitchen-station-layout.md
+    value: 1.0
+    unit: width/height ratio (1:1, PC square window; wider is letterboxed)
+    notes: "No landscape mode. Provisional owner — move source to Platform Integration GDD once written"
+    added: 2026-09-27
+    revised: ""
+
+  - name: playfield_min_fill
+    status: active
+    source: design/gdd/kitchen-station-layout.md
+    referenced_by:
+      - design/gdd/kitchen-station-layout.md
+    value: 0.95
+    unit: fraction of the limiting side of the safe area
+    added: 2026-09-27
+    revised: ""
+
+  - name: min_tap_target
+    status: active
+    source: design/gdd/kitchen-station-layout.md
+    referenced_by:
+      - design/gdd/kitchen-station-layout.md
+    value: 48
+    unit: dp (measured on a 360x640 dp phone)
+    added: 2026-09-27
+    revised: ""
 
 # Example:
 #
