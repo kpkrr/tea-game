@@ -40,7 +40,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: "2026-09-27"
+last_updated: "2026-09-28"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -80,7 +80,62 @@ entities: []
 # Attribute fields: value_gold, weight, stackable, category, and any stat
 #   modifiers that another system (e.g., economy, crafting) might reference.
 
-items: []
+items:
+  - name: cold_tea
+    status: active
+    source: design/gdd/order-recipe-system.md
+    referenced_by:
+      - design/gdd/order-recipe-system.md
+    category: drink_recipe
+    tier: simple
+    steps: [cup, iced_tea, serve]
+    value_coins: 2
+    added: 2026-09-28
+    revised: ""
+  - name: black_tea
+    status: active
+    source: design/gdd/order-recipe-system.md
+    referenced_by:
+      - design/gdd/order-recipe-system.md
+    category: drink_recipe
+    tier: medium
+    steps: [cup, leaf_black, water_100, serve]
+    value_coins: 5
+    added: 2026-09-28
+    revised: ""
+  - name: green_tea
+    status: active
+    source: design/gdd/order-recipe-system.md
+    referenced_by:
+      - design/gdd/order-recipe-system.md
+    category: drink_recipe
+    tier: medium
+    steps: [cup, leaf_green, water_80, serve]
+    value_coins: 5
+    added: 2026-09-28
+    revised: ""
+  - name: black_tea_lemon
+    status: active
+    source: design/gdd/order-recipe-system.md
+    referenced_by:
+      - design/gdd/order-recipe-system.md
+    category: drink_recipe
+    tier: complex
+    steps: [cup, leaf_black, water_100, lemon, serve]
+    value_coins: 7
+    added: 2026-09-28
+    revised: ""
+  - name: green_tea_lemon
+    status: active
+    source: design/gdd/order-recipe-system.md
+    referenced_by:
+      - design/gdd/order-recipe-system.md
+    category: drink_recipe
+    tier: complex
+    steps: [cup, leaf_green, water_80, lemon, serve]
+    value_coins: 7
+    added: 2026-09-28
+    revised: ""
 
 # Example:
 #
@@ -109,7 +164,24 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: recipe_price
+    status: active
+    source: design/gdd/order-recipe-system.md
+    referenced_by:
+      - design/gdd/order-recipe-system.md
+    variables:
+      - recipe_id
+      - price_table
+    output_range: [2, 7]
+    expression: "price_table[recipe_id]"
+    notes: "Table lookup, not computed from step count. Load-time invariants:
+      price_complex <= (price_simple + price_medium) * 1.15 and
+      price_complex <= price_medium * 1.6 (checked in integers). Read by
+      Currency: Coins & Score (coins and score multiplier) and HUD. Values
+      provisional until /balance-check together with till capacity."
+    added: 2026-09-28
+    revised: ""
 
 # Example:
 #
@@ -148,33 +220,39 @@ constants:
     source: design/gdd/kitchen-station-layout.md
     referenced_by:
       - design/gdd/kitchen-station-layout.md
+      - design/gdd/brewing-crafting-mechanic.md
     value: 7
     unit: slots
-    notes: "5 on the island + 1 at each side wall"
+    notes: "5 on the island + 1 at each side wall. Occupancy owned by
+      brewing-crafting-mechanic.md (unconditional swap)."
     added: 2026-09-27
     revised: ""
 
   - name: viewport_aspect_min
     status: active
-    source: design/gdd/kitchen-station-layout.md
+    source: design/gdd/platform-integration-telegram-mini-app.md
     referenced_by:
+      - design/gdd/platform-integration-telegram-mini-app.md
       - design/gdd/kitchen-station-layout.md
+      - design/gdd/player-control-barista-movement.md
     value: 0.45
     unit: width/height ratio (9:20, tall phone portrait)
-    notes: "Provisional owner — move source to Platform Integration GDD once written"
+    notes: "Narrower viewports clamp to 9:20, centered, free strips top/bottom. Source moved from kitchen-station-layout.md 2026-09-28 (value unchanged)"
     added: 2026-09-27
-    revised: ""
+    revised: "2026-09-28"
 
   - name: viewport_aspect_max
     status: active
-    source: design/gdd/kitchen-station-layout.md
+    source: design/gdd/platform-integration-telegram-mini-app.md
     referenced_by:
+      - design/gdd/platform-integration-telegram-mini-app.md
       - design/gdd/kitchen-station-layout.md
+      - design/gdd/player-control-barista-movement.md
     value: 1.0
     unit: width/height ratio (1:1, PC square window; wider is letterboxed)
-    notes: "No landscape mode. Provisional owner — move source to Platform Integration GDD once written"
+    notes: "No landscape mode. Source moved from kitchen-station-layout.md 2026-09-28 (value unchanged)"
     added: 2026-09-27
-    revised: ""
+    revised: "2026-09-28"
 
   - name: playfield_min_fill
     status: active
@@ -191,9 +269,82 @@ constants:
     source: design/gdd/kitchen-station-layout.md
     referenced_by:
       - design/gdd/kitchen-station-layout.md
+      - design/gdd/player-control-barista-movement.md
     value: 48
     unit: dp (measured on a 360x640 dp phone)
     added: 2026-09-27
+    revised: ""
+
+  - name: base_walk_speed
+    status: active
+    source: design/gdd/player-control-barista-movement.md
+    referenced_by:
+      - design/gdd/player-control-barista-movement.md
+      - design/gdd/order-recipe-system.md
+    value: 4.0
+    unit: m/s
+    notes: "Playtest-validated (prototype TUNING.walk_speed). Multiplied by
+      speed_multiplier x1.0/1.15/1.3/1.5 from Progression & Upgrades (Alpha);
+      MVP always x1.0."
+    added: 2026-09-28
+    revised: ""
+
+  - name: agent_radius
+    status: active
+    source: design/gdd/player-control-barista-movement.md
+    referenced_by:
+      - design/gdd/player-control-barista-movement.md
+      - design/gdd/kitchen-station-layout.md
+    value: 0.40
+    unit: m
+    notes: "work_gap (0.45, prototype WORK_GAP — not yet in Kitchen GDD) minus
+      clearance_margin (0.05, data). Must stay < work_gap. Also the path
+      clearance (body_clearance) and the NavMesh bake erosion radius. Unblocks
+      kitchen-station-layout.md AC7."
+    added: 2026-09-28
+    revised: ""
+
+  - name: tap_pick_radius
+    status: active
+    source: design/gdd/player-control-barista-movement.md
+    referenced_by:
+      - design/gdd/player-control-barista-movement.md
+    value: 28
+    unit: dp (= 42 px at the prototype's 540x960 canvas)
+    notes: "round(pick_radius_factor 1.15 x min_tap_target / 2). Inclusive
+      boundary. Likely read by HUD & Feedback UI."
+    added: 2026-09-28
+    revised: ""
+
+  - name: t_step
+    status: active
+    source: design/gdd/player-control-barista-movement.md
+    referenced_by:
+      - design/gdd/player-control-barista-movement.md
+      - design/gdd/order-recipe-system.md
+      - design/gdd/brewing-crafting-mechanic.md
+    value: 2.0
+    unit: s (average walk + tap per recipe step, MVP speed)
+    notes: "Balance-only, no runtime code. Euclidean estimate 1.68 s
+      (d_avg_hop 5.11 m / 4.0 m/s + t_react 0.4) + ~20% margin. Replaces the
+      placeholder 3 s in order-recipe-system.md Formula 2 (coins_per_sec table
+      recomputed 2026-09-28: 0.33-0.70)."
+    added: 2026-09-28
+    revised: ""
+
+  - name: t_brew_base
+    status: active
+    source: design/gdd/brewing-crafting-mechanic.md
+    referenced_by:
+      - design/gdd/brewing-crafting-mechanic.md
+      - design/gdd/order-recipe-system.md
+    value: 3.0
+    unit: s (kettle brew duration at speed_multiplier 1.0)
+    notes: "Playtest-validated (prototype TUNING.brew_time). Effective
+      t_brew = t_brew_base / speed_multiplier (x1.0/1.15/1.3/1.5,
+      Progression & Upgrades, Alpha) -> 2.0-3.0 s. Per kettle instance
+      (water_100, water_80 independent). Peak utilization ~0.45 per kettle."
+    added: 2026-09-28
     revised: ""
 
 # Example:

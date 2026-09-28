@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-09-27
-> **Last Updated**: 2026-09-27
+> **Last Updated**: 2026-09-28 (Brewing & Crafting — Designed)
 > **Source Concept**: design/gdd/game-concept.md
 
 ---
@@ -32,18 +32,21 @@ Core loop (Pillar 1: «Хаос за стойкой») требует прост
 от неё зависят почти все остальные gameplay-системы — это самая
 bottleneck-система индекса.
 
-**Platform Integration (Telegram Mini App)** *(explicit)* — Web-экспорт Godot,
-загрузка внутри Telegram WebView, интеграция с Telegram SDK (в т.ч. Stars для
-доната на более поздних тирах). Не имеет игровых зависимостей, но без неё
-игру негде показать целевой аудитории (Target Player Profile: «Telegram на
-мобильном»).
+**Platform Integration (Telegram Mini App)** *(explicit)* — Одна web-сборка
+Godot: обычный сайт по URL на ПК и телефоне, и та же сборка внутри Telegram
+Mini App как обёртка (автодетект Telegram WebApp JS). Задаёт safe area и
+диапазон пропорций экрана 9:20–1:1, в которые вписываются кухня и HUD.
+Telegram SDK — только safe-area инсеты и тема; Telegram Stars исключены
+(решение 2026-09-28). Не имеет игровых зависимостей, но без неё игру негде
+показать целевой аудитории (Target Player Profile: «Telegram на мобильном»).
 
 ### Core
 
-**Order & Recipe System** *(explicit)* — Определения рецептов (1/3/5 шагов:
-лист → вода нужной температуры → добавка → посуда), правило «цена = число
-шагов ± разброс X–Y». Зависит от Kitchen & Station Layout, так как шаги
-рецепта завязаны на существующие типы станций.
+**Order & Recipe System** *(explicit)* — Определения рецептов: 5 напитков
+MVP в 3 уровнях сложности (3/4/5 шагов: чашка → лист → вода нужной
+температуры → лимон → подача), цены из таблицы 2/5/5/7/7 — растут со
+сложностью, но не линейно по числу шагов (см. GDD). Зависит от Kitchen &
+Station Layout, так как шаги рецепта завязаны на существующие типы станций.
 
 **Player Control / Barista Movement** *(inferred)* — Тап по станции/гостю =
 идти и выполнить действие; тап по полу = просто идти; новый тап сразу
@@ -104,7 +107,8 @@ Score.
 Coins & Score и Player Control (что именно ускоряется).
 
 **Monetization / IAP Integration** *(explicit, Alpha)* — Платёжный адаптер
-поверх Telegram Stars, вызывающий интерфейс Progression & Upgrades для
+(метод оплаты не выбран; Telegram Stars исключены 2026-09-28), вызывающий
+интерфейс Progression & Upgrades для
 выдачи купленного уровня. Зависимость однонаправленная — Monetization не
 определяет, что продаётся, только проводит оплату и дёргает Progression.
 Зависит от Progression & Upgrades.
@@ -141,16 +145,16 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | Kitchen & Station Layout (inferred) | Gameplay | MVP | Designed | design/gdd/kitchen-station-layout.md | — |
-| 2 | Platform Integration (Telegram Mini App) | Core | MVP | Not Started | — | — |
-| 3 | Order & Recipe System | Gameplay | MVP | Not Started | — | Kitchen & Station Layout |
-| 4 | Player Control / Barista Movement (inferred) | Gameplay | MVP | Not Started | — | Kitchen & Station Layout |
-| 5 | Brewing & Crafting Mechanic (inferred) | Gameplay | MVP | Not Started | — | Order & Recipe System, Player Control, Kitchen & Station Layout |
-| 6 | Guest AI & Patience (inferred) | Gameplay | MVP | Not Started | — | Kitchen & Station Layout, Order & Recipe System |
+| 1 | Kitchen & Station Layout (inferred) | Gameplay | MVP | Approved | design/gdd/kitchen-station-layout.md | Platform Integration (Telegram Mini App) |
+| 2 | Platform Integration (Telegram Mini App) | Core | MVP | Approved | design/gdd/platform-integration-telegram-mini-app.md | — |
+| 3 | Order & Recipe System | Gameplay | MVP | Approved | design/gdd/order-recipe-system.md | Kitchen & Station Layout |
+| 4 | Player Control / Barista Movement (inferred) | Gameplay | MVP | Approved | design/gdd/player-control-barista-movement.md | Kitchen & Station Layout |
+| 5 | Brewing & Crafting Mechanic (inferred) | Gameplay | MVP | Designed | design/gdd/brewing-crafting-mechanic.md | Order & Recipe System, Player Control, Kitchen & Station Layout |
+| 6 | Guest AI & Patience (inferred) | Gameplay | MVP | Not Started | — | Kitchen & Station Layout, Order & Recipe System, Player Control |
 | 7 | Difficulty Curve & Session Pacing | Gameplay | MVP | Not Started | — | Guest AI & Patience, Order & Recipe System |
 | 8 | Currency: Coins & Score | Economy | MVP | Not Started | — | Order & Recipe System, Guest AI & Patience |
 | 9 | Till & Day Cycle | Economy | MVP | Not Started | — | Currency: Coins & Score |
-| 10 | HUD & Feedback UI (inferred) | UI | MVP | Not Started | — | Kitchen & Station Layout, Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic |
+| 10 | HUD & Feedback UI (inferred) | UI | MVP | Not Started | — | Platform Integration (Telegram Mini App), Kitchen & Station Layout, Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic |
 | 11 | Backend & Persistence | Persistence | Vertical Slice | Not Started | — | Till & Day Cycle, Currency: Coins & Score |
 | 12 | Leaderboard & Leagues | Meta | Vertical Slice | Not Started | — | Backend & Persistence, Currency: Coins & Score |
 | 13 | Audio & Juice Feedback (inferred) | Audio | Vertical Slice | Not Started | — | Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle |
@@ -196,8 +200,8 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 
 ### Foundation Layer (no dependencies)
 
-1. **Kitchen & Station Layout** — пространственная модель, от которой зависит почти всё остальное; ничего не требует взамен.
-2. **Platform Integration (Telegram Mini App)** — технический фундамент доставки, независим от игровых систем.
+1. **Kitchen & Station Layout** — пространственная модель, от которой зависит почти всё остальное. *С 2026-09-28 зависит от Platform Integration (safe area, пропорции 9:20–1:1) — строго говоря, это уже Core-слой; оставлена здесь, т.к. GDD уже написана и порядок проектирования не меняется.*
+2. **Platform Integration (Telegram Mini App)** — технический фундамент доставки, независим от игровых систем; задаёт safe-area-контракт для Kitchen & Station Layout и HUD.
 
 ### Core Layer (depends on foundation)
 
@@ -207,7 +211,7 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 ### Feature Layer (depends on core)
 
 1. **Brewing & Crafting Mechanic** — depends on: Order & Recipe System, Player Control, Kitchen & Station Layout
-2. **Guest AI & Patience** — depends on: Kitchen & Station Layout, Order & Recipe System
+2. **Guest AI & Patience** — depends on: Kitchen & Station Layout, Order & Recipe System, Player Control (контракт цели-гостя — добавлено при дизайне player-control)
 3. **Difficulty Curve & Session Pacing** — depends on: Guest AI & Patience, Order & Recipe System
 4. **Currency: Coins & Score** — depends on: Order & Recipe System, Guest AI & Patience
 5. **Till & Day Cycle** — depends on: Currency: Coins & Score
@@ -220,7 +224,7 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 
 ### Presentation Layer (depends on features)
 
-1. **HUD & Feedback UI** — depends on: Kitchen & Station Layout (till anchor, свободные полосы экрана — добавлено при дизайне kitchen-station-layout), Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic
+1. **HUD & Feedback UI** — depends on: Platform Integration (safe area — добавлено при дизайне platform-integration), Kitchen & Station Layout (till anchor, свободные полосы экрана — добавлено при дизайне kitchen-station-layout), Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic
 2. **Audio & Juice Feedback** — depends on: Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle
 
 ### Polish Layer (depends on everything)
@@ -269,7 +273,7 @@ Pacing (первые ~30 секунд партии), отдельной Polish-�
 | System | Risk Type | Risk Description | Mitigation |
 |--------|-----------|-----------------|------------|
 | Kitchen & Station Layout | Scope | Bottleneck — 5 систем зависят от неё напрямую; поздняя правка раскладки каскадом задевает Player Control, Order & Recipe, Brewing, Guest AI, Co-op | Уже провалидирована прототипом `kitchen-core` — зафиксировать как есть, менять только через ADR |
-| Order & Recipe System | Design | Ценообразование «цена = шаги ± разброс» стоит в основе Currency, Guest AI и Difficulty — ошибка в диапазоне X–Y ломает всю экономику | Формулы и диапазоны — отдельная секция Formulas в GDD, обязательный `/balance-check` до Alpha |
+| Order & Recipe System | Design | Таблица цен рецептов стоит в основе Currency, Guest AI и Difficulty — ошибка в кривой цен ломает всю экономику; при заварке 3 с сложный заказ доминирует по монетам/с (см. Open Questions GDD) | Формулы и диапазоны — отдельная секция Formulas в GDD, обязательный `/balance-check` до Alpha |
 | Currency: Coins & Score | Design | Стык экономики (4 системы зависят от неё); открытый вопрос из game-concept — "скрытая формула кассы будет вычислена комьюнити" | Формула должна быть спроектирована так, чтобы обрыв смены ощущался честным — playtest перед фиксацией |
 | Platform Integration (Telegram Mini App) | Technical | Открытый технический риск из game-concept: размер и время загрузки web-сборки Godot в Telegram WebView на слабых Android | Прототипировать экспорт рано, независимо от приоритета — измерить размер сборки до конца MVP |
 | Backend & Persistence | Technical | Как только Tea Coin станет токеном, клиенту в вопросах экономики доверять нельзя; лидерборд требует серверной проверки правдоподобности очков | Спроектировать серверную авторизацию до Vertical Slice, не как надстройку поверх готового клиента |
@@ -282,10 +286,10 @@ Pacing (первые ~30 секунд партии), отдельной Polish-�
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 17 |
-| Design docs started | 1 |
-| Design docs reviewed | 0 |
-| Design docs approved | 0 |
-| MVP systems designed | 1/10 |
+| Design docs started | 5 |
+| Design docs reviewed | 4 |
+| Design docs approved | 4 |
+| MVP systems designed | 5/10 |
 | Vertical Slice systems designed | 0/3 |
 
 ---

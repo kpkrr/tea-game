@@ -46,13 +46,23 @@ after it runs `project.yaml` holds the real values.
 
 ## Collaboration Protocol
 
-**User-driven collaboration, not autonomous execution.**
-Every task follows: **Question -> Options -> Decision -> Draft -> Approval**
+**Collaboration depth is set by `modes.automation` in `project.yaml`** (currently
+`guided`) — see `.claude/docs/automation-modes.md` for the full per-mode pattern.
 
-- Agents MUST ask "May I write this to [filepath]?" before using Write/Edit tools
-- Agents MUST show drafts or summaries before requesting approval
-- Multi-file changes require explicit approval for the full changeset
-- No commits without user instruction
+- `collaborative`: every decision goes through Question -> Options -> Decision ->
+  Draft -> Approval. Agents ask "May I write this to [filepath]?" before every
+  Write/Edit, show drafts before approval, and get explicit sign-off on
+  multi-file changesets.
+- `guided` (current): major decisions (naming, direction, scope, anything hard
+  to undo) still go through `AskUserQuestion`; minor decisions the agent states
+  and proceeds with. "May I write?" is asked only for new files — edits to
+  existing files proceed directly, with a brief summary shown first.
+- `autonomous`: agents decide and proceed without asking, except for the
+  categories in `modes.automation_always_ask` (scope changes, file deletions,
+  schema changes by default). Every decision is logged to
+  `production/session-logs/decision-log.md` for later review.
+
+- No commits without user instruction — in every mode.
 
 See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 

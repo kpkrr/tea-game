@@ -12,7 +12,7 @@ project:
 
 modes:
   rigor: standard
-  automation: collaborative
+  automation: guided
 
 engine:
   name: "Godot"
