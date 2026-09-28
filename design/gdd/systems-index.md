@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-09-27
-> **Last Updated**: 2026-09-28 (Guest AI & Patience — Approved)
+> **Last Updated**: 2026-09-28 (Difficulty Curve & Session Pacing — Designed)
 > **Source Concept**: design/gdd/game-concept.md
 
 ---
@@ -69,8 +69,8 @@ Recipe (что заваривать), Player Control (как добраться 
 Layout (точки появления и ожидания) и Order & Recipe (какие заказы
 раздавать).
 
-**Difficulty Curve & Session Pacing** *(explicit)* — Линейный рост сложности
-с 0-й по 3-ю минуту партии: поток гостей 8→18 гостей/мин, терпение 50→25 с,
+**Difficulty Curve & Session Pacing** *(explicit)* — Рост сложности по
+ease-in (`curve_exponent` 2.0) с 0-й по 3-ю минуту партии, затем плато: поток гостей 8→18 гостей/мин, терпение 50→25 с,
 доля сложных заказов (с лимоном) 0%→40%. Первые ~30 секунд служат встроенным
 обучением (только одношаговые напитки, редкие гости). Зависит от Guest AI &
 Patience (что именно модулирует) и Order & Recipe (какие заказы усложнять).
@@ -151,7 +151,7 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 | 4 | Player Control / Barista Movement (inferred) | Gameplay | MVP | Approved | design/gdd/player-control-barista-movement.md | Kitchen & Station Layout |
 | 5 | Brewing & Crafting Mechanic (inferred) | Gameplay | MVP | Approved | design/gdd/brewing-crafting-mechanic.md | Order & Recipe System, Player Control, Kitchen & Station Layout |
 | 6 | Guest AI & Patience (inferred) | Gameplay | MVP | Approved | design/gdd/guest-ai-patience.md | Kitchen & Station Layout, Order & Recipe System, Player Control, Brewing & Crafting Mechanic, Platform Integration (soft) |
-| 7 | Difficulty Curve & Session Pacing | Gameplay | MVP | Not Started | — | Guest AI & Patience, Order & Recipe System |
+| 7 | Difficulty Curve & Session Pacing | Gameplay | MVP | Designed | design/gdd/difficulty-curve-session-pacing.md | Guest AI & Patience, Order & Recipe System |
 | 8 | Currency: Coins & Score | Economy | MVP | Not Started | — | Order & Recipe System, Guest AI & Patience |
 | 9 | Till & Day Cycle | Economy | MVP | Not Started | — | Currency: Coins & Score |
 | 10 | HUD & Feedback UI (inferred) | UI | MVP | Not Started | — | Platform Integration (Telegram Mini App), Kitchen & Station Layout, Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic |
@@ -286,10 +286,10 @@ Pacing (первые ~30 секунд партии), отдельной Polish-�
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 17 |
-| Design docs started | 6 |
+| Design docs started | 7 |
 | Design docs reviewed | 6 |
 | Design docs approved | 6 |
-| MVP systems designed | 6/10 |
+| MVP systems designed | 7/10 |
 | Vertical Slice systems designed | 0/3 |
 
 ---

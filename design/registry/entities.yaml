@@ -184,6 +184,7 @@ formulas:
       - design/gdd/order-recipe-system.md
       - design/gdd/guest-ai-patience.md
       - design/gdd/brewing-crafting-mechanic.md
+      - design/gdd/difficulty-curve-session-pacing.md
     variables:
       - recipe_id
       - price_table
@@ -203,6 +204,7 @@ formulas:
     referenced_by:
       - design/gdd/guest-ai-patience.md
       - design/gdd/order-recipe-system.md
+      - design/gdd/difficulty-curve-session-pacing.md
     variables:
       - t_since_spawn
       - patience_max_g
@@ -212,6 +214,76 @@ formulas:
       at spawn from patience_max(t) (Difficulty Curve; baseline 50 s) and never
       recomputed. Read by Currency: Coins & Score on Served (score multiplier
       1 + remaining_fraction) and by HUD (patience ring)."
+    added: 2026-09-28
+    revised: ""
+
+  - name: difficulty_progress
+    status: active
+    source: design/gdd/difficulty-curve-session-pacing.md
+    referenced_by:
+      - design/gdd/difficulty-curve-session-pacing.md
+      - design/gdd/guest-ai-patience.md
+    variables:
+      - t
+      - ramp_duration
+      - curve_exponent
+    output_range: [0, 1]
+    expression: "clamp(t / ramp_duration, 0, 1) ^ curve_exponent"
+    notes: "Shared ease-in progress for all three difficulty curves. t is
+      match time without pauses, always passed as an argument. 1 at
+      t >= ramp_duration (plateau). Soft input for HUD and Audio (not yet
+      designed)."
+    added: 2026-09-28
+    revised: ""
+
+  - name: guests_per_minute
+    status: active
+    source: design/gdd/difficulty-curve-session-pacing.md
+    referenced_by:
+      - design/gdd/difficulty-curve-session-pacing.md
+      - design/gdd/guest-ai-patience.md
+    variables:
+      - guests_per_minute_start
+      - guests_per_minute_end
+      - difficulty_progress
+    output_range: [8, 18]
+    expression: "start + (end - start) * difficulty_progress(t)"
+    notes: "start 8.0, end 18.0 (game-concept). Read by Guest AI Formula 1
+      before its onboarding_multiplier."
+    added: 2026-09-28
+    revised: ""
+
+  - name: patience_max
+    status: active
+    source: design/gdd/difficulty-curve-session-pacing.md
+    referenced_by:
+      - design/gdd/difficulty-curve-session-pacing.md
+      - design/gdd/guest-ai-patience.md
+    variables:
+      - patience_max_start
+      - patience_max_end
+      - difficulty_progress
+    output_range: [25, 50]
+    expression: "start + (end - start) * difficulty_progress(t)"
+    notes: "start 50.0 s, end 25.0 s. Read once per guest at spawn as
+      patience_max_g (Guest AI Formula 2), never recomputed."
+    added: 2026-09-28
+    revised: ""
+
+  - name: complex_order_share
+    status: active
+    source: design/gdd/difficulty-curve-session-pacing.md
+    referenced_by:
+      - design/gdd/difficulty-curve-session-pacing.md
+      - design/gdd/guest-ai-patience.md
+    variables:
+      - complex_share_start
+      - complex_share_end
+      - difficulty_progress
+    output_range: [0, 0.4]
+    expression: "start + (end - start) * difficulty_progress(t)"
+    notes: "start 0.0, end 0.40. Read by Guest AI Formula 3; ignored during
+      onboarding (simple only)."
     added: 2026-09-28
     revised: ""
 
@@ -411,6 +483,7 @@ constants:
     source: design/gdd/guest-ai-patience.md
     referenced_by:
       - design/gdd/guest-ai-patience.md
+      - design/gdd/difficulty-curve-session-pacing.md
     value: 30.0
     unit: s (match time, pauses excluded)
     notes: "Formalizes ~30 s from game-concept. Only simple-tier recipes and spawn rate x onboarding_factor (0.5) before this. Difficulty Curve & Session Pacing must align its curve start with it."
@@ -436,6 +509,30 @@ constants:
     value: 0.25
     unit: fraction of patience_max_g
     notes: "Patience ring level urgent + anger pose (art-director). Read by HUD."
+    added: 2026-09-28
+    revised: ""
+
+  - name: ramp_duration
+    status: active
+    source: design/gdd/difficulty-curve-session-pacing.md
+    referenced_by:
+      - design/gdd/difficulty-curve-session-pacing.md
+    value: 180.0
+    unit: s (match time until difficulty plateau)
+    notes: "game-concept: difficulty grows over the first 3 minutes. Load
+      error if <= 0."
+    added: 2026-09-28
+    revised: ""
+
+  - name: curve_exponent
+    status: active
+    source: design/gdd/difficulty-curve-session-pacing.md
+    referenced_by:
+      - design/gdd/difficulty-curve-session-pacing.md
+    value: 2.0
+    unit: dimensionless (ease-in exponent, valid [1.0, 3.0])
+    notes: "Provisional, confirm by playtest (Difficulty Curve OQ #3). 1.0 =
+      linear ramp."
     added: 2026-09-28
     revised: ""
 

@@ -146,7 +146,7 @@ Approaching → Waiting, терпение и спавн стоят.
 | Order & Recipe System | Order & Recipe → Guest AI | `recipes_by_tier(tier)` для назначения `recipe_id` гостю (Formula 3); правило совпадения чашки с заказом (владеет Brewing/Order & Recipe, эта система лишь сравнивает `recipe_id`) |
 | Player Control / Barista Movement | двунаправленно | Guest AI отвечает на запрос допустимости тапа по гостю (да / нет) и на «выполнить» в Holding (Rule 5); точка взаимодействия — слот гостя (Rule 4). Guest AI сообщает Player Control о паузе (Rule 11). При уходе гостя эта система шлёт Player Control сигнал «цель исчезла» (Rule 6 → Leaving), если бариста шёл к нему |
 | Currency: Coins & Score *(не спроектирована)* | Guest AI → Currency | На каждое событие Served: `(recipe_id, remaining_fraction)` — Currency считает монеты (`recipe_price`) и очки. Контракт предварительный — фиксируется, что предоставляет эта система, не то, как Currency это использует |
-| Difficulty Curve & Session Pacing *(не спроектирована)* | двунаправленно (предварительно) | Эта система выставляет три параметра как точки расширения: `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)`. MVP-baseline (Formula 1/2/3) — фиксированные константы уровня t=0 из game-concept; Difficulty Curve при проектировании заменит их функциями от времени партии по тому же контракту |
+| Difficulty Curve & Session Pacing | двунаправленно | Эта система выставляет три параметра как точки расширения: `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)`. Их реализует Difficulty Curve (Formula 2–4 там, ease-in по общему `difficulty_progress(t)`, 180 с); значения при t = 0 совпадают с baseline этой GDD (8 / 50 / 0) |
 | HUD & Feedback UI *(не спроектирована)* | Guest AI → HUD | На каждого активного гостя: `recipe_id` (для тикета заказа), `remaining_fraction` (для индикатора терпения), состояние (Approaching/Waiting/Leaving/Served). На партию: `guests_lost`, `match_ended` |
 | Co-op / Multiplayer *(Full Vision)* | — | Не в MVP; модель "один бариста — общая очередь" потребует пересмотра при добавлении второго игрока |
 
@@ -161,8 +161,9 @@ Approaching → Waiting, терпение и спавн стоят.
 Три входа — `guests_per_minute(t)`, `patience_max(t)`,
 `complex_order_share(t)` — принадлежат Difficulty Curve & Session Pacing
 (ещё не спроектирована). Эта GDD фиксирует механизм, в котором они
-используются, и baseline при t = 0 из game-concept. Пока Difficulty Curve
-не написана, все три — константы со значением при t = 0.
+используются, и baseline при t = 0 из game-concept. Сами функции от
+времени определены в `design/gdd/difficulty-curve-session-pacing.md` (Formula 2–4, спроектирована 2026-09-28);
+примеры ниже считают их константами baseline, как `FakeDifficulty` в AC.
 
 ### Formula 1 — `spawn_interval(t)`
 
@@ -179,7 +180,7 @@ The `spawn_interval` formula is defined as:
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
 | `t` | float, с | ≥ 0 | calculated | Время с начала партии (без пауз) |
-| `guests_per_minute(t)` | float, гостей/мин | > 0; baseline 8 | Difficulty Curve (внешняя); baseline — game-concept | Целевой поток гостей |
+| `guests_per_minute(t)` | float, гостей/мин | > 0; baseline 8 | Difficulty Curve Formula 2 (внешняя); baseline — game-concept | Целевой поток гостей |
 | `onboarding_factor` | float | (0, 1]; 0.5 | data file | Во сколько раз реже приходят гости в окне онбординга |
 | `onboarding_duration` | float, с | 30.0 | data file (формализует «~30 с» из game-concept) | Длина окна онбординга (Rule 10) |
 | `effective_rate(t)` | float, гостей/мин | > 0 | calculated | Фактический темп спавна |
@@ -215,7 +216,7 @@ patience_max_g`.
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
 | `t_since_spawn` | float, с | ≥ 0 | calculated | Время с момента спавна этого гостя (без пауз) |
-| `patience_max_g` | float, с | > 0; baseline 50 | `patience_max(t_spawn)` — Difficulty Curve (внешняя); baseline — game-concept | Терпение гостя, **зафиксированное один раз при спавне** |
+| `patience_max_g` | float, с | > 0; baseline 50 | `patience_max(t_spawn)` — Difficulty Curve Formula 3 (внешняя); baseline — game-concept | Терпение гостя, **зафиксированное один раз при спавне** |
 | `remaining_fraction` | float | [0, 1] | calculated | Остаток терпения; его читают HUD (кольцо) и Currency (очки) |
 
 **Ключевое правило: `patience_max_g` фиксируется при спавне** и не
@@ -253,7 +254,7 @@ p_simple + p_medium` → medium; иначе complex. Внутри уровня �
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
 | `t_spawn` | float, с | ≥ 0 | calculated | Время партии в момент спавна гостя |
-| `complex_order_share(t)` | float | [0, 1]; baseline 0 | Difficulty Curve (внешняя); baseline — game-concept (0% → 40%) | Доля сложных заказов (с лимоном) |
+| `complex_order_share(t)` | float | [0, 1]; baseline 0 | Difficulty Curve Formula 4 (внешняя); baseline — game-concept (0% → 40%) | Доля сложных заказов (с лимоном) |
 | `medium_share_of_remaining` | float | [0, 1]; 0.5 | data file | Какая часть вероятности, оставшейся после сложных заказов, приходится на средние |
 | `p_simple`, `p_medium`, `p_complex` | float | [0, 1], сумма = 1 | calculated | Вероятности уровней |
 | `r` | float | [0, 1) | RNG | Бросок выбора уровня |
@@ -419,7 +420,7 @@ Questions).
 | Система | Тип | Что получает |
 |---|---|---|
 | Currency: Coins & Score *(не спроектирована)* | Hard | `(recipe_id, remaining_fraction)` на каждое событие Served — вход для формулы монет и очков |
-| Difficulty Curve & Session Pacing *(не спроектирована)* | Hard | Точки расширения `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` — эта GDD фиксирует MVP-baseline (t=0), Difficulty Curve заменит их функциями от времени партии по тому же контракту |
+| Difficulty Curve & Session Pacing | Hard | Реализует точки расширения `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` (её Formula 2–4); эта GDD фиксирует контракт и baseline при t = 0 |
 | HUD & Feedback UI *(не спроектирована)* | Hard | Per-guest `recipe_id`, `remaining_fraction`, состояние (Approaching/Waiting/Leaving/Served); на партию — `guests_lost`, `match_ended` |
 | Co-op / Multiplayer *(Full Vision)* | Hard | Модель «один бариста — общая очередь на 4 слота», которую нужно будет расширить на нескольких барист |
 
@@ -443,9 +444,11 @@ Questions).
   (сигнал смены видимости → пауза), её Open Question #3 закрыт Rule 11.
 - Kitchen & Station Layout с 2026-09-28 перечисляет 4 точки очереди со
   стабильными ID и точку выхода (добавлено при проектировании этой GDD).
-- Currency: Coins & Score, Difficulty Curve & Session Pacing, HUD &
-  Feedback UI ещё не спроектированы — каждая должна перечислить Guest AI &
-  Patience в своей секции Dependencies, когда будет написана.
+- Difficulty Curve & Session Pacing (2026-09-28) перечисляет эту систему
+  и как Upstream (интерфейс), и как Downstream (потребитель) — совпадает.
+- Currency: Coins & Score и HUD & Feedback UI ещё не спроектированы —
+  каждая должна перечислить Guest AI & Patience в своей секции
+  Dependencies, когда будет написана.
 
 ## Tuning Knobs
 
@@ -864,8 +867,8 @@ Integration — в `tests/integration/guest_ai/`.
 | # | Вопрос | Владелец | Когда решить |
 |---|---|---|---|
 | ~~1~~ | ~~Kitchen & Station Layout не фиксирует число точек очереди гостей и не отделяет точку выхода от точки появления~~ **Решено 2026-09-28**: Kitchen уже перечисляет ровно 4 точки очереди со стабильными ID и точку выхода (`guest_slot_count` = 4, реестр) | level-designer / ревью Kitchen | Закрыто |
-| 2 | Пропускная способность почти равна потоку: сразу после онбординга гость приходит каждые 7.5 с, а средний заказ занимает ~7.75 с (Formulas, проверка baseline). Не станет ли игра непроходимой раньше 2-й минуты, когда Difficulty Curve поднимет поток? | systems-designer | `/balance-check` вместе с GDD Difficulty Curve & Session Pacing |
-| 3 | На 30-й секунде поток удваивается ступенькой (Formula 1). Оставить ступеньку как видимый сигнал «онбординг кончился» или сгладить в Difficulty Curve? | game-designer | При проектировании Difficulty Curve & Session Pacing |
+| 2 | Пропускная способность почти равна потоку: сразу после онбординга гость приходит каждые 7.5 с, а средний заказ занимает ~7.75 с (Formulas, проверка baseline). Не станет ли игра непроходимой раньше 2-й минуты, когда Difficulty Curve поднимет поток? **Перенесено 2026-09-28** в совместный Open Question #1 `difficulty-curve-session-pacing.md` (ease-in смягчает, к 120 с избыток спроса ~75%) | systems-designer | `/balance-check` с симуляцией очереди |
+| ~~3~~ | ~~На 30-й секунде поток удваивается ступенькой (Formula 1). Оставить ступеньку или сгладить в Difficulty Curve?~~ **Решено 2026-09-28**: ступенька остаётся — Difficulty Curve её не сглаживает (её Core Rule 5, Game Feel) | game-designer | Закрыто |
 | 4 | Нужно ли избегание столкновений (RVO2) между гостями, которые идут одновременно, и между гостями и баристой? Пересекаются ли зона очереди и путь баристы? → становится ADR (navigation layers / avoidance) | ai-programmer | ADR до первой реализации гостей |
 | 5 | Структура данных гостя и переиспользование объектов (пул на 4 слота + уходящие гости) → становится ADR | lead-programmer | ADR до первой реализации гостей |
 | 6 | Пульсация кольца (0.5 Гц и быстрее) и опция reduced motion: нужна ли статичная альтернатива для доступности? | accessibility-specialist | При `/ux-design` HUD (Pre-Production) |
