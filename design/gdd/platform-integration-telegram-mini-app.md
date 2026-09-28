@@ -182,9 +182,8 @@ else:
 - **Если Telegram Mini App сворачивается / вкладка браузера уходит в
   фон**: платформа сигнализирует смену видимости (Page Visibility API в
   браузере, соответствующее событие Telegram SDK в Mini App) одинаково в
-  обоих контекстах. Реакция на сигнал (пауза партии, заморозка таймеров
-  гостей) — зона ответственности Guest AI & Patience (не спроектирована);
-  эта система только гарантирует, что сигнал существует.
+  обоих контекстах. Реакция на сигнал — пауза партии (`guest-ai-patience.md`,
+  Rule 11); эта система только гарантирует, что сигнал существует.
 - **Если Telegram SDK инициализировался, но `initData`/user ID
   недоступны** (ограничение приватности в Telegram, пустой ответ API):
   контекст остаётся Telegram Mini App, safe area и тема продолжают
@@ -205,6 +204,7 @@ Downstream:
 | HUD & Feedback UI *(не спроектирована)* | Hard (ожидаемо) | Тот же safe-area rect |
 | Monetization / IAP Integration *(не спроектирована, Alpha)* | Soft | Флаг контекста (Telegram / Standalone); платёжный метод не определён |
 | Backend & Persistence *(не спроектирована, Vertical Slice)* | Soft | Telegram user ID в Telegram-контексте, опционален |
+| Guest AI & Patience | Soft | Сигнал смены видимости (уход в фон / возврат) — Guest AI ставит партию на паузу (добавлено 2026-09-28 при проектировании `guest-ai-patience.md`) |
 
 **Двунаправленная проверка**: `kitchen-station-layout.md` уже полагалось
 на safe-area/viewport-контракт этой системы (AC#6, AC#10), но его секция
@@ -336,6 +336,6 @@ Formulas (добавлена при ревью 2026-09-28); остальные �
 |---|---|---|---|
 | 1 | Точный бюджет времени/размера загрузки на слабых Android | technical-director / прототип | До конца MVP (2–3 недели) |
 | 2 | Платёжный метод вместо Telegram Stars | economy-designer (Monetization / IAP Integration) | Alpha |
-| 3 | Поведение при сворачивании Telegram Mini App / уходе вкладки в фон — пауза партии или потеря | game-designer (Guest AI & Patience) | При проектировании Guest AI & Patience (MVP) |
+| 3 | ~~Поведение при сворачивании Telegram Mini App / уходе вкладки в фон — пауза партии или потеря~~ **Решено 2026-09-28**: пауза, отсчёт продолжается после возврата (`guest-ai-patience.md`, Rule 11) | game-designer (Guest AI & Patience) | Закрыто |
 | 4 | Механизм идентификации игрока в Standalone Web без Telegram user ID | technical-director (Backend & Persistence) | Vertical Slice |
 | 5 | Какой "кадр" имеется в виду в AC#7 — Godot `_process`/`_physics_process` или браузерный `requestAnimationFrame` (Standalone Web и Telegram Mini App — разные раннеры одного экспорта) | gameplay-programmer / technical-director | При разбиении на stories |

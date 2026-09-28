@@ -71,7 +71,7 @@ state-machine у этой системы нет.
 | Order & Recipe System | Список типов станций на кухне (`station_types`) — рецепт не может ссылаться на несуществующую станцию | Kitchen → Order & Recipe |
 | Player Control / Barista Movement | Навигируемая область пола (запечённый NavMesh) + мировые координаты точки взаимодействия для каждой станции/слота | Kitchen → Player Control |
 | Brewing & Crafting Mechanic | Список слотов (`slots`, с флагом island/wall) и станций, где физически размещаются чашки/чайники; occupancy-состояние Kitchen не принадлежит | Kitchen → Brewing |
-| Guest AI & Patience | Точки появления гостей и точки ожидания в очереди у прилавка | Kitchen → Guest AI |
+| Guest AI & Patience | Точка появления гостей, ровно 4 точки ожидания в очереди у прилавка со стабильными ID и точка выхода (отдельная сущность, может стоять рядом с точкой появления) — все на NavMesh | Kitchen → Guest AI |
 | HUD & Feedback UI ⚠️ | Мировая позиция кассы (till anchor) для отрисовки заполнения как физического объекта + позиции станций для цветовых индикаторов рецепта | Kitchen → HUD |
 
 > ⚠️ **Обнаружено при проектировании**: в `systems-index.md` у **HUD &
@@ -176,7 +176,7 @@ AC#10 этой GDD уже полагались на safe-area/viewport-конт�
 | Order & Recipe System | Hard | `station_types` |
 | Player Control / Barista Movement | Hard | NavMesh + точки взаимодействия |
 | Brewing & Crafting Mechanic | Hard | `slots`, позиции станций |
-| Guest AI & Patience | Hard | Точки спавна/очереди гостей |
+| Guest AI & Patience | Hard | Точка появления, 4 точки очереди (стабильные ID), точка выхода — *число и точка выхода добавлены 2026-09-28 при проектировании `guest-ai-patience.md` (`guest_slot_count` = 4, реестр)* |
 | HUD & Feedback UI ⚠️ | Hard | Till anchor, позиции станций для индикаторов |
 | Co-op / Multiplayer (Full Vision) | Hard | Общее пространство для нескольких игроков |
 
@@ -302,8 +302,9 @@ Feedback UI:
    Telegram или выреза камеры).
 7. **GIVEN** любая точка взаимодействия станции или слота, **WHEN** агент
    баристы с реальным радиусом `NavigationAgent3D` идёт к ней, **THEN** он
-   доходит без пересечения коллизии со столешницей. *Заблокировано, пока
-   Player Control не зафиксирует радиус агента.*
+   доходит без пересечения коллизии со столешницей. *Разблокировано
+   2026-09-28: Player Control зафиксировал `agent_radius` = 0.40 м
+   (`work_gap` 0.45 − `clearance_margin` 0.05, реестр).*
 8. **GIVEN** перечислен полный список слотов, **WHEN** проверяется участок
    столешницы рядом со станцией лимона на острове, **THEN** на этом месте
    слот не зарегистрирован.
@@ -321,7 +322,7 @@ Feedback UI:
 | Вопрос | Владелец | Когда решить |
 |---|---|---|
 | Что стоит в промежутках между станциями вдоль стен (Core Rule 7)? | game-designer, level-designer | До Vertical Slice |
-| Размеры зазоров перед станциями ждут радиуса агента баристы; после этого перепроверить AC7 | Player Control / Barista Movement GDD | При дизайне Player Control |
+| ~~Размеры зазоров перед станциями ждут радиуса агента баристы; после этого перепроверить AC7~~ **Решено 2026-09-28**: `agent_radius` = 0.40 м (`player-control-barista-movement.md`, реестр) выведен из `work_gap` 0.45, AC7 разблокирован | Player Control / Barista Movement GDD | Закрыто |
 | HUD размещается в свободных полосах экрана, а не поверх кухни — ограничение для GDD HUD | HUD & Feedback UI GDD | При дизайне HUD |
 | ~~Решение «только портрет, ПК-окно до 1:1» относится ко всей игре — закрепить как источник истины~~ **Решено 2026-09-28**: закреплено в `platform-integration-telegram-mini-app.md`, source констант `viewport_aspect_min/max` перенесён туда | Platform Integration GDD | Закрыто |
 | Как реализовать вписывание: stretch mode проекта и подгонка камеры (в Godot 4.7 изменились настройки по умолчанию `canvas_items`/`expand`) | ADR через `/architecture-decision` | Technical Setup |

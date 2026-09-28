@@ -86,6 +86,8 @@ items:
     source: design/gdd/order-recipe-system.md
     referenced_by:
       - design/gdd/order-recipe-system.md
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/player-control-barista-movement.md
     category: drink_recipe
     tier: simple
     steps: [cup, iced_tea, serve]
@@ -97,6 +99,9 @@ items:
     source: design/gdd/order-recipe-system.md
     referenced_by:
       - design/gdd/order-recipe-system.md
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/brewing-crafting-mechanic.md
+      - design/gdd/player-control-barista-movement.md
     category: drink_recipe
     tier: medium
     steps: [cup, leaf_black, water_100, serve]
@@ -108,6 +113,8 @@ items:
     source: design/gdd/order-recipe-system.md
     referenced_by:
       - design/gdd/order-recipe-system.md
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/player-control-barista-movement.md
     category: drink_recipe
     tier: medium
     steps: [cup, leaf_green, water_80, serve]
@@ -119,6 +126,9 @@ items:
     source: design/gdd/order-recipe-system.md
     referenced_by:
       - design/gdd/order-recipe-system.md
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/brewing-crafting-mechanic.md
+      - design/gdd/player-control-barista-movement.md
     category: drink_recipe
     tier: complex
     steps: [cup, leaf_black, water_100, lemon, serve]
@@ -130,6 +140,8 @@ items:
     source: design/gdd/order-recipe-system.md
     referenced_by:
       - design/gdd/order-recipe-system.md
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/player-control-barista-movement.md
     category: drink_recipe
     tier: complex
     steps: [cup, leaf_green, water_80, lemon, serve]
@@ -170,6 +182,8 @@ formulas:
     source: design/gdd/order-recipe-system.md
     referenced_by:
       - design/gdd/order-recipe-system.md
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/brewing-crafting-mechanic.md
     variables:
       - recipe_id
       - price_table
@@ -180,6 +194,24 @@ formulas:
       price_complex <= price_medium * 1.6 (checked in integers). Read by
       Currency: Coins & Score (coins and score multiplier) and HUD. Values
       provisional until /balance-check together with till capacity."
+    added: 2026-09-28
+    revised: ""
+
+  - name: remaining_fraction
+    status: active
+    source: design/gdd/guest-ai-patience.md
+    referenced_by:
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/order-recipe-system.md
+    variables:
+      - t_since_spawn
+      - patience_max_g
+    output_range: [0, 1]
+    expression: "clamp(1 - t_since_spawn / patience_max_g, 0, 1)"
+    notes: "Linear patience decay per guest. patience_max_g is captured once
+      at spawn from patience_max(t) (Difficulty Curve; baseline 50 s) and never
+      recomputed. Read by Currency: Coins & Score on Served (score multiplier
+      1 + remaining_fraction) and by HUD (patience ring)."
     added: 2026-09-28
     revised: ""
 
@@ -221,6 +253,7 @@ constants:
     referenced_by:
       - design/gdd/kitchen-station-layout.md
       - design/gdd/brewing-crafting-mechanic.md
+      - design/gdd/guest-ai-patience.md
     value: 7
     unit: slots
     notes: "5 on the island + 1 at each side wall. Occupancy owned by
@@ -259,6 +292,7 @@ constants:
     source: design/gdd/kitchen-station-layout.md
     referenced_by:
       - design/gdd/kitchen-station-layout.md
+      - design/gdd/guest-ai-patience.md
     value: 0.95
     unit: fraction of the limiting side of the safe area
     added: 2026-09-27
@@ -323,6 +357,7 @@ constants:
       - design/gdd/player-control-barista-movement.md
       - design/gdd/order-recipe-system.md
       - design/gdd/brewing-crafting-mechanic.md
+      - design/gdd/guest-ai-patience.md
     value: 2.0
     unit: s (average walk + tap per recipe step, MVP speed)
     notes: "Balance-only, no runtime code. Euclidean estimate 1.68 s
@@ -338,12 +373,69 @@ constants:
     referenced_by:
       - design/gdd/brewing-crafting-mechanic.md
       - design/gdd/order-recipe-system.md
+      - design/gdd/guest-ai-patience.md
     value: 3.0
     unit: s (kettle brew duration at speed_multiplier 1.0)
     notes: "Playtest-validated (prototype TUNING.brew_time). Effective
       t_brew = t_brew_base / speed_multiplier (x1.0/1.15/1.3/1.5,
       Progression & Upgrades, Alpha) -> 2.0-3.0 s. Per kettle instance
       (water_100, water_80 independent). Peak utilization ~0.45 per kettle."
+    added: 2026-09-28
+    revised: ""
+
+  - name: guest_slot_count
+    status: active
+    source: design/gdd/guest-ai-patience.md
+    referenced_by:
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/kitchen-station-layout.md
+    value: 4
+    unit: guest queue slots
+    notes: "Separate from kitchen_slot_count (cup slots). Kitchen & Station Layout enumerates exactly 4 queue points with stable IDs plus an exit point (added 2026-09-28, same session as this GDD). Load error if count != 4."
+    added: 2026-09-28
+    revised: "2026-09-28"
+
+  - name: max_guests_lost
+    status: active
+    source: design/gdd/guest-ai-patience.md
+    referenced_by:
+      - design/gdd/guest-ai-patience.md
+    value: 3
+    unit: guests
+    notes: "Match ends when guests_lost reaches this value; guests_lost is clamped to it. From game-concept (3 lives). Read by HUD and Till & Day Cycle via match_ended."
+    added: 2026-09-28
+    revised: ""
+
+  - name: onboarding_duration
+    status: active
+    source: design/gdd/guest-ai-patience.md
+    referenced_by:
+      - design/gdd/guest-ai-patience.md
+    value: 30.0
+    unit: s (match time, pauses excluded)
+    notes: "Formalizes ~30 s from game-concept. Only simple-tier recipes and spawn rate x onboarding_factor (0.5) before this. Difficulty Curve & Session Pacing must align its curve start with it."
+    added: 2026-09-28
+    revised: ""
+
+  - name: patience_warn_threshold
+    status: active
+    source: design/gdd/guest-ai-patience.md
+    referenced_by:
+      - design/gdd/guest-ai-patience.md
+    value: 0.6
+    unit: fraction of patience_max_g
+    notes: "Patience ring level warn (art-director). Invariant 0 < urgent < warn < 1. Read by HUD."
+    added: 2026-09-28
+    revised: ""
+
+  - name: patience_urgent_threshold
+    status: active
+    source: design/gdd/guest-ai-patience.md
+    referenced_by:
+      - design/gdd/guest-ai-patience.md
+    value: 0.25
+    unit: fraction of patience_max_g
+    notes: "Patience ring level urgent + anger pose (art-director). Read by HUD."
     added: 2026-09-28
     revised: ""
 

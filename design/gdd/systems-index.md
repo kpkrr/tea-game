@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-09-27
-> **Last Updated**: 2026-09-28 (Brewing & Crafting — Designed)
+> **Last Updated**: 2026-09-28 (Guest AI & Patience — Approved)
 > **Source Concept**: design/gdd/game-concept.md
 
 ---
@@ -149,8 +149,8 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 | 2 | Platform Integration (Telegram Mini App) | Core | MVP | Approved | design/gdd/platform-integration-telegram-mini-app.md | — |
 | 3 | Order & Recipe System | Gameplay | MVP | Approved | design/gdd/order-recipe-system.md | Kitchen & Station Layout |
 | 4 | Player Control / Barista Movement (inferred) | Gameplay | MVP | Approved | design/gdd/player-control-barista-movement.md | Kitchen & Station Layout |
-| 5 | Brewing & Crafting Mechanic (inferred) | Gameplay | MVP | Designed | design/gdd/brewing-crafting-mechanic.md | Order & Recipe System, Player Control, Kitchen & Station Layout |
-| 6 | Guest AI & Patience (inferred) | Gameplay | MVP | Not Started | — | Kitchen & Station Layout, Order & Recipe System, Player Control |
+| 5 | Brewing & Crafting Mechanic (inferred) | Gameplay | MVP | Approved | design/gdd/brewing-crafting-mechanic.md | Order & Recipe System, Player Control, Kitchen & Station Layout |
+| 6 | Guest AI & Patience (inferred) | Gameplay | MVP | Approved | design/gdd/guest-ai-patience.md | Kitchen & Station Layout, Order & Recipe System, Player Control, Brewing & Crafting Mechanic, Platform Integration (soft) |
 | 7 | Difficulty Curve & Session Pacing | Gameplay | MVP | Not Started | — | Guest AI & Patience, Order & Recipe System |
 | 8 | Currency: Coins & Score | Economy | MVP | Not Started | — | Order & Recipe System, Guest AI & Patience |
 | 9 | Till & Day Cycle | Economy | MVP | Not Started | — | Currency: Coins & Score |
@@ -211,7 +211,7 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 ### Feature Layer (depends on core)
 
 1. **Brewing & Crafting Mechanic** — depends on: Order & Recipe System, Player Control, Kitchen & Station Layout
-2. **Guest AI & Patience** — depends on: Kitchen & Station Layout, Order & Recipe System, Player Control (контракт цели-гостя — добавлено при дизайне player-control)
+2. **Guest AI & Patience** — depends on: Kitchen & Station Layout, Order & Recipe System, Player Control (контракт цели-гостя — добавлено при дизайне player-control), Brewing & Crafting Mechanic (очистка рук на подаче), Platform Integration (soft: сигнал ухода в фон → пауза) — добавлено при дизайне guest-ai-patience
 3. **Difficulty Curve & Session Pacing** — depends on: Guest AI & Patience, Order & Recipe System
 4. **Currency: Coins & Score** — depends on: Order & Recipe System, Guest AI & Patience
 5. **Till & Day Cycle** — depends on: Currency: Coins & Score
@@ -286,10 +286,10 @@ Pacing (первые ~30 секунд партии), отдельной Polish-�
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 17 |
-| Design docs started | 5 |
-| Design docs reviewed | 4 |
-| Design docs approved | 4 |
-| MVP systems designed | 5/10 |
+| Design docs started | 6 |
+| Design docs reviewed | 6 |
+| Design docs approved | 6 |
+| MVP systems designed | 6/10 |
 | Vertical Slice systems designed | 0/3 |
 
 ---
