@@ -258,13 +258,14 @@ formulas:
       - guests_per_minute_start
       - guests_per_minute_end
       - difficulty_progress
-    output_range: [8, 18]
+    output_range: [7, 18]
     expression: "start + (end - start) * difficulty_progress(t)"
-    notes: "start 8.0, end 18.0 — author decision (difficulty-curve-session-
-      pacing.md Core Rule 1), not sourced from game-concept. Read by Guest
-      AI Formula 1 before its onboarding_multiplier."
+    notes: "start 7.0 (was 8.0 — lowered by /balance-check 2026-09-29,
+      Difficulty Curve OQ #7), end 18.0 — author decision (difficulty-curve-
+      session-pacing.md Core Rule 1), not sourced from game-concept. Read by
+      Guest AI Formula 1 before its onboarding_multiplier."
     added: 2026-09-28
-    revised: ""
+    revised: "2026-09-29"
 
   - name: patience_max
     status: active

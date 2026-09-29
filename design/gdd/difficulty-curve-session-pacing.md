@@ -1,8 +1,8 @@
 # Difficulty Curve & Session Pacing
 
-> **Status**: Approved (/design-review 2026-09-28 — NEEDS REVISION → исправлено в той же сессии)
+> **Status**: Approved (/design-review 2026-09-28 — NEEDS REVISION → исправлено в той же сессии); `guests_per_minute_start` изменён `/balance-check` 2026-09-29 (Open Question #7), пропагирован в `guest-ai-patience.md` в тот же день
 > **Author**: Yan + systems-designer, qa-lead
-> **Last Updated**: 2026-09-28
+> **Last Updated**: 2026-09-29
 > **Last Verified**: 2026-09-28
 > **Implements Pillar**: Pillar 1 — Хаос за стойкой
 > **Creative Director Review (CD-GDD-ALIGN)**: пропущен — Lean mode
@@ -60,7 +60,7 @@ Recipe System как baseline-константы при t=0 (`guests_per_minute(
    наступает ближе ко 2-й минуте, а не к 90-й секунде. Прогресс достигает
    1 к концу `ramp_duration` и остаётся 1 до конца партии.
 2. **Три независимые кривые на общем прогрессе**: `guests_per_minute`
-   (8 → 18 гостей/мин), `patience_max` (50 → 25 с), `complex_order_share`
+   (7 → 18 гостей/мин), `patience_max` (50 → 25 с), `complex_order_share`
    (0% → 40%) — каждая линейно интерполирует от своего `_start` к своему
    `_end` по одному и тому же `difficulty_progress(t)`. Значения `_start`/
    `_end` — независимые data file параметры на каждую кривую; сам
@@ -147,8 +147,8 @@ The `difficulty_progress` formula is defined as:
 ramp_duration` — ровно 1 (плато, Core Rule 6).
 **Example:** `t` = 90 → `(90 / 180)^2` = 0.25. `t` = 30 → 0.0278 — к концу
 онбординга кривая почти не сдвинулась: поток выше baseline не более чем на
-3.5%, интервал спавна короче 15 с не более чем на 3.4%, поэтому пример Guest
-AI Formula 1 («в онбординге гость раз в 15 с») остаётся практически верным.
+4.4%, интервал спавна короче 17.14 с не более чем на 4.2%, поэтому пример Guest
+AI Formula 1 («в онбординге гость раз в ~17.14 с») остаётся практически верным.
 
 ### Formula 2 — `guests_per_minute(t)`
 
@@ -160,15 +160,15 @@ The `guests_per_minute` formula is defined as:
 
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
-| `guests_per_minute_start` | float, гостей/мин | > 0; 8.0 | data file (автор GDD, не game-concept — см. Core Rule 1) | Поток при t = 0 |
+| `guests_per_minute_start` | float, гостей/мин | > 0; 7.0 | data file (автор GDD, не game-concept — см. Core Rule 1; снижено с 8.0 → 7.0 `/balance-check` 2026-09-29, см. Open Question #7) | Поток при t = 0 |
 | `guests_per_minute_end` | float, гостей/мин | ≥ start; 18.0 | data file (автор GDD, не game-concept — см. Core Rule 1) | Поток на плато |
 | `difficulty_progress(t)` | float | [0, 1] | calculated (Formula 1) | — |
-| `guests_per_minute(t)` | float, гостей/мин | [8, 18] | calculated | Вход Guest AI Formula 1 (до её `onboarding_multiplier`) |
+| `guests_per_minute(t)` | float, гостей/мин | [7, 18] | calculated | Вход Guest AI Formula 1 (до её `onboarding_multiplier`) |
 
 **Output Range:** монотонно не убывает, всегда в `[start, end]`, поэтому >
 0 — fallback Guest AI Rule 12 при корректных данных не срабатывает.
-**Example:** `t` = 90 → `8 + 10 × 0.25` = 10.5 гостей/мин → `spawn_interval`
-= 5.71 с.
+**Example:** `t` = 90 → `7 + 11 × 0.25` = 9.75 гостей/мин → `spawn_interval`
+= 6.15 с.
 
 ### Formula 3 — `patience_max(t)`
 
@@ -211,10 +211,10 @@ Formula 3.
 
 | t, с | `difficulty_progress` | `guests_per_minute` | `patience_max` | `complex_order_share` |
 |---|---|---|---|---|
-| 0 | 0.0 | 8.00 | 50.0 с | 0% |
-| 30 | 0.0278 | 8.2778 | 49.3056 с | 1.11% |
-| 90 | 0.25 | 10.5 | 43.75 с | 10% |
-| 120 | 0.4444 | 12.4444 | 38.8889 с | 17.78% |
+| 0 | 0.0 | 7.00 | 50.0 с | 0% |
+| 30 | 0.0278 | 7.3056 | 49.3056 с | 1.11% |
+| 90 | 0.25 | 9.75 | 43.75 с | 10% |
+| 120 | 0.4444 | 11.8889 | 38.8889 с | 17.78% |
 | 180+ | 1.0 | 18.0 | 25.0 с | 40% |
 
 Эталон — формулы; таблица округлена до 4 знаков.
@@ -231,16 +231,22 @@ spawn_interval − 1`, без ходьбы к гостю и без буфера 
 
 | t, с | Линейная (k = 1) | Ease-in (k = 2) |
 |---|---|---|
-| 30 | +29% | +7% |
-| 90 | +84% | +42% |
-| 120 | +114% | +75% |
+| 30 | +18% | **−5%** |
+| 90 | +77% | +32% |
+| 120 | +109% | +67% |
 | 180 | +178% | +178% |
 
-Ease-in откладывает перегрузку, но к 120 с она всё ещё значительна; на
-плато один бариста принципиально не успевает — это «территория
-рекордов», потери гостей там ожидаемы. Буфер из 4 слотов частично гасит
-всплески; финальные числа — после `/balance-check` с симуляцией очереди
-(Open Questions).
+Пересчитано `/balance-check` 2026-09-29 после снижения `guests_per_minute_start`
+8.0 → 7.0 (Open Question #7): к t = 30 (момент, когда заканчивается
+онбординг и множитель `onboarding_factor` перестаёт действовать) система
+теперь входит с запасом (−5%), а не с дефицитом (+7% было раньше) —
+у ease-in-рампы впервые появляется настоящее «окно, где бариста
+действительно успевает», а не мгновенный переход из −60% (онбординг) в
+дефицит. На t = 180+ (плато) число не меняется (+178%) — оно зависит
+только от `_end`, а не от `_start`, и остаётся отдельным, ранее уже
+принятым дизайнерским решением («территория рекордов», потери гостей там
+ожидаемы). Ease-in по-прежнему откладывает перегрузку, но к 120 с она
+всё ещё значительна (+67%); буфер из 4 слотов частично гасит всплески.
 
 ## Edge Cases
 
@@ -251,7 +257,7 @@ Ease-in откладывает перегрузку, но к 120 с она вс�
 
 - **Если `t` < `onboarding_duration` (30 с)**: кривые считаются как обычно
   (Core Rule 5); замедление ×0.5 и только `simple` заказы обеспечивает
-  Guest AI. При `curve_exponent` = 2.0 вклад кривой к 30 с — 3.5% от
+  Guest AI. При `curve_exponent` = 2.0 вклад кривой к 30 с — 4.4% от
   baseline, поэтому онбординг не «двойной».
 - **Если `t` ≥ `ramp_duration`**: `difficulty_progress` = 1, все три
   значения на `_end` до конца партии (Core Rule 6). Дальнейшего роста нет.
@@ -396,7 +402,7 @@ UI. Показывать ли его и как — решает HUD при св�
 |---|---|---|
 | Guest AI & Patience | `design/gdd/guest-ai-patience.md` | Formula 1 (`spawn_interval`), Formula 2 (`remaining_fraction` / контракт «`patience_max_g` фиксируется при спавне»), Formula 3 (выбор `recipe_id`, онбординг-оверрайд на `simple`), Formula 4 (пороги тревоги), Rule 12 (защитные clamp/fallback на стороне потребителя) |
 | Order & Recipe System | `design/gdd/order-recipe-system.md` | Три уровня сложности рецептов и `recipes_by_tier(tier)`, `recipe_price` (2–7 монет) |
-| Game Concept | `design/gdd/game-concept.md` | Понятие «территория рекордов» и ориентир «~2-я минута» (Flow State Design, Short-Term Core Loop) — **не** источник конкретных чисел рампы: 180 с / 8→18 / 50→25 / 0→40% — решение автора этой GDD, расходящееся с ориентиром game-concept (Core Rule 1, Open Question #6) |
+| Game Concept | `design/gdd/game-concept.md` | Понятие «территория рекордов» и ориентир «~2-я минута» (Flow State Design, Short-Term Core Loop) — **не** источник конкретных чисел рампы: 180 с / 7→18 / 50→25 / 0→40% — решение автора этой GDD, расходящееся с ориентиром game-concept (Core Rule 1, Open Question #6) |
 
 ## Acceptance Criteria
 
@@ -405,7 +411,7 @@ UI. Показывать ли его и как — решает HUD при св�
 
 **Фикстуры и детерминизм.** Кривые — чистые функции от `t`: тесты
 передают `t` явно, без реального времени, `_process` и таймеров. Фабрика
-`DifficultyFixtures.baseline()` (180.0, 2.0, 8→18, 50→25, 0.0→0.40),
+`DifficultyFixtures.baseline()` (180.0, 2.0, 7→18, 50→25, 0.0→0.40),
 переопределение через `DifficultyFixtures.with(...)`. Integration-тесты
 подставляют настоящую кривую в `GuestFixtures` Guest AI; время идёт через
 `step(delta)`, `delta` = 0.25 с. Допуск float ±0.001; на границах clamp
@@ -416,7 +422,7 @@ Integration — `tests/integration/difficulty_curve/`.
 
 1. **[Logic]** **GIVEN** отгружаемый data file, **WHEN** загрузка, **THEN**
    ошибки нет и загружено: `ramp_duration` 180.0, `curve_exponent` 2.0,
-   `guests_per_minute_start/end` 8.0/18.0, `patience_max_start/end`
+   `guests_per_minute_start/end` 7.0/18.0, `patience_max_start/end`
    50.0/25.0, `complex_share_start/end` 0.0/0.40.
 2. **[Logic]** **GIVEN** `ramp_duration` = 0 или −1, либо `curve_exponent`
    = 0.99 или 3.01, **WHEN** загрузка, **THEN** ошибка с именем константы,
@@ -445,13 +451,13 @@ Integration — `tests/integration/difficulty_curve/`.
    = 120, k = 2.0, **WHEN** t = 60, **THEN** 0.25.
 8. **[Logic]** **GIVEN** baseline, **WHEN** t пробегает 0…600 с шагом
    0.25, **THEN** на каждом шаге: progress ∈ [0, 1] и не убывает;
-   `guests_per_minute` ∈ [8, 18] и не убывает; `patience_max` ∈ [25, 50] и
+   `guests_per_minute` ∈ [7, 18] и не убывает; `patience_max` ∈ [25, 50] и
    не возрастает; `complex_order_share` ∈ [0, 0.40] и не убывает.
 
 ### Formulas 2–4 (Core Rule 2)
 
 9. **[Logic]** **GIVEN** baseline, **WHEN** `guests_per_minute(t)` при t =
-   0 / 30 / 90 / 120 / 180 / 300, **THEN** 8.0 / 8.2778 / 10.5 / 12.4444 /
+   0 / 30 / 90 / 120 / 180 / 300, **THEN** 7.0 / 7.3056 / 9.75 / 11.8889 /
    18.0 / 18.0.
 10. **[Logic]** **GIVEN** baseline, **WHEN** `patience_max(t)` при тех же
     t, **THEN** 50.0 / 49.3056 / 43.75 / 38.8889 / 25.0 / 25.0.
@@ -459,33 +465,33 @@ Integration — `tests/integration/difficulty_curve/`.
     тех же t, **THEN** 0.0 / 0.01111 / 0.10 / 0.17778 / 0.40 / 0.40.
 12. **[Logic]** **GIVEN** baseline с изменённым только
     `guests_per_minute_end` = 24, **WHEN** t = 90, **THEN**
-    `guests_per_minute` = 12.0, а `patience_max` = 43.75 и
+    `guests_per_minute` = 11.25, а `patience_max` = 43.75 и
     `complex_order_share` = 0.10 не изменились.
 
 ### Core Rules 3, 4, 7 — нет обратной связи и состояния
 
 13. **[Logic]** **GIVEN** партия A (`guests_lost` 0, касса пуста, 1-я
     партия дня) и партия B (`guests_lost` 2, касса полна, 5-я партия),
-    **WHEN** обе запрашивают кривые при t = 90, **THEN** обе получают 10.5
+    **WHEN** обе запрашивают кривые при t = 90, **THEN** обе получают 9.75
     / 43.75 / 0.10. Публичный API кривой не принимает входов, кроме `t` и
     загруженных данных (проверка через `get_method_list()` или на
     `/code-review`).
 14. **[Logic]** **GIVEN** один экземпляр кривой, **WHEN** `f(120)`, затем
-    дважды `f(90)`, **THEN** оба вызова `f(90)` возвращают 0.25 / 10.5 /
+    дважды `f(90)`, **THEN** оба вызова `f(90)` возвращают 0.25 / 9.75 /
     43.75 / 0.10; второй экземпляр при том же `t` даёт побитово равные
     значения.
 15. **[Integration]** **GIVEN** партия, доигранная до t = 200, **WHEN**
     стартует новая партия, **THEN** первый гость появляется при t = 0 с
-    `patience_max_g` = 50.0, первый интервал спавна = 15.0 с.
+    `patience_max_g` = 50.0, первый интервал спавна = 17.1429 с.
 
 ### Core Rule 5 — онбординг принадлежит Guest AI
 
 16. **[Logic]** **GIVEN** baseline, **WHEN** t = 15, **THEN**
-    `guests_per_minute` = 8.0694 — кривая сама не применяет ×0.5; при t =
+    `guests_per_minute` = 7.0764 — кривая сама не применяет ×0.5; при t =
     20 `complex_order_share` = 0.00494 — не обнуляется.
 17. **[Integration]** **GIVEN** Guest AI с настоящей кривой, **WHEN**
     интервал фиксируется при `t_spawn` = 0 / 15 / 30 / 90, **THEN**
-    `spawn_interval` = 15.0 / 14.8709 / 7.2483 / 5.7143 с. **AND GIVEN**
+    `spawn_interval` = 17.1429 / 16.9577 / 8.2135 / 6.1538 с. **AND GIVEN**
     `complex_share_start` = `complex_share_end` = 1.0, **WHEN** гости
     появляются при t < 30, **THEN** все заказы `simple`, а первый гость при
     t ≥ 30 получает `complex`.
@@ -498,11 +504,11 @@ Integration — `tests/integration/difficulty_curve/`.
 19. **[Integration]** **GIVEN** интервал спавна истёк при t = 90, а все 4
     слота заняты до t = 120, **WHEN** в тике t = 120 освобождается слот,
     **THEN** гость появляется с `t_spawn` = 120, `patience_max_g` =
-    38.8889, следующий интервал = 4.8214 с, выбор уровня использует
+    38.8889, следующий интервал = 5.0468 с, выбор уровня использует
     `complex_order_share` = 0.17778.
 20. **[Integration]** **GIVEN** партия при t = 90, **WHEN** пауза (или
     уход в фон) на 600 кадров, **THEN** `t` = 90 и кривые возвращают 0.25 /
-    10.5 / 43.75 / 0.10; после снятия паузы и `step(0.25)` `t` = 90.25.
+    9.75 / 43.75 / 0.10; после снятия паузы и `step(0.25)` `t` = 90.25.
 21. **[Integration]** **GIVEN** отгружаемые данные, **WHEN** симуляция
     партии 300 с с непрерывным спавном, **THEN** 0 записей fallback/clamp
     Guest AI Rule 12.
@@ -523,9 +529,10 @@ Integration — `tests/integration/difficulty_curve/`.
 
 | # | Вопрос | Владелец | Когда решить |
 |---|---|---|---|
-| 1 | **Проходимость ко 2-й минуте.** Даже с ease-in к t = 120 спрос превышает пропускную способность на ~75% (Formulas, проверка пропускной способности). Хватит ли буфера из 4 слотов, или нужно снизить `guests_per_minute_end` (18 → 15–16) / поднять `curve_exponent`? Совместный вопрос с Open Question о пропускной способности в `guest-ai-patience.md` | systems-designer + user | `/balance-check` с симуляцией очереди, до Vertical Slice |
+| 1 | **Проходимость ко 2-й минуте.** Даже с ease-in к t = 120 спрос превышает пропускную способность на ~67% (после `/balance-check` 2026-09-29 и Open Question #7, было ~75%). Хватит ли буфера из 4 слотов, или нужно снизить `guests_per_minute_end` (18 → 15–16) / поднять `curve_exponent`? Совместный вопрос с Open Question о пропускной способности в `guest-ai-patience.md` | systems-designer + user | `/balance-check` с симуляцией очереди, до Vertical Slice |
 | 2 | **Числа `X` и `Y` для AC 22** (потери гостей до t = 120, доля партий, доживших до 2-й минуты) — без них цель «тяжело, но проходимо» нельзя провалить | user (game-designer) | До статуса Approved |
+| 7 | **`guests_per_minute_start` снижен 8.0 → 7.0** `/balance-check` 2026-09-29: на прежнем значении дефицит пропускной способности начинался мгновенно на t = 30 (+7%, ровно в момент окончания онбординга — без переходной зоны), а не постепенно; на 7.0 система входит в пост-онбординг с небольшим запасом (−5%). Требует **пропагации** — `guest-ai-patience.md` явно фиксирует эквивалентность своего baseline (8/50/0, источник — game-concept) со значением этой кривой при t = 0 (Interactions, Formula 1 описание, `FakeDifficulty` по умолчанию, AC 1/5/6/7/9/15/17); **Пропагация выполнена 2026-09-29** (`/propagate-design-change`): `guest-ai-patience.md` (baseline 7/50/0, Formula 1, AC 1/4–10, OQ #2), `entities.yaml`, `systems-index.md`; ADR нет — архитектурного каскада нет. `game-concept.md` число не цитирует. Остаётся подтвердить 7.0 плейтестом вместе с OQ #1/#3 | user + systems-designer | Первый плейтест MVP |
 | 3 | **`curve_exponent` = 2.0 предварительный** — подтвердить плейтестом; при необходимости разные показатели на кривую (общий `ramp_duration`, плато синхронно) | systems-designer | Первый плейтест MVP |
 | 4 | **Эскалация после плато.** Сейчас после 180 с сложность постоянна. Нужен ли сильным игрокам дальнейший рост, чтобы рекорды не упирались в «бесконечное выживание»? | user | После плейтеста MVP |
 | 5 | **Реализация кривой** (Resource с данными, `Curve` vs формула в коде, кто передаёт `t`) → становится ADR | technical-director | `/architecture-decision` перед кодом |
-| 6 | **Расхождение с ориентиром game-concept.** `ramp_duration` = 180 с (3 мин) и baseline-числа (8→18 / 50→25 / 0→40%) — решение, принятое при проектировании этой GDD, а не значения из game-concept: тот дважды называет ориентиром ~2-ю минуту и явно оставляет точную кривую открытым вопросом для прототипа и плейтеста (не зафиксированным числом). Нужно решить: обновить сам game-concept.md, чтобы «~2 минуты» стало «~3 минуты» (закрыть его открытый вопрос значением отсюда), или сузить `ramp_duration`/сдвинуть плато ближе к 120 с при следующей калибровке. Пока это разведено намеренно (см. Core Rule 1), но не должно остаться неразрешённым после первого плейтеста MVP | user (game-designer) | Первый плейтест MVP, вместе с Open Question #1 и #3 |
+| 6 | **Расхождение с ориентиром game-concept.** `ramp_duration` = 180 с (3 мин) и baseline-числа (7→18 / 50→25 / 0→40%) — решение, принятое при проектировании этой GDD, а не значения из game-concept: тот дважды называет ориентиром ~2-ю минуту и явно оставляет точную кривую открытым вопросом для прототипа и плейтеста (не зафиксированным числом). Нужно решить: обновить сам game-concept.md, чтобы «~2 минуты» стало «~3 минуты» (закрыть его открытый вопрос значением отсюда), или сузить `ramp_duration`/сдвинуть плато ближе к 120 с при следующей калибровке. Пока это разведено намеренно (см. Core Rule 1), но не должно остаться неразрешённым после первого плейтеста MVP | user (game-designer) | Первый плейтест MVP, вместе с Open Question #1 и #3 |
