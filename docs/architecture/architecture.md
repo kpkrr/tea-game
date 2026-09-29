@@ -12,7 +12,7 @@
   order-recipe-system, player-control-barista-movement, brewing-crafting-mechanic,
   guest-ai-patience, difficulty-curve-session-pacing, currency-coins-score,
   till-day-cycle, hud-feedback-ui (10/10 MVP)
-- ADRs Referenced: ADR-0001 (Web build & platform shell, Proposed), ADR-0002 (Viewport, camera fit & 2.5D presentation, Proposed)
+- ADRs Referenced: ADR-0001 (Web build & platform shell, Proposed), ADR-0002 (Viewport, camera fit & 2.5D presentation, Proposed), ADR-0003 (Match simulation: clock, tick order, pause & events, Proposed), ADR-0004 (Data config & load-time validation, Proposed), ADR-0005 (Local persistence — SaveStore, Proposed)
 - Technical Director Sign-Off: 2026-09-30 — APPROVED WITH CONDITIONS (код не
   начинать, пока ADR-0001…0005 не Accepted; ADR-0001 начинается с модуля
   `engine-reference/godot/modules/web.md` и spike на реальном телефоне)
@@ -87,10 +87,10 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 |---|---|---|---|---|---|
 | **PlatformBridge** (autoload) | Foundation | safe-area rect (= вьюпорт браузера), состояние `Loading/Ready` | `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached` | браузер: resize/orientationchange, Page Visibility API | ⚠️ `JavaScriptBridge` (только visibility), `get_viewport().size_changed` |
 | **ViewFit** | Foundation | `safe_aspect`, playfield rect, letterbox, размер и смещение ortho-камеры, `kitchen_rect` (ADR-0002; 1 единица канваса = 1 dp) | `playfield_changed(playfield, kitchen_rect)` | `PlatformBridge.safe_area_changed`, габариты кухни | ⚠️ stretch mode, `Camera3D` (ortho `size`) |
-| **GameClock** | Foundation | игровое время `t`, флаг паузы, clamp `max_step_delta` | `t`, `step_dt`, `paused` | команды паузы/сброса от MatchLifecycle | — (чистый GDScript) |
-| **MatchDirector** | Foundation | порядок тика, корень композиции матча (DI) | — | все модули матча | `_physics_process` |
-| **ConfigLoader** | Foundation | загруженные и провалидированные данные тюнинга | типизированные `Resource`-конфиги | файлы данных | `ResourceLoader`, `Resource` |
-| **SaveStore** | Foundation | формат и версия файла сохранения | `get(key)`, `set(key, value)`, `flush()` | — | ⚠️ `FileAccess`/`ConfigFile` на `user://` (IndexedDB на web) |
+| **GameClock** | Foundation | игровое время `t`, флаги `hidden` и `frozen`, clamp `max_step_delta` (ADR-0003) | `t`, `sim_dt`, `ui_dt`, `running_changed(running)` | команды pause/resume/freeze/reset от MatchLifecycle | — (чистый GDScript) |
+| **MatchDirector** | Foundation | порядок тика, корень композиции матча (DI) | — | все модули матча | `_process` с `process_priority = -100` (ADR-0003; не `_physics_process`) |
+| **ConfigLoader** | Foundation | загруженные и провалидированные данные тюнинга (ADR-0004: `GameConfig` + подресурсы на систему, `.tres` в `assets/data/config/`, `ConfigValidator` собирает все ошибки во всех сборках) | типизированные `Resource`-конфиги, инъекция через конструкторы | файлы данных | `ResourceLoader`, `Resource` |
+| **SaveStore** | Foundation | формат и версия сохранения (JSON-блоб, `schema_version`), backend по платформе (ADR-0005) | `scope(owner) -> SaveScope` (`read_int/write_int`, …), `flush_if_dirty()` | — | web: `localStorage` через хелпер оболочки + `JavaScriptBridge.get_interface`; desktop: `user://` + атомарная замена; `user://` на web не используется |
 | **KitchenLayout** | Foundation | станции, 7 слотов, 4 слота гостей, spawn/exit, till-anchor, `station_types`, NavMesh | позиции + стабильные ID, `station_types` | — | `NavigationRegion3D`, `Sprite3D` |
 | **RecipeBook** | Core | 5 рецептов, прайс, грамматика шагов, цвета шагов | `is_valid_next`, `matches`, `recipe_price`, `recipes_by_tier` | `station_types`, конфиг | — |
 | **TapPicker** | Core | правило выбора цели тапа | `tapped(target)` | ввод (в dp, ADR-0002), позиции KitchenLayout/Guests | `Camera3D.unproject_position`, `project_ray_*`, `Plane.intersects_ray` |
@@ -124,20 +124,22 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 
 ## Data Flow
 
-### 1. Тик симуляции (каждый `_physics_process`)
+### 1. Тик симуляции (каждый `_process`, ADR-0003)
 
 `MatchDirector` — единственное место, где задан порядок. Узлы систем свой
 `_process` для симуляции **не используют**.
 
 ```
-MatchDirector._physics_process(delta):
-  dt = GameClock.advance(delta)        # 0 на паузе, иначе min(delta, max_step_delta = 0.25)
-  if dt == 0: return
-  TapPicker.flush()                     # последний press за кадр → tapped(target)
-  BaristaController.step(dt)            # движение; в Holding → offer_action() владельцу
-  Brewing.step(dt)                      # таймеры чайников
-  GuestSim.step(dt)                     # (1) подачи → (2) таймауты → (3) проверка конца → (4) спавн
-HUD._process(_delta):                   # только чтение, после симуляции
+MatchDirector._process(delta):          # process_priority = -100 — раньше всех узлов отображения
+  MatchLifecycle.apply_pending()        # 0: отложенный старт → GameClock.reset(), match_started
+  dt = GameClock.advance(delta)         # 1: 0 если hidden/frozen или первый кадр после resume, иначе min(delta, 0.25)
+  TapPicker.flush(dt > 0)               # 2: последний press за кадр → tapped(target); без хода — сбрасывается
+  if dt > 0:
+    BaristaController.step(dt)          # 3: движение; в Holding → offer_action() владельцу
+    Brewing.step(dt)                    # 4: таймеры чайников
+    GuestSim.step(dt)                   # 5: (a) подачи → (b) таймауты → (c) проверка конца → (d) спавн
+  SaveStore.flush_if_dirty()            # 6: одна запись за кадр, если что-то менялось (ADR-0005)
+HUD._process(_delta):                   # priority 0 — только чтение, после симуляции
 ```
 
 Порядок «Player Control → Guest AI» и «подача раньше таймаута» — требования
@@ -159,18 +161,20 @@ GuestSim ─served(recipe_id, rf)─► Currency: coins = recipe_price; score = 
 
 ```
 PlatformBridge.ready_reached + KitchenLayout загружен ─► MatchLifecycle.start()
-HUD «Играть снова» (после grace 500 мс) ─request_new_match─► MatchLifecycle.start()
-MatchLifecycle.start(): GameClock.reset(); emit match_started
+HUD «Играть снова» (после grace 500 мс) ─request_new_match() (метод, ставит старт в очередь)─► MatchLifecycle
+MatchLifecycle.apply_pending() (шаг 0 тика): GameClock.reset(); emit match_started
     → Brewing сбрасывает всё, Currency: match_score=0, Till: проверка UTC-сброса,
       GuestSim: чистит гостей и сразу спавнит первого
 GuestSim: guests_lost == 3 ─► MatchLifecycle: GameClock.freeze(); emit match_ended
     → Currency: is_new_record = match_score > best_score; при true сохраняет best_score
-PlatformBridge.visibility_changed(false/true) ─► MatchLifecycle ─► GameClock.pause()/resume()
+PlatformBridge.visibility_changed(false/true) ─► MatchLifecycle ─► GameClock.pause()/resume() (resume отбрасывает первый кадр)
 ```
 
 Единственный источник паузы — `GameClock`. Анимации HUD, привязанные к игровому
-времени (пульс колец, всплывающие числа), берут время из него, а не из
-`get_process_delta_time()` (TR-hud-008).
+времени (пульс колец, всплывающие числа), берут `sim_dt` из него, а не из
+`get_process_delta_time()` (TR-hud-008); оверлей итогов (fade, grace) — `ui_dt`,
+который идёт при `frozen`, но стоит при `hidden`. Спрайты паузятся по
+`running_changed` (ADR-0003).
 
 ### 4. Сохранение и загрузка
 
@@ -180,8 +184,10 @@ PlatformBridge.visibility_changed(false/true) ─► MatchLifecycle ─► GameC
 | `till_amount`, `day_state`, `full_since_utc` | Till | при каждом изменении (Served, Open↔Full) | холодный старт, `match_started` (проверка сброса) |
 | `settings.language` | UI / настройки | при смене | холодный старт |
 
-`SaveStore` — одна плоская схема с `schema_version`. На web `user://` лежит в
-IndexedDB ⚠️: момент синхронизации и поведение при очистке хранилища WebView
+`SaveStore` — одна плоская схема с `schema_version` (ADR-0005). На web — `localStorage`
+(синхронная запись), а не `user://`/IndexedDB; сброс на диск — шаг 6 тика и синхронно при
+уходе страницы в фон; владельцы пишут только через свой `SaveScope`. Исходный вопрос про
+IndexedDB: момент синхронизации и поведение при очистке хранилища WebView
 проверяются в ADR-0005. `match_score` не сохраняется: если приложение упадёт
 посреди партии, её результат теряется (TR-currency-006).
 
@@ -190,8 +196,8 @@ IndexedDB ⚠️: момент синхронизации и поведение 
 ```
 1. HTML-оболочка: проверка WebGL2 → иначе статичный экран «обновите браузер» (движок не грузится)
 2. PlatformBridge (autoload): первая safe area (= вьюпорт), подписка на resize и visibility
-3. ConfigLoader: загрузка и валидация всех данных → ошибка = матч не стартует, текст ошибки в debug
-4. SaveStore: чтение файла (при повреждении или его отсутствии — дефолты)
+3. ConfigLoader: загрузка и валидация всех данных → ошибка = `PlatformBridge.fail_boot()`, статичный экран «обновите страницу» во всех сборках, полный список ошибок в debug (ADR-0004)
+4. SaveStore: чтение блоба (при повреждении или его отсутствии — дефолты по ключам, игра не блокируется; ADR-0005)
 5. Kitchen-сцена: KitchenLayout, ViewFit (камера), MatchDirector собирает граф модулей (DI)
 6. Till: проверка UTC-сброса на холодном старте
 7. PlatformBridge.ready_reached → экран загрузки уходит без белой вспышки → MatchLifecycle.start()
@@ -207,14 +213,14 @@ IndexedDB ⚠️: момент синхронизации и поведение 
 ```gdscript
 # Foundation
 class_name GameClock extends RefCounted
-func advance(real_delta: float) -> float     # возвращает dt ≤ max_step_delta, 0 на паузе/заморозке
+signal running_changed(running: bool)
+func advance(real_delta: float) -> float     # возвращает dt ≤ max_step_delta, 0 на паузе/заморозке (ADR-0003)
 func pause() -> void; func resume() -> void; func freeze() -> void; func reset() -> void
-var t: float                                  # игровое время матча, только чтение
+var t: float; var sim_dt: float; var ui_dt: float   # только чтение
 
-class_name SaveStore extends RefCounted       # интерфейс; LocalSaveStore — реализация MVP
-func read(key: StringName, default: Variant) -> Variant
-func write(key: StringName, value: Variant) -> void   # синхронная запись в память
-func flush() -> bool                          # запись на диск; false = ошибка (логируется)
+class_name SaveStore extends RefCounted       # ADR-0005; backend: WebStorage | File | Memory
+func scope(owner: StringName) -> SaveScope    # read_int/write_int/read_string/write_string, только свой префикс
+func flush_if_dirty() -> void                 # только MatchDirector (шаг 6) и уход в фон
 
 class_name UtcClock extends RefCounted        # инъецируется в Till; FakeUtcClock в тестах
 func now_unix() -> int
@@ -232,7 +238,7 @@ signal served(recipe_id: StringName, remaining_fraction: float)   # GuestSim
 signal match_started(); signal match_ended()                        # MatchLifecycle
 signal coins_earned(amount: int); signal score_earned(amount: int)  # Currency
 signal coins_added(amount: int)                                     # Till (включая 0)
-signal request_new_match()                                          # HUD
+func request_new_match() -> void    # MatchLifecycle; вызывает HUD (команда, не сигнал — ADR-0003)
 ```
 
 **Инварианты для вызывающих:**
@@ -331,7 +337,7 @@ ADR пока нет. Traceability: **0 из 164 требований покры�
 |---|---|---|---|
 | AQ-01 | Single-thread или threads для web-экспорта 4.7 в мобильных браузерах (Chrome Android, Safari iOS), реальный размер сборки и время загрузки? | High | ADR-0001 (spike) |
 | AQ-02 | NavMesh или `AStarGrid2D`: воспроизводит ли NavMesh «середину прохода + спрямление» без постобработки? | High | ADR-0006 |
-| AQ-03 | Когда `user://` на web реально попадает в IndexedDB, и что будет при очистке данных сайта / приватном режиме? | High | ADR-0005 |
+| AQ-03 | ~~Когда `user://` на web реально попадает в IndexedDB, и что будет при очистке данных сайта / приватном режиме?~~ **Решено ADR-0005:** на web `localStorage`, не `user://`; приватный режим → `persistent = false`, игра продолжается; очистка данных → первый запуск. Остаток — проверка на устройстве | High | ADR-0005 (spike) |
 | AQ-04 | Задержка «касание → движок» в мобильном браузере не измерена (бюджет ≤ 50 мс только внутри движка). | Medium | ADR-0001 spike → ADR-0007 |
 | AQ-05 | Что считается «кадром» для debounce safe area: `_process` или `requestAnimationFrame` (platform OQ5)? | Low | ADR-0001 |
 | AQ-06 | Манипуляция системными часами устройства может досрочно сбросить кассу: принятый риск MVP. | Low | Backend & Persistence (VS) |

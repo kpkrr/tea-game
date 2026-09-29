@@ -62,6 +62,12 @@ to confirm or refute — do not treat it as settled without the spike.
   some reported cases the completion callback simply never fires. Two
   concurrent `flush()` calls from `SaveStore` is a real failure mode to design
   against, not a theoretical one.
+- *Clarification (godot-specialist, 2026-09-30, from engine source, not docs)*: for
+  `user://` Godot's web OS itself schedules one sync from the main-loop iteration after a
+  file closes and skips starting a second while one runs, so the overlapping-`syncfs` race
+  applies to raw Emscripten use, not Godot's `user://` path. The remaining hazard is that
+  the sync waits for the next main-loop iteration — which does not happen while the tab
+  is hidden. ADR-0005 therefore uses `localStorage` for saves on web.
 - **Practical implication for ADR-0005 (SaveStore)**: `flush()` timing and
   whether it must be awaited/confirmed before treating a save as durable is
   unresolved from docs alone and needs the same on-device spike.

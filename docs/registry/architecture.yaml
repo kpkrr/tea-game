@@ -63,6 +63,7 @@ state_ownership:
     write_access: platform-bridge-only
     referenced_by:
       - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
     added: 2026-09-30
     revised: ""
 
@@ -74,6 +75,50 @@ state_ownership:
     write_access: view-fit-only
     referenced_by:
       - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: game_time
+    status: active
+    owner_system: game-clock
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    interface: "GameClock (RefCounted, injected): t, sim_dt, ui_dt getters; running_changed(running: bool) signal; is_running(). Flags hidden/frozen written only via pause/resume/freeze/reset from MatchLifecycle; advance() called only by MatchDirector"
+    write_access: match-lifecycle (commands) + match-director (advance) only
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: match_lifecycle_state
+    status: active
+    owner_system: match-lifecycle
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    interface: "MatchLifecycle.state (BOOTING/RUNNING/ENDED, getter); match_started()/match_ended() signals, each exactly once per match"
+    write_access: match-lifecycle-only
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: game_config
+    status: active
+    owner_system: config-loader
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    interface: "GameConfig Resource tree (one typed sub-resource per system), loaded + validated once at boot, injected via constructors from MatchDirector._compose(); immutable by convention"
+    write_access: none-after-load
+    referenced_by:
+      - docs/architecture/adr-0004-data-config-load-validation.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: persistent_save_blob
+    status: active
+    owner_system: save-store
+    adr: docs/architecture/adr-0005-local-persistence-savestore.md
+    interface: "SaveStore.scope(owner) -> SaveScope (read_int/write_int/read_string/write_string on own prefix only); flush_if_dirty() by MatchDirector step 6 and page hide only. Keys: currency.best_score (currency), till.amount / till.day_state / till.full_since_utc (till)"
+    write_access: each key by its prefix owner only; storage I/O by save-store only
+    referenced_by:
+      - docs/architecture/adr-0005-local-persistence-savestore.md
     added: 2026-09-30
     revised: ""
 
@@ -114,6 +159,7 @@ interfaces:
     signal_signature: "visibility_changed(visible: bool)"
     referenced_by:
       - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
     added: 2026-09-30
     revised: ""
 
@@ -142,6 +188,134 @@ interfaces:
     signal_signature: "playfield_changed(playfield: Rect2, kitchen_rect: Rect2)"
     referenced_by:
       - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: match_lifecycle_events
+    status: active
+    pattern: signal
+    producer: match-lifecycle
+    consumers:
+      - brewing
+      - currency
+      - till              # match_started only
+      - barista-controller
+      - guest-sim
+      - hud
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    signal_signature: "match_started(); match_ended()"
+    notes: "Synchronous, connected only in MatchDirector._compose(); match_started emitted at tick step 0"
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: new_match_request
+    status: active
+    pattern: direct_call
+    producer: hud
+    consumers:
+      - match-lifecycle
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    signal_signature: "MatchLifecycle.request_new_match() -> void (command method, queued + deduped, applied at tick step 0; not a signal)"
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: served_chain
+    status: active
+    pattern: signal
+    producer: guest-sim
+    consumers:
+      - currency          # -> coins_earned(amount: int) -> till -> coins_added(amount: int) -> hud; score_earned(amount: int) -> hud
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    signal_signature: "served(recipe_id: StringName, remaining_fraction: float)"
+    notes: "Whole chain completes synchronously inside GuestSim.step sub-step (a); no CONNECT_DEFERRED"
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: game_time_running
+    status: active
+    pattern: signal
+    producer: game-clock
+    consumers:
+      - presentation      # GameTimeSprite pause()/play(); also checks is_running() in _ready
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    signal_signature: "running_changed(running: bool)"
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: config_injection
+    status: active
+    pattern: direct_call
+    producer: config-loader
+    consumers:
+      - all-match-modules  # receive their own sub-resource (and read-only foreign ones) via constructor
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    signal_signature: "Module.new(cfg.<system>: <System>Config, …); ConfigValidator.validate(cfg: GameConfig) -> Array[ConfigError]"
+    referenced_by:
+      - docs/architecture/adr-0004-data-config-load-validation.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: boot_failure
+    status: active
+    pattern: direct_call
+    producer: match-director
+    consumers:
+      - platform-bridge
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    signal_signature: "PlatformBridge.fail_boot(message: String) -> void  # Loading -> Failed; ready_reached never emitted"
+    referenced_by:
+      - docs/architecture/adr-0004-data-config-load-validation.md
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: rng_injection
+    status: active
+    pattern: direct_call
+    producer: match-director
+    consumers:
+      - guest-sim          # streams guest_tier, guest_recipe
+      - presentation       # stream cosmetic
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    signal_signature: "Rng (RefCounted): randf() -> float [0,1); randi_range(from, to) -> int. Streams seeded splitmix64(match_seed ^ STREAM_CONST)"
+    referenced_by:
+      - docs/architecture/adr-0004-data-config-load-validation.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: save_scope_access
+    status: active
+    pattern: direct_call
+    producer: save-store
+    consumers:
+      - currency
+      - till
+    adr: docs/architecture/adr-0005-local-persistence-savestore.md
+    signal_signature: "SaveScope.declare_int(key, default, min, max); read_int(key) -> int; write_int(key, value) (memory only, marks dirty)"
+    referenced_by:
+      - docs/architecture/adr-0005-local-persistence-savestore.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: web_save_helper
+    status: active
+    pattern: direct_call
+    producer: html-shell
+    consumers:
+      - save-store       # WebStorageBackend via JavaScriptBridge.get_interface("teaRushSave")
+    adr: docs/architecture/adr-0005-local-persistence-savestore.md
+    signal_signature: "window.teaRushSave = {available: bool, read() -> string|null, write(s) -> bool} over localStorage key tea_rush.save"
+    referenced_by:
+      - docs/architecture/adr-0005-local-persistence-savestore.md
+      - docs/architecture/adr-0001-web-build-platform-shell.md
     added: 2026-09-30
     revised: ""
 
@@ -270,6 +444,50 @@ api_decisions:
     added: 2026-09-30
     revised: ""
 
+  - purpose: simulation_tick_driver
+    status: active
+    api: "Single MatchDirector Node._process, process_priority = -100, variable delta clamped by GameClock (max_step_delta 0.25 s); modules are RefCounted with step(dt)"
+    not: "_physics_process fixed step; per-system _process; SceneTree.paused"
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    reason: "No physics; fixed step judders on 90/120 Hz and replays catch-up steps after stalls on web; one owner of tick order"
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: tuning_data_format
+    status: active
+    api: "Typed custom Resource classes saved as .tres in assets/data/config/ (GameConfig root + one sub-resource per system, uid:// ExtResources); sentinel defaults (NAN / -1 / &\"\" / []) mark missing keys; no bool knobs"
+    not: "JSON + manual mapping; const tuning scripts; Curve resources for difficulty"
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    reason: "Typed, inspector-editable, pure in-memory validation in tests; .tres coerces wrong types silently (verified 4.7.2), so a shipped-values CI test is mandatory"
+    referenced_by:
+      - docs/architecture/adr-0004-data-config-load-validation.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: config_validation_policy
+    status: active
+    api: "ConfigValidator.validate collects all errors with dotted path; identical in debug and release; failure -> PlatformBridge.fail_boot"
+    not: "assert()-only invariants stripped from release; stop-at-first-error"
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    reason: "One behaviour everywhere; GDDs require load error naming the constant; wrong economy must never ship silently"
+    referenced_by:
+      - docs/architecture/adr-0004-data-config-load-validation.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: web_save_storage
+    status: active
+    api: "Browser localStorage through the HTML-shell helper + JavaScriptBridge.get_interface; one versioned JSON blob; desktop FileBackend user://save.json with temp + DirAccess.rename_absolute"
+    not: "user:// (IDBFS) for save data on web; direct IndexedDB from JS; OS.is_userfs_persistent() as a durability check"
+    adr: docs/architecture/adr-0005-local-persistence-savestore.md
+    reason: "Godot syncs user:// from the main loop, which stops when the tab is hidden; localStorage.setItem is synchronous and works inside the visibility callback"
+    referenced_by:
+      - docs/architecture/adr-0005-local-persistence-savestore.md
+    added: 2026-09-30
+    revised: ""
+
 # Example:
 #
 # api_decisions:
@@ -321,6 +539,90 @@ forbidden_patterns:
     description: "No module other than PlatformBridge may connect to get_viewport().size_changed or read DisplayServer window size; ViewFit reacts only to safe_area_changed."
     why: "Single debounced source of viewport changes (ADR-0001); parallel listeners recompute out of order and bypass the once-per-frame debounce."
     adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+
+  - pattern: scene_tree_pause_for_gameplay
+    status: active
+    description: "Gameplay must never set or read get_tree().paused; pause is GameClock hidden/frozen only."
+    why: "One pause source; tree pause cannot clamp post-stall delta nor distinguish page-hidden from match-frozen."
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+
+  - pattern: per_system_simulation_process
+    status: active
+    description: "Simulation modules must not implement _process/_physics_process or read frame delta, Time, OS or Engine time; only MatchDirector calls step(dt)."
+    why: "Tick order (Player Control before Guest AI; serves before timeouts) lives in one function."
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+
+  - pattern: global_event_bus_autoload
+    status: active
+    description: "No EventBus autoload; typed signals on owning modules, connected only in MatchDirector._compose(). Modules never reference autoloads by name."
+    why: "Hidden coupling, global state in tests, implicit ordering/re-entrancy."
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+
+  - pattern: deferred_gameplay_signals
+    status: active
+    description: "Cross-module gameplay signals must not use CONNECT_DEFERRED or call_deferred."
+    why: "Served chain and lifecycle resets must complete inside the emitting tick step."
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+
+  - pattern: engine_timers_for_game_time
+    status: active
+    description: "Tween, Timer and AnimationPlayer autoplay must not drive effects bound to game time; use GameClock.sim_dt / running_changed."
+    why: "They run on frame time and would not stop on hide/freeze."
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+
+  - pattern: refcounted_lambda_or_bind_connections
+    status: active
+    description: "Signals between RefCounted modules connect plain method Callables only — no lambdas, no .bind() holding RefCounted."
+    why: "Strong references form cycles that RefCounted never frees (leaks across matches and tests)."
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+
+  - pattern: global_random_in_gameplay
+    status: active
+    description: "Gameplay code must not call global randf()/randi()/randi_range()/randomize() or create its own RandomNumberGenerator; use the injected Rng stream. Enforced by CI grep over src/."
+    why: "Reproducible matches from a logged seed; deterministic tests via FakeRng."
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    added: 2026-09-30
+
+  - pattern: tuning_literals_or_self_loaded_config
+    status: active
+    description: "No tuning value from a GDD Tuning Knobs table or entities.yaml as a code literal; modules never load()/preload() config themselves nor write to config objects."
+    why: "Data-driven values (coding standards, Principle 4); single validated source injected at composition."
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    added: 2026-09-30
+
+  - pattern: changing_config_sentinel_default
+    status: active
+    description: "A config field's sentinel default must never be changed to a real value."
+    why: "The editor omits default-valued fields on save; every .tres that omitted the field would silently adopt the new value and bypass the missing-key check."
+    adr: docs/architecture/adr-0004-data-config-load-validation.md
+    added: 2026-09-30
+
+  - pattern: owner_side_save_io
+    status: active
+    description: "Systems must not touch FileAccess, localStorage, JavaScriptBridge or SaveBackend for persistence, nor call flush_if_dirty(); they only write through their SaveScope."
+    why: "Single coalesced flush per frame + page-hide flush; ownership enforced by scopes (Pillar 4)."
+    adr: docs/architecture/adr-0005-local-persistence-savestore.md
+    added: 2026-09-30
+
+  - pattern: persisting_match_state
+    status: active
+    description: "match_score and any in-match state must never be written to SaveStore."
+    why: "Currency GDD: a match interrupted by a crash is lost by design; only best_score and till state persist."
+    adr: docs/architecture/adr-0005-local-persistence-savestore.md
+    added: 2026-09-30
+
+  - pattern: blocking_boot_on_save_failure
+    status: active
+    description: "A corrupt, missing or unavailable save must never block boot or a match; fall back to per-key defaults (persistent=false when storage is unavailable or the save is from a newer schema)."
+    why: "Save is player data, unlike config (ADR-0004); the game must stay playable in private mode."
+    adr: docs/architecture/adr-0005-local-persistence-savestore.md
     added: 2026-09-30
 
 # Example:

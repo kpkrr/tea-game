@@ -65,7 +65,7 @@ Tea Rush ships as a single web build (Godot 4.7, WebGL2/Compatibility renderer),
 2. A loading screen with a progress bar driven by the standard web-export loading callback, kept visible with no hard timeout until `PlatformBridge.ready_reached` fires (TR-platform-006).
 3. A CSS cross-fade from the loading screen to the game canvas — canvas stays at `opacity: 0` until the first frame is confirmed drawable, then fades in over the loading screen's fade-out — to avoid the white-flash failure mode Godot's canvas init can otherwise produce (TR-platform-018).
 
-**`PlatformBridge` (Foundation autoload).** Owns the safe-area rect and `Loading`/`Ready` state; the sole source of `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached`.
+**`PlatformBridge` (Foundation autoload).** Owns the safe-area rect and `Loading`/`Ready`/`Failed` state (`Failed` added by ADR-0004: invalid config → `fail_boot(message)`, the shell shows a static "reload the page" screen and `ready_reached` is never emitted); the sole source of `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached`.
 - *Safe area*: driven by `get_viewport().size_changed` plus a JS `resize`/`orientationchange` listener as the authoritative trigger, coalesced through a per-frame dirty flag consumed once in `_process` — never emitted directly from the JS event handler — satisfying "no more than once per frame" (TR-platform-010) without a separate `requestAnimationFrame` timer, since Godot's own main loop is already synced to the browser's rAF cadence. This resolves AQ-05: "a frame" means one Godot `_process` tick.
 - *Visibility*: **must not** use `NOTIFICATION_APPLICATION_FOCUS_IN/OUT` or `_PAUSED`/`_RESUMED` — confirmed non-functional on web export (godotengine/godot#87014), the one platform where Godot's normal cross-platform lifecycle notification is the wrong tool. Instead, the HTML shell registers a `document.visibilitychange` JS listener wired to a `JavaScriptBridge.create_callback` that calls back into GDScript, and `PlatformBridge` emits the single `visibility_changed(bool)` from that callback (TR-platform-012). This also matters because the browser pauses `_process`/`_physics_process` entirely while backgrounded — a polling approach inside `_process` cannot work even in principle, independent of the notification bug.
 - *Ready*: emitted once `ConfigLoader` validation and the kitchen scene (`KitchenLayout`) are loaded and the first frame is drawable — drives both the HTML shell's fade transition and, per `architecture.md` §"Жизненный цикл матча", `MatchLifecycle.start()` (TR-platform-013).
@@ -97,6 +97,7 @@ signal visibility_changed(visible: bool) # single source of truth for both direc
 signal ready_reached()                   # WebGL2 confirmed + ConfigLoader + KitchenLayout ready
 
 func get_safe_area() -> Rect2            # last known value, readable without waiting on a signal
+func fail_boot(message: String) -> void  # Loading -> Failed (ADR-0004); called only by MatchDirector._compose()
 ```
 
 ### Implementation Guidelines
@@ -106,6 +107,9 @@ func get_safe_area() -> Rect2            # last known value, readable without wa
 - Run the WebGL2 probe on a throwaway canvas (not the engine's `<canvas>`), or release it via `WEBGL_lose_context` before the loader starts.
 - Before finalising the shell, diff the hand-rolled probe against the capability checks in the generated 4.7 loader JS (`Engine`); the gate must be at least as strict as the engine's own requirements, otherwise a browser passes the gate and fails inside Godot init (defeats TR-platform-011).
 - Implement `visibility_changed` only via `JavaScriptBridge.create_callback` + `document.visibilitychange`. Never via `NOTIFICATION_APPLICATION_*` on this platform.
+- The shell must also forward `pagehide` to the same callback as `visible = false` (iOS Safari / bfcache may skip `visibilitychange`); duplicates are harmless because `PlatformBridge` emits only on state change (ADR-0005).
+- The HTML shell must define the `window.teaRushSave` `localStorage` helper specified in ADR-0005.
+- The `JavaScriptObject` returned by `create_callback` must be kept in a `PlatformBridge` member variable for the app's lifetime; a local is garbage-collected and the callback silently stops firing (noted by ADR-0003 engine validation, 2026-09-30).
 - Coalesce resize/orientationchange into one `safe_area_changed` per `_process` tick via a dirty flag; never emit synchronously from the raw JS handler.
 - Run the WebGL2 check in plain JS in the HTML shell, strictly before requesting the engine's loader script.
 - Do not treat `OS.is_userfs_persistent()` as authoritative (documented false-positive behavior) — `SaveStore` (ADR-0005) must design around that, not this module.

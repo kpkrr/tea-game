@@ -499,6 +499,6 @@ Crafting.
 | Цены 2/5/7 снижают доход за партию примерно на 10–15% относительно 2/5/9; вместимость кассы (250) калибрована под старые цены | economy-designer — вместе с Till & Day Cycle | При проектировании Till & Day Cycle |
 | `game-concept.md` описывает кассу как «≈5 × доход за 2-минутную партию», а по плейтесту партия ~222 с и касса ≈ 3× дохода партии. (Описание рецептов в game-concept и systems-index приведено к этой GDD 2026-09-28.) | Yan (правка game-concept) | При проектировании Till & Day Cycle |
 | ~~`t_step` = 3 с — условное значение~~ **Решено 2026-09-28**: `t_step` = 2.0 с (`player-control-barista-movement.md`, Formula 4), Formula 2 пересчитана | Player Control / Barista Movement GDD | Закрыто |
-| ID шагов (`cup`, `leaf_black`, …) и форма ошибки загрузки — рабочие | lead-programmer → ADR | Technical Setup |
+| ~~ID шагов (`cup`, `leaf_black`, …) и форма ошибки загрузки — рабочие~~ **Решено ADR-0004 (2026-09-30):** ID — `StringName` в `RecipeDef.steps`; ошибка — `ConfigError{path, rule, message}`, валидатор собирает все ошибки | lead-programmer → ADR | Закрыто |
 | Показывать ли `cup` и `serve` на тикете (от этого зависит, показывает ли число жетонов уровень) | ux-designer → `/ux-design` | Pre-Production, до эпиков HUD |
-| Поведение инвариантов цен в release-сборке (в debug и тестах — ошибка загрузки) | lead-programmer → ADR | Technical Setup |
+| ~~Поведение инвариантов цен в release-сборке (в debug и тестах — ошибка загрузки)~~ **Решено ADR-0004 (2026-09-30):** в release — так же, как в debug: ошибка загрузки, игра не стартует | lead-programmer → ADR | Закрыто |
