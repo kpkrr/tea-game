@@ -1,6 +1,6 @@
 # Difficulty Curve & Session Pacing
 
-> **Status**: Designed (ждёт /design-review)
+> **Status**: Approved (/design-review 2026-09-28 — NEEDS REVISION → исправлено в той же сессии)
 > **Author**: Yan + systems-designer, qa-lead
 > **Last Updated**: 2026-09-28
 > **Last Verified**: 2026-09-28
@@ -10,9 +10,12 @@
 ## Summary
 
 Difficulty Curve & Session Pacing раскручивает партию от спокойного старта
-до часа пик. За первые 3 минуты поток гостей растёт с 8 до 18 в минуту,
-терпение падает с 50 до 25 с, а доля заказов с лимоном растёт с 0 до 40%;
-после этого сложность держится на плато — «территория рекордов». Рост идёт
+до часа пик. За первые 3 минуты (решение автора этой GDD — game-concept
+называет ориентиром ~2 минуты и оставляет точную кривую открытым вопросом
+для плейтеста, см. Core Rule 1 и Open Question #6) поток гостей растёт с 8
+до 18 в минуту, терпение падает с 50 до 25 с, а доля заказов с лимоном
+растёт с 0 до 40%; после этого сложность держится на плато — «территория
+рекордов». Рост идёт
 по ease-in (медленно в начале, резко к концу), зависит только от времени
 партии и одинаков для всех игроков — это даёт нарастающий хаос Pillar 1 без
 скрытой адаптивной сложности.
@@ -45,8 +48,14 @@ Recipe System как baseline-константы при t=0 (`guests_per_minute(
 1. **Единый прогресс сложности**: у партии есть один параметр
    `difficulty_progress(t)` ∈ [0, 1], вычисляемый из времени партии `t`
    (без пауз — тот же таймер, которым уже пользуется Guest AI & Patience) и
-   константы `ramp_duration` = 180 с (game-concept: «рост с 0-й по 3-ю
-   минуту»). Прогресс растёт по ease-in (`curve_exponent` = 2.0, Formula
+   константы `ramp_duration` = 180 с. **Решение автора этой GDD, не цитата
+   game-concept**: game-concept дважды называет ориентиром ~2-ю минуту
+   («к ~2-й минуте — тяжело, но проходимо»; «первые ~2 минуты — рабочее
+   окно») и явно оставляет точную кривую открытым вопросом для прототипа и
+   плейтеста, а не фиксированным числом. 180 с — сознательное расширение
+   этого окна на треть, сделанное при проектировании этой системы; см.
+   Open Question #6 для обоснования и плана проверки. Прогресс растёт по
+   ease-in (`curve_exponent` = 2.0, Formula
    1): медленно в начале, резко к концу рампы — так перегрузка баристы
    наступает ближе ко 2-й минуте, а не к 90-й секунде. Прогресс достигает
    1 к концу `ramp_duration` и остаётся 1 до конца партии.
@@ -151,8 +160,8 @@ The `guests_per_minute` formula is defined as:
 
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
-| `guests_per_minute_start` | float, гостей/мин | > 0; 8.0 | data file (game-concept) | Поток при t = 0 |
-| `guests_per_minute_end` | float, гостей/мин | ≥ start; 18.0 | data file (game-concept) | Поток на плато |
+| `guests_per_minute_start` | float, гостей/мин | > 0; 8.0 | data file (автор GDD, не game-concept — см. Core Rule 1) | Поток при t = 0 |
+| `guests_per_minute_end` | float, гостей/мин | ≥ start; 18.0 | data file (автор GDD, не game-concept — см. Core Rule 1) | Поток на плато |
 | `difficulty_progress(t)` | float | [0, 1] | calculated (Formula 1) | — |
 | `guests_per_minute(t)` | float, гостей/мин | [8, 18] | calculated | Вход Guest AI Formula 1 (до её `onboarding_multiplier`) |
 
@@ -171,8 +180,8 @@ The `patience_max` formula is defined as:
 
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
-| `patience_max_start` | float, с | > 0; 50.0 | data file (game-concept) | Терпение гостя при t = 0 |
-| `patience_max_end` | float, с | (0, start]; 25.0 | data file (game-concept) | Терпение на плато |
+| `patience_max_start` | float, с | > 0; 50.0 | data file (автор GDD, не game-concept — см. Core Rule 1) | Терпение гостя при t = 0 |
+| `patience_max_end` | float, с | (0, start]; 25.0 | data file (автор GDD, не game-concept — см. Core Rule 1) | Терпение на плато |
 | `difficulty_progress(t)` | float | [0, 1] | calculated (Formula 1) | — |
 | `patience_max(t)` | float, с | [25, 50] | calculated | Вход Guest AI Formula 2; читается один раз при спавне гостя (`patience_max_g`) |
 
@@ -189,8 +198,8 @@ The `complex_order_share` formula is defined as:
 
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
-| `complex_share_start` | float | [0, 1]; 0.0 | data file (game-concept) | Доля сложных заказов при t = 0 |
-| `complex_share_end` | float | [start, 1]; 0.40 | data file (game-concept) | Доля на плато |
+| `complex_share_start` | float | [0, 1]; 0.0 | data file (автор GDD, не game-concept — см. Core Rule 1) | Доля сложных заказов при t = 0 |
+| `complex_share_end` | float | [start, 1]; 0.40 | data file (автор GDD, не game-concept — см. Core Rule 1) | Доля на плато |
 | `difficulty_progress(t)` | float | [0, 1] | calculated (Formula 1) | — |
 | `complex_order_share(t)` | float | [0, 0.40] | calculated | Вход Guest AI Formula 3; игнорируется в онбординге (там только `simple`) |
 
@@ -213,8 +222,11 @@ Formula 3.
 ### Проверка пропускной способности (только для балансировки)
 
 Средний `time_to_complete` при η = 0.5 по миксу уровней Guest AI Formula 3
-сворачивается в `avg_time(p) = 7.75 + 1.5 × p` с (при p = 0 совпадает с
-расчётом в `guest-ai-patience.md`). Избыток спроса = `avg_time /
+сворачивается в `avg_time(p) = 7.75 + 3.75 × p` с (при p = 0 совпадает с
+расчётом в `guest-ai-patience.md`; коэффициент — из `time_to_complete`
+при η=0.5 в `order-recipe-system.md`: simple 6 с, medium 9.5 с, complex
+11.5 с, и микса Formula 3 p_medium = p_simple = 0.5×(1−p) — таблица ниже
+уже посчитана по этому коэффициенту). Избыток спроса = `avg_time /
 spawn_interval − 1`, без ходьбы к гостю и без буфера очереди:
 
 | t, с | Линейная (k = 1) | Ease-in (k = 2) |
@@ -384,7 +396,7 @@ UI. Показывать ли его и как — решает HUD при св�
 |---|---|---|
 | Guest AI & Patience | `design/gdd/guest-ai-patience.md` | Formula 1 (`spawn_interval`), Formula 2 (`remaining_fraction` / контракт «`patience_max_g` фиксируется при спавне»), Formula 3 (выбор `recipe_id`, онбординг-оверрайд на `simple`), Formula 4 (пороги тревоги), Rule 12 (защитные clamp/fallback на стороне потребителя) |
 | Order & Recipe System | `design/gdd/order-recipe-system.md` | Три уровня сложности рецептов и `recipes_by_tier(tier)`, `recipe_price` (2–7 монет) |
-| Game Concept | `design/gdd/game-concept.md` | Baseline-числа рампы (8→18 гостей/мин, 50→25 с терпения, 0%→40% сложных заказов), понятие «территория рекордов» после ~2–3 минут (Flow State Design) |
+| Game Concept | `design/gdd/game-concept.md` | Понятие «территория рекордов» и ориентир «~2-я минута» (Flow State Design, Short-Term Core Loop) — **не** источник конкретных чисел рампы: 180 с / 8→18 / 50→25 / 0→40% — решение автора этой GDD, расходящееся с ориентиром game-concept (Core Rule 1, Open Question #6) |
 
 ## Acceptance Criteria
 
@@ -516,3 +528,4 @@ Integration — `tests/integration/difficulty_curve/`.
 | 3 | **`curve_exponent` = 2.0 предварительный** — подтвердить плейтестом; при необходимости разные показатели на кривую (общий `ramp_duration`, плато синхронно) | systems-designer | Первый плейтест MVP |
 | 4 | **Эскалация после плато.** Сейчас после 180 с сложность постоянна. Нужен ли сильным игрокам дальнейший рост, чтобы рекорды не упирались в «бесконечное выживание»? | user | После плейтеста MVP |
 | 5 | **Реализация кривой** (Resource с данными, `Curve` vs формула в коде, кто передаёт `t`) → становится ADR | technical-director | `/architecture-decision` перед кодом |
+| 6 | **Расхождение с ориентиром game-concept.** `ramp_duration` = 180 с (3 мин) и baseline-числа (8→18 / 50→25 / 0→40%) — решение, принятое при проектировании этой GDD, а не значения из game-concept: тот дважды называет ориентиром ~2-ю минуту и явно оставляет точную кривую открытым вопросом для прототипа и плейтеста (не зафиксированным числом). Нужно решить: обновить сам game-concept.md, чтобы «~2 минуты» стало «~3 минуты» (закрыть его открытый вопрос значением отсюда), или сузить `ramp_duration`/сдвинуть плато ближе к 120 с при следующей калибровке. Пока это разведено намеренно (см. Core Rule 1), но не должно остаться неразрешённым после первого плейтеста MVP | user (game-designer) | Первый плейтест MVP, вместе с Open Question #1 и #3 |

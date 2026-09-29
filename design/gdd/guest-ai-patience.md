@@ -95,8 +95,12 @@ Questions как «→ становится ADR», а не решаются зд
    система замораживается в том же тике. Новых спавнов нет, терпение всех
    оставшихся гостей стоит, гости в Approaching останавливаются на месте,
    тапы по гостям получают «нет». Сигнал `match_ended` отправляется один
-   раз (его получают Till & Day Cycle, HUD и другие — вне этой GDD). Уже
-   начатые анимации ухода (Served / Leaving) доигрываются.
+   раз (его получают Currency: Coins & Score, HUD и другие — вне этой
+   GDD). Уже начатые анимации ухода (Served / Leaving) доигрываются.
+   *(Till & Day Cycle исключена из получателей `/propagate-design-change`
+   2026-09-29: после ревизии её Core Rule 4/5 переход Open → Full больше
+   не зависит от `match_ended` — касса реагирует напрямую на событие
+   Served, независимо от конца партии.)*
 10. **Онбординг**: первые `onboarding_duration` (30 с) партии `recipe_id`
     назначается только из простого уровня (`cold_tea`), а поток
     умножается на `onboarding_factor` = 0.5 (Formula 1: 4 гостя/мин, один
@@ -145,7 +149,7 @@ Approaching → Waiting, терпение и спавн стоят.
 | Brewing & Crafting Mechanic | двунаправленно | Brewing → Guest AI: `held_cup.steps` (рецепт чашки через `matches()` Order & Recipe). Guest AI → Brewing: вызов `consume_held_cup()` при подаче (Rule 5). Контракт зафиксирован в `brewing-crafting-mechanic.md` |
 | Order & Recipe System | Order & Recipe → Guest AI | `recipes_by_tier(tier)` для назначения `recipe_id` гостю (Formula 3); правило совпадения чашки с заказом (владеет Brewing/Order & Recipe, эта система лишь сравнивает `recipe_id`) |
 | Player Control / Barista Movement | двунаправленно | Guest AI отвечает на запрос допустимости тапа по гостю (да / нет) и на «выполнить» в Holding (Rule 5); точка взаимодействия — слот гостя (Rule 4). Guest AI сообщает Player Control о паузе (Rule 11). При уходе гостя эта система шлёт Player Control сигнал «цель исчезла» (Rule 6 → Leaving), если бариста шёл к нему |
-| Currency: Coins & Score *(не спроектирована)* | Guest AI → Currency | На каждое событие Served: `(recipe_id, remaining_fraction)` — Currency считает монеты (`recipe_price`) и очки. Контракт предварительный — фиксируется, что предоставляет эта система, не то, как Currency это использует |
+| Currency: Coins & Score | Guest AI → Currency | На каждое событие Served: `(recipe_id, remaining_fraction)` — Currency считает монеты (`coins_earned = recipe_price`) и очки (`score_earned`). Контракт подтверждён Currency: Coins & Score (Core Rule 1, Formula 1/2) без изменений 2026-09-28 |
 | Difficulty Curve & Session Pacing | двунаправленно | Эта система выставляет три параметра как точки расширения: `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)`. Их реализует Difficulty Curve (Formula 2–4 там, ease-in по общему `difficulty_progress(t)`, 180 с); значения при t = 0 совпадают с baseline этой GDD (8 / 50 / 0) |
 | HUD & Feedback UI *(не спроектирована)* | Guest AI → HUD | На каждого активного гостя: `recipe_id` (для тикета заказа), `remaining_fraction` (для индикатора терпения), состояние (Approaching/Waiting/Leaving/Served). На партию: `guests_lost`, `match_ended` |
 | Co-op / Multiplayer *(Full Vision)* | — | Не в MVP; модель "один бариста — общая очередь" потребует пересмотра при добавлении второго игрока |
@@ -419,7 +423,7 @@ Questions).
 
 | Система | Тип | Что получает |
 |---|---|---|
-| Currency: Coins & Score *(не спроектирована)* | Hard | `(recipe_id, remaining_fraction)` на каждое событие Served — вход для формулы монет и очков |
+| Currency: Coins & Score | Hard | `(recipe_id, remaining_fraction)` на каждое событие Served — вход для формул `coins_earned`/`score_earned` (контракт подтверждён 2026-09-28) |
 | Difficulty Curve & Session Pacing | Hard | Реализует точки расширения `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` (её Formula 2–4); эта GDD фиксирует контракт и baseline при t = 0 |
 | HUD & Feedback UI *(не спроектирована)* | Hard | Per-guest `recipe_id`, `remaining_fraction`, состояние (Approaching/Waiting/Leaving/Served); на партию — `guests_lost`, `match_ended` |
 | Co-op / Multiplayer *(Full Vision)* | Hard | Модель «один бариста — общая очередь на 4 слота», которую нужно будет расширить на нескольких барист |
@@ -446,9 +450,11 @@ Questions).
   стабильными ID и точку выхода (добавлено при проектировании этой GDD).
 - Difficulty Curve & Session Pacing (2026-09-28) перечисляет эту систему
   и как Upstream (интерфейс), и как Downstream (потребитель) — совпадает.
-- Currency: Coins & Score и HUD & Feedback UI ещё не спроектированы —
-  каждая должна перечислить Guest AI & Patience в своей секции
-  Dependencies, когда будет написана.
+- Currency: Coins & Score (2026-09-28) перечисляет эту систему в своих
+  Upstream с тем же контрактом `(recipe_id, remaining_fraction)` —
+  сходится.
+- HUD & Feedback UI ещё не спроектирована — должна перечислить Guest AI &
+  Patience в своей секции Dependencies, когда будет написана.
 
 ## Tuning Knobs
 
@@ -592,7 +598,7 @@ AI & Patience обязана предоставлять, чтобы HUD могл
 | Пауза при уходе в фон (закрывает их Open Question #3) | `design/gdd/platform-integration-telegram-mini-app.md` | Open Question #3, AC 11 | Ownership handoff |
 | `matches(held_cup.steps)` и `consume_held_cup()` при подаче | `design/gdd/brewing-crafting-mechanic.md` | Core Rule 5, Interactions, AC-I1 | Rule dependency |
 | AC 44 закрывает их AC 40(b) | `design/gdd/player-control-barista-movement.md` | AC 40(b) (Blocked: Guest AI) | Test dependency |
-| Формула очков `price × 10 × (1 + remaining_fraction)` (пример уже приведён там) | `design/gdd/order-recipe-system.md` | Formula 1, Example | Data dependency (владение — Currency: Coins & Score, ещё не спроектирована) |
+| Формула очков `price × 10 × (1 + remaining_fraction)` (пример уже приведён там) | `design/gdd/order-recipe-system.md` | Formula 1, Example | Data dependency (формально владеет `design/gdd/currency-coins-score.md`, Formula 1 — `score_earned`) |
 | Поток гостей 8→18/мин, терпение 50→25с, доля сложных 0→40% за 3 мин, онбординг 30с | `design/gdd/game-concept.md` | Player Experience Analysis, MVP Definition | Rule dependency (baseline этой GDD = значения при t=0) |
 | 4-направленная анимация гостя, `AnimatedSprite3D`, состояния (ожидание/злость/уход) | `design/gdd/game-concept.md` | Visual Identity Anchor | Rule dependency |
 
@@ -872,7 +878,7 @@ Integration — в `tests/integration/guest_ai/`.
 | 4 | Нужно ли избегание столкновений (RVO2) между гостями, которые идут одновременно, и между гостями и баристой? Пересекаются ли зона очереди и путь баристы? → становится ADR (navigation layers / avoidance) | ai-programmer | ADR до первой реализации гостей |
 | 5 | Структура данных гостя и переиспользование объектов (пул на 4 слота + уходящие гости) → становится ADR | lead-programmer | ADR до первой реализации гостей |
 | 6 | Пульсация кольца (0.5 Гц и быстрее) и опция reduced motion: нужна ли статичная альтернатива для доступности? | accessibility-specialist | При `/ux-design` HUD (Pre-Production) |
-| 7 | Контракт с Currency: Coins & Score (`recipe_id`, `remaining_fraction` на Served) предварительный. Проверить, что Currency принимает именно его | economy-designer | При проектировании Currency: Coins & Score |
+| ~~7~~ | ~~Контракт с Currency: Coins & Score (`recipe_id`, `remaining_fraction` на Served) предварительный. Проверить, что Currency принимает именно его~~ **Решено 2026-09-28**: подтверждено без изменений — Currency: Coins & Score Core Rule 1 и Formula 1/2 принимают ровно этот payload | economy-designer | Закрыто |
 | 8 | Бюджет производительности Guest AI на кадр и эталонное слабое устройство (AC 48). В проекте есть только общий бюджет 16.6 мс | technical-director | perf-ADR до Vertical Slice |
 | 9 | Выбор рецепта внутри уровня — второй бросок из того же потока RNG или отдельного? Влияет на детерминизм тестов → становится ADR | lead-programmer | Вместе с ADR #5 |
 | 10 | Формат стабильного ID слотов гостей (правило ничьей Rule 3) — тот же вопрос открыт в Player Control | level-designer | Вместе с #1 |

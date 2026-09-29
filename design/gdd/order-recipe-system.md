@@ -395,7 +395,8 @@ Crafting.
 | Документ | Что используется | Где в этой GDD |
 |---|---|---|
 | `design/gdd/kitchen-station-layout.md` | `station_types` (Interactions, AC-5) | Core Rules 1, Dependencies, AC-3, AC-38 |
-| `design/gdd/systems-index.md` | Формула очков `цена × 10 × (1 + доля терпения)` (Currency: Coins & Score, ещё без GDD); доля сложных заказов 0%→40% (Difficulty Curve, ещё без GDD) | Interactions, Formulas (пример) |
+| `design/gdd/currency-coins-score.md` | Формула очков `цена × 10 × (1 + доля терпения)` — теперь формально `score_earned` (Formula 1), пример здесь совпадает без изменений | Interactions, Formulas (пример) |
+| `design/gdd/difficulty-curve-session-pacing.md` | Доля сложных заказов 0%→40% (Formula 4 — `complex_order_share`) | Interactions, Formulas (пример) |
 | `design/gdd/game-concept.md` | Pillars 1, 2, 4; Content Volume (MVP 3 уровня, Alpha 6–8 напитков) | Overview, Core Rule 4 |
 | `prototypes/kitchen-core/README.md` | Рецепты, цвета шагов, стартовые цены 2/5/9, находка о нелинейной цене | Core Rules, Formulas |
 | `prototypes/kitchen-core/kitchen_core.gd` (`TUNING`) | `brew_time` = 3 с, `walk_speed` = 4 м/с, веса уровней | Formulas (Formula 2) |

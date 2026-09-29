@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-09-27
-> **Last Updated**: 2026-09-28 (Difficulty Curve & Session Pacing — Designed)
+> **Last Updated**: 2026-09-29 (HUD & Feedback UI — Approved)
 > **Source Concept**: design/gdd/game-concept.md
 
 ---
@@ -151,10 +151,10 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 | 4 | Player Control / Barista Movement (inferred) | Gameplay | MVP | Approved | design/gdd/player-control-barista-movement.md | Kitchen & Station Layout |
 | 5 | Brewing & Crafting Mechanic (inferred) | Gameplay | MVP | Approved | design/gdd/brewing-crafting-mechanic.md | Order & Recipe System, Player Control, Kitchen & Station Layout |
 | 6 | Guest AI & Patience (inferred) | Gameplay | MVP | Approved | design/gdd/guest-ai-patience.md | Kitchen & Station Layout, Order & Recipe System, Player Control, Brewing & Crafting Mechanic, Platform Integration (soft) |
-| 7 | Difficulty Curve & Session Pacing | Gameplay | MVP | Designed | design/gdd/difficulty-curve-session-pacing.md | Guest AI & Patience, Order & Recipe System |
-| 8 | Currency: Coins & Score | Economy | MVP | Not Started | — | Order & Recipe System, Guest AI & Patience |
-| 9 | Till & Day Cycle | Economy | MVP | Not Started | — | Currency: Coins & Score |
-| 10 | HUD & Feedback UI (inferred) | UI | MVP | Not Started | — | Platform Integration (Telegram Mini App), Kitchen & Station Layout, Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic |
+| 7 | Difficulty Curve & Session Pacing | Gameplay | MVP | Approved | design/gdd/difficulty-curve-session-pacing.md | Guest AI & Patience, Order & Recipe System |
+| 8 | Currency: Coins & Score | Economy | MVP | Approved | design/gdd/currency-coins-score.md | Order & Recipe System, Guest AI & Patience |
+| 9 | Till & Day Cycle | Economy | MVP | Approved | design/gdd/till-day-cycle.md | Currency: Coins & Score, Guest AI & Patience |
+| 10 | HUD & Feedback UI (inferred) | UI | MVP | Approved | design/gdd/hud-feedback-ui.md | Platform Integration (Telegram Mini App), Kitchen & Station Layout, Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic, Player Control / Barista Movement |
 | 11 | Backend & Persistence | Persistence | Vertical Slice | Not Started | — | Till & Day Cycle, Currency: Coins & Score |
 | 12 | Leaderboard & Leagues | Meta | Vertical Slice | Not Started | — | Backend & Persistence, Currency: Coins & Score |
 | 13 | Audio & Juice Feedback (inferred) | Audio | Vertical Slice | Not Started | — | Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle |
@@ -214,7 +214,7 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 2. **Guest AI & Patience** — depends on: Kitchen & Station Layout, Order & Recipe System, Player Control (контракт цели-гостя — добавлено при дизайне player-control), Brewing & Crafting Mechanic (очистка рук на подаче), Platform Integration (soft: сигнал ухода в фон → пауза) — добавлено при дизайне guest-ai-patience
 3. **Difficulty Curve & Session Pacing** — depends on: Guest AI & Patience, Order & Recipe System
 4. **Currency: Coins & Score** — depends on: Order & Recipe System, Guest AI & Patience
-5. **Till & Day Cycle** — depends on: Currency: Coins & Score
+5. **Till & Day Cycle** — depends on: Currency: Coins & Score, Guest AI & Patience (`match_ended` — добавлено при дизайне till-day-cycle)
 6. **Backend & Persistence** — depends on: Till & Day Cycle, Currency: Coins & Score
 7. **Leaderboard & Leagues** — depends on: Backend & Persistence, Currency: Coins & Score
 8. **Progression & Upgrades** — depends on: Till & Day Cycle, Currency: Coins & Score, Player Control
@@ -224,7 +224,7 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 
 ### Presentation Layer (depends on features)
 
-1. **HUD & Feedback UI** — depends on: Platform Integration (safe area — добавлено при дизайне platform-integration), Kitchen & Station Layout (till anchor, свободные полосы экрана — добавлено при дизайне kitchen-station-layout), Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic
+1. **HUD & Feedback UI** — depends on: Platform Integration (safe area — добавлено при дизайне platform-integration), Kitchen & Station Layout (till anchor, свободные полосы экрана — добавлено при дизайне kitchen-station-layout), Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic, Player Control / Barista Movement (контур выбранной цели, кольцо точки назначения — обнаружено на design-review 2026-09-29, контракт уже существовал в player-control-barista-movement.md UI Requirements, но не был перенесён ни сюда, ни в hud-feedback-ui.md до этого прохода). *Обнаружено при дизайне HUD: мягкая обратная зависимость на Guest AI & Patience (владелец сигнала «начать новую партию» для кнопки «Играть снова») — не описана ни в одной GDD, зафиксирована как Open Question в hud-feedback-ui.md, не блокирует.*
 2. **Audio & Juice Feedback** — depends on: Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle
 
 ### Polish Layer (depends on everything)
@@ -286,10 +286,10 @@ Pacing (первые ~30 секунд партии), отдельной Polish-�
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 17 |
-| Design docs started | 7 |
-| Design docs reviewed | 6 |
-| Design docs approved | 6 |
-| MVP systems designed | 7/10 |
+| Design docs started | 10 |
+| Design docs reviewed | 7 |
+| Design docs approved | 8 |
+| MVP systems designed | 10/10 |
 | Vertical Slice systems designed | 0/3 |
 
 ---

@@ -40,7 +40,15 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: "2026-09-28"
+last_updated: "2026-09-29"
+# updated: +1 formula (till_amount), +2 constants (till_capacity,
+# daily_reset_time_utc) from design/gdd/till-day-cycle.md; referenced_by
+# on coins_earned updated
+# updated (design-review of hud-feedback-ui.md, same day): referenced_by
+# on recipe_price, remaining_fraction, till_amount, till_capacity,
+# patience_warn_threshold, patience_urgent_threshold now includes
+# design/gdd/hud-feedback-ui.md — these were already noted "Read by HUD" in
+# each entry's own notes: field but the tracking array had not been updated
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -185,6 +193,8 @@ formulas:
       - design/gdd/guest-ai-patience.md
       - design/gdd/brewing-crafting-mechanic.md
       - design/gdd/difficulty-curve-session-pacing.md
+      - design/gdd/currency-coins-score.md
+      - design/gdd/hud-feedback-ui.md
     variables:
       - recipe_id
       - price_table
@@ -205,6 +215,8 @@ formulas:
       - design/gdd/guest-ai-patience.md
       - design/gdd/order-recipe-system.md
       - design/gdd/difficulty-curve-session-pacing.md
+      - design/gdd/currency-coins-score.md
+      - design/gdd/hud-feedback-ui.md
     variables:
       - t_since_spawn
       - patience_max_g
@@ -248,8 +260,9 @@ formulas:
       - difficulty_progress
     output_range: [8, 18]
     expression: "start + (end - start) * difficulty_progress(t)"
-    notes: "start 8.0, end 18.0 (game-concept). Read by Guest AI Formula 1
-      before its onboarding_multiplier."
+    notes: "start 8.0, end 18.0 — author decision (difficulty-curve-session-
+      pacing.md Core Rule 1), not sourced from game-concept. Read by Guest
+      AI Formula 1 before its onboarding_multiplier."
     added: 2026-09-28
     revised: ""
 
@@ -265,8 +278,10 @@ formulas:
       - difficulty_progress
     output_range: [25, 50]
     expression: "start + (end - start) * difficulty_progress(t)"
-    notes: "start 50.0 s, end 25.0 s. Read once per guest at spawn as
-      patience_max_g (Guest AI Formula 2), never recomputed."
+    notes: "start 50.0 s, end 25.0 s — author decision (difficulty-curve-
+      session-pacing.md Core Rule 1), not sourced from game-concept. Read
+      once per guest at spawn as patience_max_g (Guest AI Formula 2),
+      never recomputed."
     added: 2026-09-28
     revised: ""
 
@@ -282,10 +297,76 @@ formulas:
       - difficulty_progress
     output_range: [0, 0.4]
     expression: "start + (end - start) * difficulty_progress(t)"
-    notes: "start 0.0, end 0.40. Read by Guest AI Formula 3; ignored during
-      onboarding (simple only)."
+    notes: "start 0.0, end 0.40 — author decision (difficulty-curve-session-
+      pacing.md Core Rule 1), not sourced from game-concept. Read by Guest
+      AI Formula 3; ignored during onboarding (simple only)."
     added: 2026-09-28
     revised: ""
+
+  - name: score_earned
+    status: active
+    source: design/gdd/currency-coins-score.md
+    referenced_by:
+      - design/gdd/currency-coins-score.md
+    variables:
+      - recipe_id
+      - recipe_price
+      - remaining_fraction
+      - score_multiplier_base
+    output_range: [20, 140]
+    expression: "round(recipe_price(recipe_id) * score_multiplier_base * (1 + remaining_fraction))"
+    notes: "Theoretical range [20,140]; practical ceiling ~115-130
+      (remaining_fraction=1.0 unreachable — guest travel time to slot
+      before Served is possible). Rounded round() half-up at compute
+      time, never stored as float — match_score/best_score always int.
+      Reads recipe_price (order-recipe-system.md) and remaining_fraction
+      (guest-ai-patience.md). Never conditioned on till capacity or any
+      Progression/Monetization variable (Core Rule 9) — validated by
+      economy-designer 2026-09-28. Known crossover: a perfectly-served
+      medium recipe (5x10x2=100) can outscore a complex recipe served at
+      the edge (7x10x1=70) when remaining_fraction > 0.4 — intended, not
+      a bug (see Edge Cases)."
+    added: 2026-09-28
+    revised: ""
+
+  - name: coins_earned
+    status: active
+    source: design/gdd/currency-coins-score.md
+    referenced_by:
+      - design/gdd/currency-coins-score.md
+      - design/gdd/till-day-cycle.md
+    variables:
+      - recipe_id
+      - recipe_price
+    output_range: [2, 7]
+    expression: "recipe_price(recipe_id)"
+    notes: "Direct passthrough of recipe_price, no modifiers. Emitted to
+      Till & Day Cycle on every Served event regardless of till capacity
+      — till decides whether to accept it, this formula never checks."
+    added: 2026-09-28
+    revised: ""
+
+  - name: till_amount
+    status: active
+    source: design/gdd/till-day-cycle.md
+    referenced_by:
+      - design/gdd/till-day-cycle.md
+      - design/gdd/hud-feedback-ui.md
+    variables:
+      - till_amount
+      - coins_earned
+      - till_capacity
+    output_range: [0, 250]
+    expression: "min(till_amount + coins_earned, till_capacity)"
+    notes: "Partial-add-to-ceiling on every Served event; never exceeds
+      till_capacity. Does not affect score_earned/match_score/best_score
+      (owned exclusively by currency-coins-score.md). Persists across
+      matches via local save; resets to 0 only on Full → Open transition
+      (daily_reset_time_utc). Reaching till_capacity no longer blocks new
+      matches (revised /balance-check 2026-09-29, till-day-cycle.md Core
+      Rule 4/5) — only coin growth stops, matches remain unrestricted."
+    added: 2026-09-29
+    revised: "2026-09-29"
 
 # Example:
 #
@@ -495,6 +576,7 @@ constants:
     source: design/gdd/guest-ai-patience.md
     referenced_by:
       - design/gdd/guest-ai-patience.md
+      - design/gdd/hud-feedback-ui.md
     value: 0.6
     unit: fraction of patience_max_g
     notes: "Patience ring level warn (art-director). Invariant 0 < urgent < warn < 1. Read by HUD."
@@ -506,6 +588,7 @@ constants:
     source: design/gdd/guest-ai-patience.md
     referenced_by:
       - design/gdd/guest-ai-patience.md
+      - design/gdd/hud-feedback-ui.md
     value: 0.25
     unit: fraction of patience_max_g
     notes: "Patience ring level urgent + anger pose (art-director). Read by HUD."
@@ -519,8 +602,10 @@ constants:
       - design/gdd/difficulty-curve-session-pacing.md
     value: 180.0
     unit: s (match time until difficulty plateau)
-    notes: "game-concept: difficulty grows over the first 3 minutes. Load
-      error if <= 0."
+    notes: "Author decision, NOT a game-concept citation — game-concept
+      names ~2 minutes as the target twice and leaves the exact curve an
+      open question for playtest (see difficulty-curve-session-pacing.md
+      Core Rule 1, Open Question #6). Load error if <= 0."
     added: 2026-09-28
     revised: ""
 
@@ -534,6 +619,53 @@ constants:
     notes: "Provisional, confirm by playtest (Difficulty Curve OQ #3). 1.0 =
       linear ramp."
     added: 2026-09-28
+    revised: ""
+
+  - name: score_multiplier_base
+    status: active
+    source: design/gdd/currency-coins-score.md
+    referenced_by:
+      - design/gdd/currency-coins-score.md
+    value: 10
+    unit: dimensionless (score formula coefficient)
+    notes: "Already quoted literally as '× 10' in order-recipe-system.md
+      and guest-ai-patience.md example calculations before this GDD
+      formalized it as a named, data-driven constant (coding-standards.md
+      — gameplay values must not be hardcoded)."
+    added: 2026-09-28
+    revised: ""
+
+  - name: till_capacity
+    status: active
+    source: design/gdd/till-day-cycle.md
+    referenced_by:
+      - design/gdd/till-day-cycle.md
+      - design/gdd/hud-feedback-ui.md
+    value: 250
+    unit: coins
+    notes: "MVP level-0 value; matches the Progression & Upgrades forward-
+      decision already in systems-index.md (levels 0-3: 250/350/500/700).
+      Calibrated via throughput (revenue_per_match_avg ~75-90 for an
+      average player, matches_to_fill ~3, ~11 min) anchored on Session
+      Length (~10 min), not the literal '5 matches' game-concept.md also
+      states — the two targets are mutually incompatible at the measured
+      ~222s match length; see till-day-cycle.md Open Questions."
+    added: 2026-09-29
+    revised: ""
+
+  - name: daily_reset_time_utc
+    status: active
+    source: design/gdd/till-day-cycle.md
+    referenced_by:
+      - design/gdd/till-day-cycle.md
+    value: 0
+    unit: hour UTC (00:00 UTC)
+    notes: "User decision — neutral, no audience-geography assumption.
+      Checked only between matches (never mid-match); only applies to a
+      Closed (full) till — an unfilled till never resets. Candidate for
+      confirmation by analytics-engineer once real DAU-by-timezone data
+      exists post-launch (till-day-cycle.md Open Questions)."
+    added: 2026-09-29
     revised: ""
 
 # Example:
