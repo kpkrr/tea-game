@@ -189,6 +189,12 @@ window.teaRushSave = {
 - **Clock manipulation resets the till early** → accepted MVP risk (AQ-06, TR-till-012), unchanged by this ADR.
 - **Page killed between a write and step 6 of the same frame** → impossible within one frame on single-thread web (the frame runs to completion); the only gap is a crash mid-frame, which loses at most that frame's changes.
 
+## Spike Results (2026-09-30)
+
+Source: `prototypes/web-spike/README.md` (session `0b7b7c05`, iPhone Safari, DPR 3).
+- Verification (2) ✅ a `localStorage` write made synchronously inside the hide callback, followed by closing the tab, was present on reopen (iOS Safari).
+- `teaRushSave.available` = true in a normal Safari tab. Verification (3) private mode and (4) clear-site-data — not run.
+
 ## GDD Requirements Addressed
 
 | GDD System | Requirement | How This ADR Addresses It |

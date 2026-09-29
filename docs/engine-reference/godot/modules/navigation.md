@@ -21,6 +21,12 @@ taken from documentation. Re-probe on any engine upgrade.
   async iterations it took 3 frames. Consecutive `map_force_update` calls in
   the same frame do not finish the sync (worker-thread hand-off) — poll once
   per frame and probe with `map_get_closest_point`.
+- **`NavigationServer3D.map_force_update` is DEPRECATED** (flag present in the
+  `4.5-stable`, `4.6-stable` and `4.7.2-stable` class XML, absent in 4.4): *"no longer
+  supported, as it is incompatible with asynchronous updates. It can only be used in a
+  single-threaded context, at your own risk."* Still callable in 4.7.2 (verified by
+  probe). Verified 2026-09-30 from class XML; the only safe use is single-threaded
+  (this project's web export) with `map_set_use_async_iterations(map, false)`.
 - **Runtime bake is synchronous**: `NavigationServer3D.bake_from_source_geometry_data(nm, src)`
   (8×11 m floor + 27 obstructions: ~5 ms, 70 polygons, `cell_size` 0.05).
 - **`agent_radius` is ceiled to whole cells** (`ceil(radius / cell_size)`);

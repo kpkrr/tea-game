@@ -214,8 +214,17 @@ static func render_scale(canvas_px: Vector2i, pixel_budget: int, scale_min: floa
 - **Coarse browser timers hide sub-0.1 ms step costs.** *Mitigation*: windowed sums over ≥ 600 frames; p99 only asserted on total script time.
 - **Prepass sprites may cost 2 draw calls each.** *Mitigation*: census ceiling 75 leaves room; Verification (2) sets the real ratio; fallback `ALPHA_CUT_DISCARD` for characters (ADR-0002).
 - **Host may not compress `.wasm`.** *Mitigation*: hosting requirement recorded; CI measures compressed size; release checklist verifies served `Content-Encoding`.
-- **`Engine.max_fps` on web is unconfirmed.** The web main loop is driven by `requestAnimationFrame`, but the engine may skip ticks until the target frame time, so a cap may work. No `OS.delay_*` emulation. *Mitigation*: Verification (5) decides; if the cap does nothing, 90/120 Hz phones run flat out, which is accepted for MVP, and battery impact is noted for playtests.
+- **90/120 Hz phones run the sim at display rate.** `Engine.max_fps` works on web (spike 2026-09-30), so a 60 fps cap is available if battery/heat becomes a playtest issue; not enabled by default in MVP.
 - **Pre-warm drift** — a material, font or SFX added later is missing from the pre-warm set. *Mitigation*: census test asserts every material of the worst-case scene is in the set.
+
+## Spike Results (2026-09-30)
+
+Source: `prototypes/web-spike/README.md` (session `0b7b7c05`, iPhone Safari, DPR 3). **The reference device (weak Android) was not available**: iPhone numbers confirm size, load and memory budgets but say nothing about the 30 fps floor. Frame-time and per-system lines stay provisional until a weak-Android run.
+- §4 ✅ engine gzip 10.11 MB + 0.07 MB js (as measured on the template).
+- §5 ✅ (iPhone): local boot ≈ 3.5 s; modelled cold TTI at 10 Mbps ≈ 13 s; warm 1.2 s.
+- §6 ✅ wasm heap 48.4 MB after boot (JS-side `Memory.buffer.byteLength`).
+- §3: 83 draw calls at 75 instances; 60 fps (display cap) at every render scale.
+- Verification (5) ✅ `Engine.max_fps = 30` works on web (30.0 fps in iOS Safari and desktop Chromium) — 90/120 Hz phones can be capped; see Risks.
 
 ## GDD Requirements Addressed
 

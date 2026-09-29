@@ -215,6 +215,14 @@ func step(dt: float) -> void              # dt > 0, already clamped; never reads
 - **Re-entrancy via signal handlers** (e.g. HUD handler calling back into lifecycle) → guideline forbids it; `request_new_match()` is queued so even a mistaken synchronous call is safe.
 - **`AnimatedSprite3D` keeps animating on freeze if a node forgets `running_changed`** → a single `GameTimeSprite` helper script owns the subscription.
 
+## Spike Results (2026-09-30)
+
+Source: `prototypes/web-spike/README.md` (session `0b7b7c05`, iPhone Safari, DPR 3).
+- Verification (4) ✅ the JS visibility callback ran between frames (`in_process = false`) for both hide and show.
+- The browser halted the main loop while hidden (1 frame in 16 s).
+- Verification (1)/(2) — the delta of the first frame after return was **not captured** (spike reported one frame early). The design is safe either way (resume discard + 0.25 s clamp); re-measure in the first MatchDirector story on device.
+- Verification (3) — not exercised by the spike (no MatchDirector); stays a debug assert in the implementation.
+
 ## GDD Requirements Addressed
 
 | GDD System | Requirement | How This ADR Addresses It |

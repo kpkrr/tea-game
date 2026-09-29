@@ -1,0 +1,24 @@
+; Throwaway spike project for ADR-0001/0002/0006/0007 device verification.
+; Settings mirror ADR-0002 (stretch) and ADR-0001 (web, single-thread).
+config_version=5
+
+[application]
+
+config/name="tea-rush-web-spike"
+run/main_scene="res://spike.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[display]
+
+window/size/viewport_width=360
+window/size/viewport_height=640
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+driver/depth_prepass/disable_for_vendors=""
+anti_aliasing/quality/msaa_3d=0

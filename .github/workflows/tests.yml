@@ -1,0 +1,32 @@
+name: Automated Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  checks: write          # gdUnit4-action publishes the report as a check run
+
+jobs:
+  test:
+    name: Run GdUnit4 Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Run GdUnit4 Tests
+        uses: godot-gdunit-labs/gdUnit4-action@v1.3.2
+        with:
+          godot-version: '4.7.2'          # docs/engine-reference/godot/VERSION.md
+          version: 'installed'            # use the committed addons/gdUnit4 (v6.2.1), never "latest"
+          paths: |
+            res://tests/unit
+            res://tests/integration
+          report-name: test-results.xml

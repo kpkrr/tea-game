@@ -1,82 +1,77 @@
 # Godot UI — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-09-30 | Engine: Godot 4.7.2
 
-## What Changed Since ~4.3 (LLM Cutoff)
+Compiled 2026-09-30 from the `4.7.2-stable` `Control.xml` (diffed against
+`4.6-stable`), the 4.6→4.7 migration guide, and a `--doctool` dump of the installed
+4.7.2 editor. Unverified items are marked UNVERIFIED.
 
-### 4.6 Changes
-- **Dual-focus system**: Mouse/touch focus is now SEPARATE from keyboard/gamepad focus
-  - Visual feedback differs by input method
-  - Custom focus implementations may need updating
-- **TabContainer**: Tab properties editable directly in Inspector
-- **TileMapLayer scene tile rotation**: Scene tiles can be rotated like atlas tiles
+## 4.7 Changes (verified)
 
-### 4.5 Changes
-- **FoldableContainer**: New accordion-style UI node for collapsible sections
-- **Recursive Control behavior**: Disable mouse/focus for entire node hierarchies
-  with a single property
-- **Screen reader support**: Control nodes work with AccessKit
-- **Live translation preview**: Test different locales in-editor
-- **`RichTextLabel.push_meta`**: Added optional `tooltip` parameter (from 4.4)
+### Control offset-transform (new in 4.7, absent in 4.6)
+Visual-only-by-default transform applied on top of layout, so containers/anchors
+do not re-layout when it changes. Exact `Control` properties:
 
-### 4.4 Changes
-- **`GraphEdit.connect_node`**: Added optional `keep_alive` parameter
+| Property | Type | Default |
+|---|---|---|
+| `offset_transform_enabled` | bool | `false` (all others ignored until true) |
+| `offset_transform_position` | Vector2 | (0, 0) absolute |
+| `offset_transform_position_ratio` | Vector2 | (0, 0) fraction of `size`; summed with position |
+| `offset_transform_rotation` | float | 0.0 (radians) |
+| `offset_transform_scale` | Vector2 | (1, 1) |
+| `offset_transform_pivot` | Vector2 | (0, 0) absolute |
+| `offset_transform_pivot_ratio` | Vector2 | (0.5, 0.5); summed with pivot |
+| `offset_transform_visual_only` | bool | `true`: input still hits the original rect; `false`: input follows the visual position |
+
+No `Tween` is needed; set the properties from any per-frame code.
+
+### Other 4.7 Control changes
+- New: `custom_maximum_size`, `propagate_maximum_size`, `get_maximum_size()`,
+  `get_combined_maximum_size()`, `update_maximum_size()`, `translation_context`.
+- `Control.accessibility_live` type moved to `AccessibilityServer.AccessibilityLiveMode`
+  (C# incompatible).
+- `RichTextLabel`: `UPDATE_WIDTH_IN_PERCENT` → `UPDATE_WIDTH_UNIT`; `add_image`/`update_image`
+  `width`/`height` are `float`, `*_in_percent` → `*_unit` (`RichTextLabel.ImageUnit`).
+- `TreeItem.select(column, set_as_cursor)` optional param added.
+
+### mouse_filter (unchanged 4.6 → 4.7, verified in 4.7.2 XML)
+- `Control.mouse_filter` default = `MOUSE_FILTER_STOP` (0). STOP consumes the event
+  (marked handled, so it never reaches `_unhandled_input`); PASS = 1 bubbles up if
+  unhandled; IGNORE = 2 does not receive and does not block.
+- Per-class overrides (from `--doctool` dump of 4.7.2):
+  `Label` = IGNORE, `NinePatchRect` = IGNORE, `Container` = PASS,
+  `TextureRect` = PASS, `TextureProgressBar` = PASS, `PanelContainer` = STOP,
+  `FoldableContainer`/`GraphNode`/`GraphFrame` = STOP. Plain `Control` = STOP,
+  so a full-rect root `Control` swallows taps until set to IGNORE.
+- `mouse_behavior_recursive` (INHERITED 0 / DISABLED 1 / ENABLED 2) can disable a
+  whole subtree; check `get_mouse_filter_with_override()`.
+- `mouse_force_pass_scroll_events` default `true` (scroll events pass up even from STOP).
+
+### Dual focus (4.6, still current)
+Mouse/touch focus is separate from keyboard/gamepad focus. Carried forward from
+`breaking-changes.md` (4.5→4.6); not re-verified against 4.7 class docs. UNVERIFIED for
+any 4.7 delta beyond the gamepad-window-focus change in `input.md`.
+
+## Older Changes
+- 4.5: `FoldableContainer`; recursive Control mouse/focus behavior (`*_behavior_recursive`); AccessKit screen reader; live translation preview.
+- 4.4: `GraphEdit.connect_node(keep_alive)`; `RichTextLabel.push_meta(tooltip)`.
 
 ## Current API Patterns
-
-### Theme and Style (4.6)
 ```gdscript
-# Editor uses new "Modern" theme by default
-# For game UI, use custom themes as before:
-var theme := Theme.new()
-theme.set_color(&"font_color", &"Label", Color.WHITE)
-theme.set_font_size(&"font_size", &"Label", 24)
-```
+# Popup slide/pop without disturbing container layout (4.7)
+func pop(c: Control, t: float) -> void:
+    c.offset_transform_enabled = true
+    c.offset_transform_pivot_ratio = Vector2(0.5, 0.5)
+    c.offset_transform_scale = Vector2.ONE * lerpf(0.8, 1.0, t)
+    c.offset_transform_position = Vector2(0.0, lerpf(24.0, 0.0, t))
 
-### Focus Management (4.6 — CHANGED)
-```gdscript
-# Keyboard/gamepad focus (grab_focus still works)
-func _ready() -> void:
-    %StartButton.grab_focus()
-
-# IMPORTANT: In 4.6, mouse hover is separate from keyboard focus
-# Both can be active simultaneously on different controls
-# Test your UI with BOTH mouse and keyboard/gamepad
-
-# Focus neighbors (unchanged)
-%Button1.focus_neighbor_bottom = %Button2.get_path()
-%Button1.focus_neighbor_right = %Button3.get_path()
-```
-
-### FoldableContainer (4.5 — NEW)
-```gdscript
-# Accordion-style collapsible container
-# Add as parent of content you want to make collapsible
-# Children show/hide when header is clicked
-# Configure via editor properties or code
-```
-
-### Recursive Disable (4.5 — NEW)
-```gdscript
-# Disable all mouse/focus interactions for a hierarchy
-# Useful for disabling entire menu sections
-%SettingsPanel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-# In 4.5+, this can propagate recursively to children
-```
-
-### Localization-Ready UI (best practice)
-```gdscript
-# Use tr() for all visible strings
-label.text = tr("MENU_START_GAME")
-
-# Use auto-wrap for labels (text length varies by language)
-label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-
-# Test with live translation preview in editor (4.5+)
+# Non-interactive HUD: never let it eat taps
+root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 ```
 
 ## Common Mistakes
-- Assuming `grab_focus()` affects mouse focus (keyboard/gamepad only in 4.6)
-- Not testing UI with both mouse and gamepad after upgrading to 4.6
-- Hardcoding strings instead of using `tr()` for localization
-- Not using `FoldableContainer` for collapsible UI (new in 4.5, cleaner than custom)
+- Leaving a full-rect root `Control`/`PanelContainer` on `STOP` above a tap-driven world.
+- Assuming a `Container` blocks input (it is PASS) but a `PanelContainer` does (STOP).
+- Using `position`/`scale` for animations inside containers (re-laid-out); use `offset_transform_*`.
+- Assuming offset-transform moves the hit rect (only with `offset_transform_visual_only = false`).
+- Assuming `grab_focus()` affects mouse focus (keyboard/gamepad only since 4.6).

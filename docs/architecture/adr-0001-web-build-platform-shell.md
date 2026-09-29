@@ -58,7 +58,7 @@ Tea Rush ships as a single web build (Godot 4.7, WebGL2/Compatibility renderer),
 
 ## Decision
 
-**Export configuration: single-thread, host-agnostic.** Web export preset ships with **Thread Support: OFF**, and an export template with unused engine features disabled to reduce payload size. This requires no `Cross-Origin-Opener-Policy`/`Cross-Origin-Embedder-Policy` headers and therefore runs on any static HTTPS host — the actual hosting provider is not decided by this ADR and is deferred to `release-manager`/`devops-engineer`, with the only hard requirement being that it serves `.wasm` with the correct MIME type (`application/wasm`) and ideally gzip/brotli compression. This is the conservative default under Architecture Principle 5 ("no threads, no heavy post-processing, without on-device measurement") and matches Godot's own documented recommendation for 2D-leaning games; it also sidesteps the unverified iOS SharedArrayBuffer risk noted in `modules/web.md` entirely, rather than depending on it working out. If the real-device spike later shows single-thread performance is genuinely insufficient, that is a new decision (see Consequences → Negative), not a retrofit of this one.
+**Export configuration: single-thread, host-agnostic.** Web export preset ships with **Thread Support: OFF**, and an export template with unused engine features disabled to reduce payload size. This requires no `Cross-Origin-Opener-Policy`/`Cross-Origin-Embedder-Policy` headers and therefore runs on any static HTTPS host — the actual hosting provider is not decided by this ADR and is deferred to `release-manager`/`devops-engineer`, with the hard requirements being **HTTPS** (the 4.7.2 web loader refuses to start outside a secure context — *"Secure Context — Check web server configuration (use HTTPS)"* — even in the single-thread build; observed on a phone over plain LAN HTTP during the spike, 2026-09-30; only `localhost` is exempt), `.wasm` served as `application/wasm`, and gzip/brotli compression. This is the conservative default under Architecture Principle 5 ("no threads, no heavy post-processing, without on-device measurement") and matches Godot's own documented recommendation for 2D-leaning games; it also sidesteps the unverified iOS SharedArrayBuffer risk noted in `modules/web.md` entirely, rather than depending on it working out. If the real-device spike later shows single-thread performance is genuinely insufficient, that is a new decision (see Consequences → Negative), not a retrofit of this one.
 
 **HTML shell.** A custom minimal wrapper (not Godot's full default export page) does, in order:
 1. A plain-JS `canvas.getContext('webgl2')` capability check, *before* the engine's `.wasm`/loader script is even requested. Failure renders a static "please update your browser" page and the engine is never loaded (TR-platform-011) — this check lives entirely outside Godot, so it works even when the engine itself could never have started.
@@ -191,6 +191,21 @@ Not applicable — greenfield project, no existing web build to migrate from.
 - Loading→Ready transition verified with a retained screenshot (no white flash) per `coding-standards.md` run-and-observe requirement.
 - Resize/orientationchange mid-match verified not to reset match state.
 - iOS Safari/Chrome viability explicitly decided (tested or explicitly accepted as out of scope) before Accepted — see Risks.
+
+## Spike Results (2026-09-30)
+
+Source: `prototypes/web-spike/README.md` (session `0b7b7c05`, iPhone Safari, DPR 3). Android was **not** run — by owner decision the functional
+results below are taken to hold on Android; device performance on a weak
+Android is still unmeasured (ADR-0007).
+
+- **HTTPS is mandatory:** the 4.7.2 loader refuses plain HTTP outside `localhost` ("Secure Context"), even single-thread.
+- **iOS Safari runs the single-thread build** — the iOS risk is closed; iPhone stays in MVP scope.
+- Cold ready 9.6 s over a phone hotspot (wasm 10.1 MB gzip downloaded in 4.4 s, ≈ 3.5 s local compile + init + scene); warm ready 1.2 s.
+- `window_get_size()` = CSS px × DPR (1179×2085 for 393×695 × 3) — confirms the safe-area unit fix.
+- Visibility: `visibilitychange` reached GDScript through `create_callback` (handler `args: Array`) **between frames**; the main loop stopped while hidden (1 frame in 16 s). `pagehide` did not fire on backgrounding (only on real unload), as expected.
+- `localStorage` written inside the hide callback survived closing the tab (ADR-0005).
+- Touch → engine ≤ 1 ms (Safari timer resolution).
+- Not yet verified: WebGL2-unsupported fallback page; mid-match rotation on device; `create_callback` behaviour on Android Chrome (assumed equal).
 
 ## Related
 - Will link to ADR-0002 (Viewport/camera fit), ADR-0005 (SaveStore), ADR-0007 (Perf budgets) once written — this ADR's `Enables` above records the planned relationship ahead of their existing.

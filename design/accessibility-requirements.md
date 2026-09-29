@@ -1,0 +1,242 @@
+# Accessibility Requirements: Tea Rush
+
+> Authoring guidance: .claude/docs/templates/guidance/accessibility-requirements-guide.md
+
+> **Status**: Committed
+> **Author**: ux-designer (via `/ux-design accessibility`, autonomous mode) · Yan (product owner)
+> **Last Updated**: 2026-09-30
+> **Accessibility Tier Target**: **Basic** + выборочные пункты Standard/Comprehensive (перечислены ниже)
+> **Platform(s)**: Web (браузер телефона и ПК; Telegram Mini App отложен 2026-09-30)
+> **External Standards Targeted**:
+> - WCAG 2.1 Level AA — только для контраста текста и размера целей касания (SC 1.4.3, 2.5.5 в духе AAA 44 px → у нас 48 dp)
+> - Game Accessibility Guidelines (gameaccessibilityguidelines.com) — Basic-раздел
+> - Xbox / PlayStation guidelines — N/A (платформ нет)
+> - Apple / Google Accessibility Guidelines — N/A (не нативное приложение; см. Known Limitations)
+> **Accessibility Consultant**: None engaged
+> **Linked Documents**: `design/gdd/systems-index.md`, `design/ux/interaction-patterns.md`, `design/gdd/hud-feedback-ui.md`, `design/gdd/order-recipe-system.md` (Visual/Audio), `docs/architecture/adr-0002-viewport-camera-fit-presentation.md`
+
+> **Why this document exists**: Per-screen accessibility annotations belong in
+> UX specs. This document captures the project-wide accessibility commitments,
+> the feature matrix across all systems, the test plan, and the audit history.
+> If a feature conflicts with a commitment made here, this document wins —
+> change the feature, not the commitment, unless the producer approves a formal
+> revision. Update after each `/gate-check`, after any audit, and whenever a
+> system is added to `systems-index.md`.
+
+---
+
+## Accessibility Tier Definition
+
+### Tier Definitions
+
+| Tier | Core Commitment |
+|------|----------------|
+| **Basic** | Критичный текст читается; ни одна функция не требует различения только цвета; раздельная громкость; нет фоточувствительного риска. |
+| **Standard** | Basic + переназначение ввода, субтитры, размер текста, режим для дальтоников, нет таймингов без продления. |
+| **Comprehensive** | Standard + screen reader для меню, mono, assist-режимы, перенос HUD, reduced motion, визуальные дубли всех критичных звуков. |
+| **Exemplary** | Comprehensive + полная настройка субтитров, high contrast, когнитивные помощники, хаптика, внешний аудит. |
+
+### This Project's Commitment
+
+**Target Tier**: **Basic**, с поднятием отдельных пунктов выше базы.
+
+**Rationale**: Tea Rush — аркада на ~2 минуты под давлением времени, где всё
+управление — одиночный тап (без удержаний, свайпов, мультитача и быстрых
+нажатий), нет озвучки и почти нет текста. Поэтому большинство требований
+Standard здесь либо уже выполнено самим дизайном (моторика, субтитры), либо
+неприменимо (переназначение ввода для одного жеста). Единственное требование
+Standard, которое мы сознательно не выполняем, — «нет таймингов, которые нельзя
+продлить»: терпение гостя и есть ядро Pillar 1 «Хаос за стойкой», его
+продление меняет жанр. Цена отказа от Standard — игроки с медленной реакцией
+или моторными ограничениями будут чаще проигрывать; смягчение — бесконечные
+бесплатные повторы, 30-секундный онбординг и Open Question про «спокойный
+режим» после MVP. Команда — один человек плюс агенты, бюджета на
+платформенные API и внешний аудит нет.
+
+**Features explicitly in scope (beyond tier baseline)**:
+- **Язык шагов «форма главная, цвет вспомогательный»** (Standard, режим для дальтоников — заменён дизайном): каждый из 7 шагов рецепта различим глифом и светлотой в оттенках серого и при протанопии, дейтеранопии, тританопии (`order-recipe-system.md` Visual/Audio). Отдельный переключаемый режим не нужен, потому что базовая палитра уже проходит все три симуляции — это сильнее режима, который надо найти и включить.
+- **Красный и зелёный никогда не кодируют состояние UI** (проектное правило HUD): успех/ошибка/тревога — через светлоту, иконку, силуэт и движение.
+- **Reduced motion** (Comprehensive): в MVP — по системной настройке `prefers-reduced-motion` браузера, без экрана настроек; закрывает TR-hud-022 и Guest AI Open Question #6.
+- **Звук никогда не единственный носитель информации** (Comprehensive, визуальные дубли критичных звуков): уже правило `order-recipe-system.md`, `player-control-barista-movement.md`, `hud-feedback-ui.md` — игру часто запускают без звука.
+- **Цели касания ≥ 48 dp** на эталоне 360×640 (TR-layout-014) и прощающий выбор тапа 28 dp вокруг pick-якоря (ADR-0006).
+- **Полностью играбельно одной рукой** в портрете.
+
+**Features explicitly out of scope**:
+- Переназначение ввода, субтитры, настройка субтитров — нечего переназначать и нечего субтитровать (см. Known Intentional Limitations).
+- Продление/отключение таймера терпения в MVP — ядро жанра (Known Intentional Limitations + Open Question 1).
+- Screen reader — игровой процесс в реальном времени на 3D-канвасе, недоступен для чтения по своей природе.
+- Раздельная громкость в MVP — появится вместе с Audio & Juice Feedback (Vertical Slice); до тех пор только системная громкость и кнопка «без звука» (Open Question 2).
+
+---
+
+## Visual Accessibility
+
+Единица размеров — dp эталонного канваса 360×640 (ADR-0002: 1 единица вьюпорта = 1 dp).
+
+| Feature | Target Tier | Scope | Status | Implementation Notes |
+|---------|-------------|-------|--------|---------------------|
+| Минимальный размер текста — экранный HUD | Basic | Счётчик `match_score`, оверлей итогов | Not Started | Счёт ≥ 20 dp по высоте цифры; прочий экранный текст ≥ 14 dp. Проверка на 9:20 (самые узкие полосы). |
+| Минимальный размер текста — мир | Basic | Цена на жетоне заказа (`Label3D`) | Not Started | ≥ 12 dp на экране в худшем случае 9:20 (масштаб кухни `s(0,45)`); размер `Label3D` задаётся от этого случая (ADR-0002 Verification 4). |
+| Размер глифов шагов | Basic | Жетоны рецепта, теги станций | Not Started | Глиф читается при 16 dp; жетон на тикете 20–24 dp (`order-recipe-system.md`). |
+| Контраст текста | Basic (WCAG AA) | Весь текст | Not Started | ≥ 4,5:1 для текста < 18 dp, ≥ 3:1 для крупного. Цена на пергаментном фоне жетона — самый контрастный элемент тикета. |
+| Цвет не единственный признак | Basic | Всё | In Design | См. аудит ниже — у каждой цветовой пары есть нецветовой дубль уже в GDD. |
+| Режимы для дальтоников | Standard | — | Replaced by design | Базовая палитра обязана проходить симуляции протанопии, дейтеранопии, тританопии и оттенки серого (тест-план). Если палитра провалит симуляцию — чиним палитру/глиф, а не добавляем режим. |
+| Фоточувствительность | Basic | Пульсы колец, вспышки тикета, VFX | Not Started | Ничего не мигает чаще 3 раз в секунду с перепадом яркости; пульс кольца «Срочно» — изменение масштаба/светлоты ≤ 2 Гц. Полноэкранных вспышек нет. |
+| Reduced motion | Comprehensive | Пульс колец терпения, всплывающие числа, акцент «касса полна», отскок излишка | Not Started | При `prefers-reduced-motion: reduce`: пульс кольца → статичная иконка уровня (иконка и так есть, Guest AI P1); дуги попапов → появление на месте + fade; тряски нет вовсе. Движение персонажей не отключается (без него игра нечитаема). |
+| UI scaling | Standard | — | Out of scope | Масштаб задаёт подгонка кухни (ADR-0002); отдельный ползунок ломает контракт заполнения ≥ 0,95. См. Known Limitations. |
+| Субтитры | — | — | N/A | Озвучки нет. |
+
+### Color-as-Only-Indicator Audit
+
+| Location | Color Signal | What It Communicates | Non-Color Backup | Status |
+|----------|-------------|---------------------|-----------------|--------|
+| Жетоны шагов рецепта (7) | белый/фиолетовый/зелёный/оранжево-коричневый/красный/синий/жёлтый | Какой шаг нужен | Уникальный тёмный глиф на каждом; светлота листьев заметно различается; вода 100 vs 80 — 3 струйки пара против 1 | Resolved in design (`order-recipe-system.md`) |
+| Теги станций | та же палитра | Что делает станция | Тот же глиф на бейдже + форма самой станции | Resolved in design |
+| Кольцо терпения | нейтральное, без смены оттенка | calm / warn / urgent | Радиальный wipe (длина дуги) + иконка уровня + пульс + поза гостя «злость» | Resolved in design (`guest-ai-patience.md`) |
+| Состояние чашки | не оттенком | собирается / совпадает / испорчена | Галочка / крестик, обесцвечивание ряда, мутная жидкость без пара | Resolved in design |
+| Попап монет vs очков | золото vs мятно-бирюзовый | Что заработано | Иконка (монетка/звезда), направление полёта (к кассе / к счётчику) | Resolved in design (`hud-feedback-ui.md` §6) |
+| Статус чайника | свечение | EMPTY / BREWING / READY | Уровень жидкости, пар на READY, матовый корпус на EMPTY | Resolved in design |
+| Страйки | тёмно-серый, не красный | Ушедшие гости | Погасшая иконка (форма), счёт 3 иконок | Resolved in design |
+
+---
+
+## Motor Accessibility
+
+| Feature | Target Tier | Scope | Status | Implementation Notes |
+|---------|-------------|-------|--------|---------------------|
+| Единственный жест — одиночный тап | Basic | Весь ввод | In Design | Только press (TR-control-018); нет удержаний, свайпов, двойных тапов, мультитача, drag. Мышь: левая кнопка = тап. |
+| Прощение точности | Standard | Выбор цели | In Design | Pick-радиус 28 dp вокруг якоря; иначе луч по геометрии; тап по столешнице → ближайшая точка пола (ADR-0006). Тап вне кухни — ничего, без штрафа. |
+| Цели касания | Basic | Все кнопки и станции | Not Started | ≥ 48 × 48 dp для кнопок; станции — через pick-радиус. ADR-0002 Risks: проверить проекцию на 9:20. |
+| Нет очереди и нет штрафа за лишний тап | Standard | Player Control | In Design | Новый тап заменяет цель (TR-control-003) — ошибочный тап исправляется следующим. |
+| Защита от случайного рестарта | Basic | «Играть снова» | In Design | Grace 500 мс после fade-in оверлея (TR-hud-007). |
+| One-hand mode | Basic | Вся игра | Satisfied by design | Портрет, одна точка касания — играбельно большим пальцем одной руки. Верхние станции на высоких экранах — проверить досягаемость в плейтесте. |
+| Переназначение ввода | Standard | — | N/A | Один жест, клавиатурного управления нет. |
+| Hold / rapid input alternatives | Standard | — | N/A | Удержаний и быстрых нажатий нет. |
+| Input timing adjustments | Standard | Терпение гостей | Out of scope (MVP) | Таймер — ядро жанра; см. Known Limitations и Open Question 1. |
+
+---
+
+## Cognitive Accessibility
+
+| Feature | Target Tier | Scope | Status | Implementation Notes |
+|---------|-------------|-------|--------|---------------------|
+| Пауза | Basic | Партия | In Design | Уход вкладки/приложения в фон ставит партию на паузу, возврат продолжает без скачка (ADR-0003). Отдельной кнопки паузы в MVP нет — Open Question 3. |
+| Обучение без текста | Standard | Первые 30 с | In Design | Онбординг встроен в темп: только простые напитки, спавн ×0,5 (TR-guest-014). Нечего «пропустить и потерять». |
+| Цена ошибки | Standard | Партия | In Design | Проигрыш не стоит ничего: повтор мгновенный и бесплатный, касса не теряется (Till не зависит от исхода). |
+| Нет авто-скрытия важного | Standard | Оверлей итогов | In Design | Оверлей висит, пока игрок не нажмёт «Играть снова». Всплывающие числа (~400 мс) дублируют уже видимое (счёт, касса) — не несут уникальной информации. |
+| Когнитивная нагрузка | Comprehensive (документация) | См. матрицу | In Design | Пиково: до 4 гостей + 2 чайника + чашка в руках + 7 слотов > 4 объектов. Компенсация: заказ висит над гостем (не надо помнить), цена в чашке, чайник светится на READY, кольца показывают срочность. |
+| Сложность | Standard | — | Out of scope (MVP) | Кривая одна для всех (TR-pacing-003 — честное сравнение очков). См. Open Question 1. |
+
+---
+
+## Auditory Accessibility
+
+| Feature | Target Tier | Scope | Status | Implementation Notes |
+|---------|-------------|-------|--------|---------------------|
+| Субтитры | Basic | — | N/A | Речи нет. |
+| Звук не единственный носитель | Comprehensive | Все события | In Design | Проектное правило трёх GDD; проверяется прохождением партии без звука (тест-план). |
+| Раздельная громкость | Basic | Музыка / SFX | Deferred to VS | В MVP — системная громкость и кнопка «без звука» (Open Question 2); ползунки — с Audio & Juice Feedback. |
+| Mono | Comprehensive | — | Not planned | Звук не пространственный; стерео-информации нет. |
+| Высокочастотные сигналы | Standard | Звон монет | Not Started | Звон монет не несёт уникальной информации (есть попап и касса) — риск для слуховых аппаратов не критичен. |
+
+### Gameplay-Critical SFX Audit
+
+| Sound Effect | What It Communicates | Visual Backup | Caption Required | Status |
+|-------------|---------------------|--------------|-----------------|--------|
+| Чайник READY | Чай готов, чайник занят до выемки | Янтарное свечение крышки + пар | No | Resolved in design |
+| Уход гостя (Leaving) | Страйк | Сутулая походка + негативная иконка + погасший страйк | No | Resolved in design |
+| Испорченная чашка | Нужно выбросить | Мутная жидкость без пара, крестик, обесцвеченный ряд | No | Resolved in design |
+| Served → монеты / очки | Заработано | Два разных попапа (иконка, цвет, направление) + касса | No | Resolved in design |
+| Касса полна | Монеты больше не идут | Акцент на самой кассе (заполнение, «потолок») | No | Resolved in design |
+| Новый рекорд | Рекорд | Отдельный акцент в оверлее итогов | No | Resolved in design |
+
+---
+
+## Platform Accessibility API Integration
+
+| Platform | API / Standard | Features Planned | Status | Notes |
+|----------|---------------|-----------------|--------|-------|
+| Web (браузер) | `prefers-reduced-motion` media query | Reduced motion | Not Started | Читается в HTML-оболочке и передаётся через `PlatformBridge` — требует дополнения контракта ADR-0001 (Open Question 4). |
+| Web (браузер) | ARIA / AccessKit | — | Not planned | Игра — один `<canvas>`; поддержка AccessKit в web-экспорте 4.7 не проверена, а читать экранному чтецу нечего, кроме оверлея итогов. Статичные экраны оболочки (нет WebGL2, ошибка загрузки) — обычный HTML, остаются доступными. |
+| iOS / Android native | VoiceOver / TalkBack | — | N/A | Нативного приложения нет. |
+
+---
+
+## Per-Feature Accessibility Matrix
+
+| System | Visual Concerns | Motor Concerns | Cognitive Concerns | Auditory Concerns | Addressed | Notes |
+|--------|----------------|---------------|-------------------|------------------|-----------|-------|
+| Kitchen & Station Layout | Теги станций различимы без цвета | Цели 48 dp на 9:20 | Раскладка фиксирована, запоминается | — | Yes | Проверка проекции на 9:20 — ADR-0002 |
+| Platform Integration | Экраны оболочки (нет WebGL2, ошибка) — HTML | — | — | — | Partial | `prefers-reduced-motion` → OQ 4 |
+| Order & Recipe | 7 цветов шагов | — | Грамматика шагов | Звук не несёт рецепт | Yes | Форма главная |
+| Player Control | Контур цели без смены оттенка | Один тап, прощение 28 dp | Нет очереди — ошибка исправляется тапом | Нет звука на тап пола | Yes | |
+| Brewing & Crafting | Состояния чашки/чайника без hue | — | Одна чашка в руках | READY дублируется светом | Yes | |
+| Guest AI & Patience | Кольцо без hue | Таймер не продлевается | До 4 гостей одновременно | Leaving дублируется | Partial | Таймер — Known Limitation |
+| Difficulty Curve | — | Рост темпа | Онбординг 30 с | — | Partial | Нет режима сложности — OQ 1 |
+| Currency | Попапы: 3 канала различия | — | Две метрики не смешиваются | Звуки монет/очков различны и дублированы | Yes | |
+| Till & Day Cycle | Акцент «полна» на предмете | — | Касса не штрафует проигрыш | Дублирован | Yes | |
+| HUD & Feedback UI | Размер текста, контраст, reduced motion | Grace рестарта | Оверлей не исчезает сам | Звук на событие — не единственный | Partial | Reduced motion — OQ 4 |
+| Backend, Leaderboard, Audio, Progression, Monetization, Co-op, Token | — | — | — | — | Not designed | Строка обязательна при проектировании каждой (VS+) |
+
+---
+
+## Accessibility Test Plan
+
+| Feature | Test Method | Test Cases | Pass Criteria | Responsible | Status |
+|---------|------------|------------|--------------|-------------|--------|
+| Цвет не единственный признак | Скриншоты кухни со всеми 7 жетонами, тикетами, чашками во всех состояниях → оттенки серого + Coblis (протан/дейтан/тритан) | 4 симуляции × 3 кадра (спокойно, пик, конец партии) | Каждый шаг и состояние опознаются без цвета; пара зелёный/чёрный лист различима | ux-designer | Not Started |
+| Контраст текста | Анализатор контраста на финальных цветах | Счёт на полосе, цена на жетоне, текст оверлея | ≥ 4,5:1 (мелкий) / ≥ 3:1 (крупный) | ux-designer | Not Started |
+| Размер текста и целей на 9:20 | Скриншот на 360×800 dp | Цена `Label3D`, счёт, кнопка «Играть снова», расстояние между pick-якорями | Цена ≥ 12 dp, счёт ≥ 20 dp, кнопки ≥ 48 dp | qa-tester | Not Started |
+| Без звука | Партия 3 мин с выключенным звуком | Все события из SFX-аудита | Ни одно событие не пропущено | qa-tester | Not Started |
+| Одной рукой | Партия большим пальцем одной руки на телефоне ≥ 6,5" | Досягаемость верхних станций | Партия проходится без смены хвата | qa-tester | Not Started |
+| Reduced motion | Включить системную настройку, партия 3 мин | Кольца, попапы, акцент кассы | Нет пульсов и дуг; вся информация на месте | ux-designer | Not Started |
+| Фоточувствительность | Запись экрана пиковой минуты, покадровый разбор | Кольца «Срочно» ×4, вспышки тикетов | ≤ 3 вспышки/с, нет полноэкранных вспышек | qa-tester | Not Started |
+| Пауза | Скрыть вкладку в середине партии на 10 с | Терпение, чайники | Возврат без скачка времени | qa-tester | Not Started |
+
+Evidence — `production/qa/evidence/` (coding-standards: Visual/UI).
+
+---
+
+## Known Intentional Limitations
+
+| Feature | Tier Required | Why Not Included | Risk / Impact | Mitigation |
+|---------|--------------|-----------------|--------------|------------|
+| Продление или отключение таймера терпения | Standard | Давление времени — ядро Pillar 1; кривая одна для всех ради честного сравнения очков | Игроки с медленной реакцией или моторными ограничениями проигрывают раньше | Бесплатные мгновенные повторы; онбординг 30 с; касса не штрафует проигрыш; «спокойный режим» — OQ 1 |
+| Переназначение ввода | Standard | Один жест (тап) | Нет | — |
+| Субтитры | Basic | Нет речи | Нет | Правило «звук не единственный носитель» |
+| Screen reader | Comprehensive | Реальное время на канвасе | Незрячий игрок не сможет играть | Статичные HTML-экраны оболочки остаются доступными |
+| Ползунок масштаба UI | Standard | Масштаб задаёт подгонка кухни (ADR-0002) | Текст мельче на узких экранах | Минимальные размеры для худшего случая 9:20 |
+| Раздельная громкость в MVP | Basic | Аудио-система — Vertical Slice | Нельзя приглушить только звон | Кнопка «без звука» (OQ 2); ползунки на VS |
+| Режим сложности | Standard | Одна кривая для всех (сравнимые очки, лидерборд VS) | См. таймер | OQ 1 |
+
+---
+
+## Audit History
+
+| Date | Auditor | Type | Scope | Findings Summary | Status |
+|------|---------|------|-------|-----------------|--------|
+| 2026-09-30 | ux-designer (агент) | Design review | 10 MVP GDD | Цветовой язык и звуковое дублирование уже соответствуют Basic и выше; не хватало reduced motion, минимальных размеров текста и паузы — внесены сюда | Complete |
+
+---
+
+## External Resources
+
+| Resource | URL | Relevance |
+|----------|-----|-----------|
+| WCAG 2.1 | https://www.w3.org/TR/WCAG21/ | Контраст, цели касания |
+| Game Accessibility Guidelines | https://gameaccessibilityguidelines.com | Basic-чеклист |
+| Coblis | https://www.color-blindness.com/coblis-color-blindness-simulator/ | Симуляция дальтонизма для тест-плана |
+| `prefers-reduced-motion` (MDN) | https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion | Источник флага reduced motion |
+| Harding / W3C three-flashes | https://www.w3.org/WAI/WCAG21/Understanding/three-flashes-or-below-threshold | Порог фоточувствительности |
+
+---
+
+## Open Questions
+
+| Question | Owner | Deadline | Resolution |
+|----------|-------|----------|-----------|
+| 1. «Спокойный режим» (множитель терпения, без очков в лидерборд) — нужен ли после MVP? | game-designer / producer | До Vertical Slice (вместе с Leaderboard) | — |
+| 2. Кнопка «без звука» в MVP — где живёт (полоса HUD или экран оболочки) и сохраняется ли в `SaveStore` (`settings.*`)? | ux-designer | При `/ux-design hud` | — |
+| 3. Нужна ли явная кнопка паузы (сейчас пауза только уходом вкладки в фон)? | game-designer | При `/ux-design hud` | — |
+| 4. Флаг `prefers-reduced-motion`: оболочка читает media query и передаёт в `PlatformBridge` (новое поле контракта ADR-0001) | technical-director | До accept ADR-0001 | — |
+| 5. Player journey map (`design/player-journey.md`) не создан — контекст игрока в этом документе основан на game-concept | ux-designer | Pre-Production | — |

@@ -38,7 +38,7 @@ naming:
 
 commands:
   build: "[TO BE CONFIGURED — no Godot export preset exists yet; set once export_presets.cfg is created]"
-  test: "godot --headless --script tests/gdunit4_runner.gd"
+  test: "godot --headless --path . --script tests/gdunit4_runner.gd"
   run: "godot --path . --windowed --resolution 1280x720"
   smoke: "godot --headless --quit-after 5"
 
