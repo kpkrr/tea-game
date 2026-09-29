@@ -89,6 +89,8 @@ var reached: bool                # end within path_end_tolerance (0.05 m, XZ) of
 
 **9. No avoidance in MVP.** Guests use the same `Navigator`, map and radius (spawn → own slot; Guest AI Rule 4/no-path fallback: spawn directly in the slot). No RVO, no local avoidance, one navigation layer. Barista and guests may overlap visually; revisit only if playtest shows it reads as a bug.
 
+> **Amendment 2026-09-30 — player pause (owner decision during `/ux-design hud`).** Taps on the kitchen are ignored while the match is paused by the player (ADR-0003 amendment). No new code path: a player pause stops the clock, so `advance()` returns 0 and `flush(dt > 0.0)` drops any stored press every frame, including a kitchen press made in the same frame as the pause request and in the first (discarded) frame after `request_resume()`. As defence in depth the HUD pause overlay is a full-screen `Control` with `MOUSE_FILTER_STOP`, so presses never reach `TapInput` while it is shown; the pause button itself is a HUD `Control` and never produces a kitchen tap. Validation adds: player-paused clock → `flush(false)` → no `tapped`; resume → next tap resolves normally.
+
 ### Architecture Diagram
 
 ```

@@ -86,7 +86,7 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 | Модуль | Слой | Владеет | Отдаёт наружу | Потребляет | Engine API |
 |---|---|---|---|---|---|
 | **PlatformBridge** (autoload) | Foundation | safe-area rect (= вьюпорт браузера в px окна, `DisplayServer.window_get_size()`), видимость (`is_visible()`), состояние `Loading/Ready/Failed` | `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached` | браузер: resize/orientationchange, Page Visibility API | ⚠️ `JavaScriptBridge` (только visibility), `get_viewport().size_changed` |
-| **ViewFit** | Foundation | `safe_aspect`, playfield rect, letterbox, размер и смещение ortho-камеры, `kitchen_rect` (ADR-0002; 1 единица канваса = 1 dp) | `playfield_changed(playfield, kitchen_rect)` | `PlatformBridge.safe_area_changed`, габариты кухни | ⚠️ stretch mode, `Camera3D` (ortho `size`) |
+| **ViewFit** | Foundation | `safe_aspect`, playfield rect, letterbox, размер и смещение ortho-камеры, `kitchen_rect` (ADR-0002; 1 единица канваса = 1 dp; поправка 2026-09-30: HUD — всегда верхняя строка; если верхняя полоса < `hud_min_strip_dp` = 56 dp (аспекты ≈ 0,8–1,0), она резервируется, кухня < 95 % поля — исключение; боковые полосы — только letterbox) | `playfield_changed(playfield, kitchen_rect)` | `PlatformBridge.safe_area_changed`, габариты кухни | ⚠️ stretch mode, `Camera3D` (ortho `size`) |
 | **GameClock** | Foundation | игровое время `t`, флаги `hidden` и `frozen`, clamp `max_step_delta` (ADR-0003) | `t`, `sim_dt`, `ui_dt`, `running_changed(running)` | команды pause/resume/freeze/reset от MatchLifecycle | — (чистый GDScript) |
 | **MatchDirector** | Foundation | порядок тика, корень композиции матча (DI) | — | все модули матча | `_process` с `process_priority = -100` (ADR-0003; не `_physics_process`) |
 | **ConfigLoader** | Foundation | загруженные и провалидированные данные тюнинга (ADR-0004: `GameConfig` + подресурсы на систему, `.tres` в `assets/data/config/`, `ConfigValidator` собирает все ошибки во всех сборках) | типизированные `Resource`-конфиги, инъекция через конструкторы | файлы данных | `ResourceLoader`, `Resource` |
@@ -102,6 +102,7 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 | **DifficultyCurve** | Feature | ничего (без состояния) | `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` | конфиг | — |
 | **Currency** | Feature | `match_score`, `best_score`, `is_new_record` | `coins_earned(n)`, `score_earned(n)`, геттеры | `served`, `match_started`, `match_ended`, SaveStore | — |
 | **Till** | Feature | `till_amount`, `Open/Full`, `full_since_utc` | `coins_added(n)`, `day_state`, `till_fill_ratio` | `coins_earned`, `match_started`, `UtcClock`, SaveStore | — |
+| **AudioDirector** | Presentation | шины Master → Music, SFX; mute (шина Master); low-pass на шине Music (итоги, нарастание по `ui_dt`); музыкальный плеер; загрузка трека после `ready_reached`; ключ `settings.muted` (поправка ADR-0001, 2026-09-30) | `is_muted()` | `set_muted()` от HUD, `MatchLifecycle.paused_changed`/`match_started`/`match_ended`, `GameClock.ui_dt`, `cfg.audio`, первый жест игрока, `SaveScope` `settings`, URL от `PlatformBridge.asset_url()` через `_compose()` | `AudioServer.set_bus_mute`, `AudioEffectLowPassFilter`, `AudioStreamPlayer` (SFX: Sample; музыка: Stream), `AudioStreamOggVorbis.load_from_buffer`, `HTTPRequest` |
 | **HUD** | Presentation | ничего игрового (правило «без кэша») | `request_new_match` | всё перечисленное выше, только чтение | `Control`, `Sprite3D`/`Label3D`, `Tween` |
 
 ```
@@ -168,6 +169,8 @@ MatchLifecycle.apply_pending() (шаг 0 тика): GameClock.reset(); emit matc
 GuestSim: guests_lost == 3 ─► MatchLifecycle: GameClock.freeze(); emit match_ended
     → Currency: is_new_record = match_score > best_score; при true сохраняет best_score
 PlatformBridge.visibility_changed(false/true) ─► MatchLifecycle ─► GameClock.pause()/resume() (resume отбрасывает первый кадр)
+HUD пауза / «Продолжить» ─request_pause()/request_resume()─► MatchLifecycle: пауза = hidden ИЛИ user_paused ─► GameClock.pause()/resume(); paused_changed ─► AudioDirector (музыка)  (поправка ADR-0003, 2026-09-30)
+match_ended ─► AudioDirector: low-pass на шине Music (нарастание по ui_dt); match_started ─► фильтр снят, трек с начала  (поправка ADR-0001/0003, 2026-09-30)
 ```
 
 Единственный источник паузы — `GameClock`. Анимации HUD, привязанные к игровому
@@ -183,6 +186,7 @@ PlatformBridge.visibility_changed(false/true) ─► MatchLifecycle ─► GameC
 | `best_score` | Currency | на `match_ended`, только если `is_new_record` | холодный старт |
 | `till_amount`, `day_state`, `full_since_utc` | Till | при каждом изменении (Served, Open↔Full) | холодный старт, `match_started` (проверка сброса) |
 | `settings.language` | UI / настройки | при смене | холодный старт |
+| `settings.muted` (bool, по умолчанию `false`) | AudioDirector | при переключении кнопки звука в HUD | холодный старт, до первого звука (ADR-0005, поправка 2026-09-30) |
 
 `SaveStore` — одна плоская схема с `schema_version` (ADR-0005). На web — `localStorage`
 (синхронная запись), а не `user://`/IndexedDB; сброс на диск — шаг 6 тика и синхронно при
@@ -239,6 +243,9 @@ signal match_started(); signal match_ended()                        # MatchLifec
 signal coins_earned(amount: int); signal score_earned(amount: int)  # Currency
 signal coins_added(amount: int)                                     # Till (включая 0)
 func request_new_match() -> void    # MatchLifecycle; вызывает HUD (команда, не сигнал — ADR-0003)
+func request_pause() -> void; func request_resume() -> void   # MatchLifecycle; вызывает HUD (поправка ADR-0003, 2026-09-30)
+signal paused_changed(paused: bool)                                 # MatchLifecycle: hidden ИЛИ user_paused
+func set_muted(muted: bool) -> void                                 # AudioDirector; вызывает HUD (поправка ADR-0001)
 ```
 
 **Инварианты для вызывающих:**
@@ -246,7 +253,7 @@ func request_new_match() -> void    # MatchLifecycle; вызывает HUD (ко
   из GuestSim (TR-brewing-008).
 - Значения из DifficultyCurve фиксируются в госте при спавне и больше не
   пересчитываются (TR-guest-009, TR-pacing-004).
-- HUD не пишет ни в одну систему, кроме `request_new_match`.
+- HUD не пишет ни в одну систему, кроме `request_new_match`, `request_pause`/`request_resume` и `AudioDirector.set_muted` (поправки 2026-09-30).
 - Till не читает score, Currency не читает состояние кассы (граница Pillar 4).
 
 **Типы движка в интерфейсах:** в сигнатурах выше только `StringName`, `Array[T]`,
@@ -303,7 +310,7 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 
 | # | `/architecture-decision` | Решает |
 |---|---|---|
-| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. |
+| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено; музыка 2,7 МБ вне `.pck`, догружается после `ready_reached` — поправка 2026-09-30), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. |
 
 ### Can defer to implementation
 
@@ -560,3 +567,10 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | 020 | Чужие константы только читаются | Data-Config |
 | 021 | Контур цели и кольцо на полу меняются в том же кадре, что и цель Player Control | Input |
 | 022 | Опция reduced-motion для пульса колец (решается в `/ux-design`) | UI |
+| 023 | Кнопка паузы: пауза = hidden ИЛИ пауза игрока (единый GameClock); только в Active; возврат вкладки не снимает; снятие «Продолжить» / Escape / Enter; тапы по кухне игнорируются (2026-09-30, ADR-0003/0006) | Core |
+| 024 | Кнопка звука: mute = шина Master; `settings.muted` в SaveStore, schema_version без изменений (2026-09-30, ADR-0001/0005) | Audio |
+| 025 | ~~Один зацикленный музыкальный трек: старт по первому жесту, пауза вместе с матчем~~ — заменено TR-hud-027 (2026-09-30) | Audio |
+| 026 | ~~Бюджет музыки: ≤ 1,0 МБ в `.pck` 3,0 МБ (остальное ≤ 2,0 МБ), PCM ≤ 48 МБ~~ — заменено TR-hud-028 (2026-09-30) | Performance |
+| 027 | Музыка: старт после жеста и загрузки; пауза/скрытие — пауза с позиции; на итогах low-pass (800 Гц / 0,3 с, конфиг, по `ui_dt`); «Играть снова» — с начала без фильтра; mute = Master (2026-09-30, ADR-0001/0003/0004) | Audio |
+| 028 | Бюджет музыки: файл ≤ 2,7 МБ вне `.pck`, после `ready_reached`; Stream, ≈ 2,7 МБ в куче, ≤ 1,0 мс/кадр (предв.); `.pck` 3,0 МБ целиком под остальное (2026-09-30, ADR-0007) | Performance |
+| 029 | HUD — всегда верхняя строка: Mode A, если верхняя полоса ≥ 56 dp (`ViewConfig.hud_min_strip_dp`), иначе Mode C — резерв верхней полосы 56 dp (аспекты ≈ 0,8–1,0); кухня < 95 % поля — явное исключение; боковые полосы под HUD не используются (2026-09-30, ADR-0002/0004) | UI |

@@ -1347,6 +1347,62 @@ requirements:
     created: 2026-09-30
     revised: ""
     status: active
+  - id: TR-hud-023
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Кнопка паузы в HUD: пауза = hidden ИЛИ пауза игрока через единый GameClock (ADR-0003); только в Active; возврат вкладки не снимает паузу игрока; снятие только «Продолжить» (Escape/Enter на ПК); тапы по кухне на паузе игнорируются"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-024
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Кнопка звука: mute = шина Master; состояние `settings.muted` (bool, по умолчанию false) в SaveStore, schema_version без изменений"
+    domain: "Audio"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-025
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Один зацикленный музыкальный трек: старт по первому жесту игрока (autoplay браузера), пауза вместе с матчем (hidden / пауза игрока), не на итогах; шины Master → Music, SFX"
+    domain: "Audio"
+    created: 2026-09-30
+    revised: 2026-09-30
+    status: "superseded-by: TR-hud-027"
+  - id: TR-hud-026
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Бюджет музыки: файл ≤ 1,0 МБ внутри `.pck` 3,0 МБ (остальное ≤ 2,0 МБ), разжатый PCM ≤ 48 МБ; разблокировка web-аудио на iOS Safari по первому касанию проверяется на устройстве"
+    domain: "Performance"
+    created: 2026-09-30
+    revised: 2026-09-30
+    status: "superseded-by: TR-hud-028"
+  - id: TR-hud-027
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Один зацикленный музыкальный трек (`music_jazz_main.ogg`): старт с начала после первого жеста игрока и загрузки файла; пауза игрока и скрытая вкладка ставят музыку на паузу, возобновление — с той же позиции; на итогах (MatchEnd) трек продолжает играть под low-pass фильтром шины Music (частота среза и время нарастания — конфиг, нарастание по ui_dt); «Играть снова» — фильтр снят, трек с начала; mute = шина Master во всех состояниях; шины Master → Music, SFX"
+    domain: "Audio"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-028
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Бюджет музыки: файл ≤ 2,7 МБ вне `.pck`, загружается после ready_reached (не входит в 13,5 МБ загрузки и холодный TTI ≤ 20 с); воспроизведение Stream (сжатые пакеты ≈ 2,7 МБ в wasm-куче, без PCM), декод + микс ≤ 1,0 мс/кадр на эталонном устройстве (предварительно); `.pck` ≤ 3,0 МБ целиком под остальной контент; разблокировка web-аудио на iOS Safari, отсутствие треска и стоимость загрузки проверяются на устройстве"
+    domain: "Performance"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-029
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "HUD — всегда горизонтальная верхняя строка; боковые полосы под HUD не используются (только letterbox). Mode A: если верхняя полоса вокруг вписанной кухни ≥ `hud_min_strip_dp` (56 dp, конфиг ViewConfig) — HUD в ней. Иначе Mode C (почти квадратные экраны, аспект ≈ 0,8–1,0): кухня вписывается в поле минус верхняя полоса этой высоты; заполнение ≥ 95 % уменьшенного поля, от полного поля может быть < 95 % (явное исключение); телефоны 9:20–9:16 не затронуты"
+    domain: "UI"
+    created: 2026-09-30
+    revised: 2026-09-30
+    status: active
 
 # --- EXAMPLE ENTRIES (remove when first real entries are added) ---
 #

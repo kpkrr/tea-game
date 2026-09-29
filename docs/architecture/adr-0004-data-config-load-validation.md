@@ -92,6 +92,11 @@ Boot step 3:  ConfigLoader.load("res://assets/data/config/game_config.tres")
      HUD.bind(cfg.hud, cfg.guest /*read-only*/)
 ```
 
+> **Amendment 2026-09-30 — audio and HUD-strip knobs (owner decisions during `/ux-design hud`; ADR-0001 and ADR-0002 amendments).**
+> - **New `AudioConfig`** sub-resource (`assets/data/config/audio.tres`, `GameConfig.audio`), injected into `AudioDirector` only: `music_lowpass_cutoff_hz: float = NAN` (target cutoff of the Music-bus low-pass at MatchEnd) and `music_lowpass_ramp_s: float = NAN` (ramp time, accumulated from `ui_dt`). Defaults in `audio.tres`: **800 Hz** and **0.3 s** (the same placeholders as the HUD UX spec; tuned by ear later). Validator: both finite; `20 ≤ music_lowpass_cutoff_hz < 20000` (`range`; the ramp starts at 20 000 Hz); `0 ≤ music_lowpass_ramp_s ≤ 5` (`range`; 0 = instant).
+> - **`ViewConfig.hud_min_strip_dp: int = -1`**, default 56 (ADR-0002 amendment). Validator: `1 ≤ x ≤ 160` (`range`), and `hud.hud_row_height_dp ≤ view.hud_min_strip_dp` (`invariant`) if `HudConfig` carries that field.
+> - Both ship with their validator rules in the same change (Implementation Guidelines).
+
 ### Key Interfaces
 
 ```gdscript
@@ -106,6 +111,7 @@ class_name GameConfig extends Resource
 @export var currency: CurrencyConfig
 @export var till: TillConfig
 @export var hud: HudConfig
+@export var audio: AudioConfig          # amendment 2026-09-30 (ADR-0001 music low-pass)
 
 class_name RecipeDef extends Resource
 @export var recipe_id: StringName = &""

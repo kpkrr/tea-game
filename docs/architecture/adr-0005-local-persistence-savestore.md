@@ -80,6 +80,11 @@ Currency must keep `best_score` across restarts and never lower it; Till must ke
 
 `match_score` and all in-match state are never saved. Settings (`settings.*`) are reserved for the UI owner when it exists.
 
+> **Amendment 2026-09-30 — `settings.muted` (owner decision during `/ux-design hud`).** New key in the MVP table: `settings.muted` — owner **AudioDirector** (scope `&"settings"`, ADR-0001 amendment), written when the player toggles the HUD mute button, default `false`, read once at boot and applied to the Master bus before the first sound.
+> - **Type:** `SaveScope` gains `declare_bool(key, default)`, `read_bool(key) -> bool`, `write_bool(key, value)`. Stored as a JSON boolean; validation accepts only a JSON `true`/`false` (`0`, `1`, `"true"`, `null` → default `false` for that key only, logged once), same per-key rule as §3.
+> - **Schema version:** stays `1`. The change is **additive with a default**: an existing v1 blob without the key validates to `false` via the per-key default, so no `_migrate_v1_to_v2` is needed. Bumping is reserved for changes of meaning, type or removal of an existing key (§3 migration rule).
+> - Validation adds: missing key → `false`; `"true"`/`1` → `false` + one log; round-trip `true`; mute toggle → one `write_blob` at step 6 of that frame (or on page hide).
+
 ### Architecture Diagram
 
 ```

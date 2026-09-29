@@ -71,12 +71,13 @@ state_ownership:
     status: active
     owner_system: view-fit
     adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
-    interface: "ViewFit.playfield_changed(playfield: Rect2, kitchen_rect: Rect2) signal + get_playfield()/get_kitchen_rect(); dp (1 viewport unit = 1 reference dp)"
+    interface: "ViewFit.playfield_changed(playfield: Rect2, kitchen_rect: Rect2) signal + get_playfield()/get_kitchen_rect(); dp (1 viewport unit = 1 reference dp). Amendment 2026-09-30 (Mode C): the HUD is always a top row (side strips are letterbox only, never HUD); when the top strip of the fitted kitchen is < ViewConfig.hud_min_strip_dp (56), the kitchen is fitted into P minus a top strip of that height (fill >= 95 % of the reduced field, < 95 % of P — explicit exception, near-square only); the signal still carries the full P"
     write_access: view-fit-only
     referenced_by:
       - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+      - docs/architecture/adr-0004-data-config-load-validation.md
     added: 2026-09-30
-    revised: ""
+    revised: 2026-09-30
 
   - state: game_time
     status: active
@@ -143,6 +144,45 @@ state_ownership:
       - docs/architecture/adr-0006-navigation-tap-picking.md
     added: 2026-09-30
     revised: ""
+
+  # Appended 2026-09-30 — owner decisions during /ux-design hud (ADR amendments 2026-09-30)
+  - state: pause_reasons
+    status: active
+    owner_system: match-lifecycle
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    interface: "MatchLifecycle private _hidden (visibility) + _user_paused (player); clock paused while hidden OR user_paused via GameClock.pause()/resume() on edges only. request_pause() (RUNNING only) / request_resume() (only while user-paused; tab return never clears it); is_user_paused() getter; paused_changed(paused: bool) signal, sync, any state"
+    write_access: match-lifecycle-only (commands from HUD; visibility from _compose handler)
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: settings_muted
+    status: active
+    owner_system: audio-director
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    interface: "AudioDirector.set_muted(bool) (HUD mute button) / is_muted(); applied as AudioServer.set_bus_mute(Master); persisted as settings.muted (bool, default false) via SaveScope &\"settings\" read_bool/write_bool; schema_version stays 1 (additive key with default)"
+    write_access: audio-director-only (HUD calls set_muted)
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0005-local-persistence-savestore.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: audio_bus_layout
+    status: active
+    owner_system: audio-director
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    # revised 2026-09-30 — old: "...; mute = Master bus mute; web playback type Sample (default) kept"
+    interface: "res://default_bus_layout.tres: Master <- Music, SFX. Players set bus Music or SFX, never Master; mute = Master bus mute (all states); Music bus slot 0 = AudioEffectLowPassFilter (disabled by default, ramped at MatchEnd). Web playback: SFX Sample (project default); MusicPlayer playback_type = Stream (effects and on-the-fly Ogg decode need it); audio/driver/output_latency.web = 100"
+    write_access: audio-director-only (bus mute, filter enable/cutoff); layout is a static resource
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0007-performance-load-budgets.md
+    added: 2026-09-30
+    revised: 2026-09-30
 
 # Example:
 #
@@ -224,6 +264,7 @@ interfaces:
       - barista-controller
       - guest-sim
       - hud
+      - audio-director    # added 2026-09-30: match_ended -> music low-pass ramp (ui_dt); match_started -> filter off, track restarts at 0
     adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
     signal_signature: "match_started(); match_ended()"
     notes: "Synchronous, connected only in MatchDirector._compose(); match_started emitted at tick step 0"
@@ -397,6 +438,48 @@ interfaces:
     added: 2026-09-30
     revised: ""
 
+  # Appended 2026-09-30 — owner decisions during /ux-design hud
+  - contract: player_pause_request
+    status: active
+    pattern: direct_call
+    producer: hud
+    consumers:
+      - match-lifecycle
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    signal_signature: "request_pause() -> void; request_resume() -> void (HUD pause button, 'Продолжить', Escape/Enter on desktop); applied immediately, not queued"
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: pause_state_change
+    status: active
+    pattern: signal
+    producer: match-lifecycle
+    consumers:
+      - audio-director   # MusicPlayer.stream_paused (resume continues from position); not paused by frozen (match end: low-pass instead)
+    adr: docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    signal_signature: "paused_changed(paused: bool)  # edge of hidden OR user_paused; emitted synchronously inside the JS hide callback"
+    referenced_by:
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: mute_toggle
+    status: active
+    pattern: direct_call
+    producer: hud
+    consumers:
+      - audio-director
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    signal_signature: "AudioDirector.set_muted(muted: bool) -> void; is_muted() -> bool"
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0005-local-persistence-savestore.md
+    added: 2026-09-30
+    revised: ""
+
 # Example:
 #
 # interfaces:
@@ -433,7 +516,7 @@ performance_budgets:
     script_total_ms: "avg <= 2.0, p99 <= 4.0 (sim + presentation scripts on RD)"
     render: "draw calls <= 100 target / 150 ceiling per frame incl. HUD; <= 75 renderable 3D instances worst case; textures <= 48 MB incl. mipmaps; 3D pixel budget 1.5 Mpx via scaling_3d_scale (floor 0.6)"
     memory: "wasm heap peak <= 256 MB (read from JS); <= 2 MB growth over 5 matches"
-    load: "compressed download <= 13.5 MB (engine 10.2 MB measured); cold TTI <= 20 s @10 Mbps, warm <= 6 s"
+    load: "boot download (compressed) <= 13.5 MB (engine 10.2 MB measured, .pck <= 3.0 MB); cold TTI <= 20 s @10 Mbps, warm <= 6 s; post-boot music file <= 2.7 MB fetched after ready_reached, outside the boot total and TTI (amendment 2026-09-30)"
     adr: docs/architecture/adr-0007-performance-load-budgets.md
     added: 2026-09-30
     revised: ""
@@ -509,6 +592,17 @@ performance_budgets:
     referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md]
     added: 2026-09-30
     revised: ""
+
+  # Appended 2026-09-30 — music (ADR-0007 amendment)
+  - system: music
+    status: active
+    # revised 2026-09-30 — old: budget_ms 0.0; Sample playback; .pck split music <= 1.0 MB + rest <= 2.0 MB; decoded PCM <= 48 MB; first-play conversion in RenderPrewarm
+    budget_ms: 1.0
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "music_jazz_main.ogg (2.61 MB, 204.8 s, 48 kHz stereo). Stream playback: decode + mix + low-pass on the main thread via the no-threads AudioWorklet callback, outside step() and the 2.0 ms script cap; avg <= 1.0 ms/frame on RD, provisional, measured as frame-time delta playing vs stream_paused. Not in .pck (full 3.0 MB back to other content); post-boot download <= 2.7 MB; wasm resident ~2.7 MB compressed, high-water +<= 6 MB. Sample playback for music forbidden (~157 MB transient heap + ~79 MB AudioBuffer + multi-second decode). No pre-warm step."
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md, docs/architecture/adr-0001-web-build-platform-shell.md]
+    added: 2026-09-30
+    revised: 2026-09-30
 
 # Example:
 #
@@ -728,6 +822,33 @@ api_decisions:
     adr: docs/architecture/adr-0007-performance-load-budgets.md
     reason: "Debug-only counters; coarse web timers; determinism rule for tests"
     referenced_by:
+      - docs/architecture/adr-0007-performance-load-budgets.md
+    added: 2026-09-30
+    revised: ""
+
+  # Appended 2026-09-30 — audio (ADR-0001 amendment)
+  - purpose: web_audio_playback_and_unlock
+    status: active
+    # revised 2026-09-30 — old api: "default_playback_type.web = Sample (default); loop=true in import; MusicPlayer.play() on first gesture; ..."; old not: "Stream playback on single-thread web (crackle); ..."
+    api: "SFX: default_playback_type.web = Sample (default). MusicPlayer: playback_type = Stream, output_latency.web = 100; stream = AudioStreamOggVorbis.load_from_buffer(HTTPRequest body) with loop = true set in code (off-web: load(res://)); music starts at 0 once gesture seen + loaded + not paused; pause via stream_paused on MatchLifecycle.paused_changed; MatchEnd = Music-bus AudioEffectLowPassFilter ramp on GameClock.ui_dt (AudioConfig music_lowpass_cutoff_hz 800 / music_lowpass_ramp_s 0.3 defaults); replay = filter off + play(0.0); mute via AudioServer.set_bus_mute(Master)"
+    not: "Sample playback for the music track (no bus effects, whole-track synchronous decode); Stream playback for SFX; music in the .pck / on the boot path; Tween-driven filter ramps; music autoplay before a gesture; script-driven looping; per-player volume hacks for mute; SceneTree.paused"
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    reason: "Browsers suspend AudioContext until a gesture; Web Audio keeps running while the tab is hidden, so pause must be explicit and synchronous; 4.7.2 source: Sample mode ignores AudioEffects and decodes the whole stream at first play"
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0007-performance-load-budgets.md
+    added: 2026-09-30
+    revised: 2026-09-30
+
+  # Appended 2026-09-30 — post-boot music fetch (ADR-0001 / ADR-0007 amendments)
+  - purpose: post_boot_asset_fetch
+    status: active
+    api: "Export preset excludes assets/audio/music/*; build step copies the .ogg next to index.html. After ready_reached, _compose() calls AudioDirector.start_music_fetch(PlatformBridge.asset_url(name)); HTTPRequest (use_threads=false) with an absolute URL; one retry after 5 s, then silent"
+    not: "Relative URLs in HTTPRequest; fetching before ready_reached (competes with boot download); error UI for a missing track; AudioDirector referencing PlatformBridge by name"
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    reason: "Keeps the 2.6 MB track off the 13.5 MB boot download and cold-TTI path"
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
       - docs/architecture/adr-0007-performance-load-budgets.md
     added: 2026-09-30
     revised: ""
