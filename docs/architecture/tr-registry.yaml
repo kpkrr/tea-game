@@ -24,10 +24,1329 @@
 #
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
-version: 1
-last_updated: ""
+version: 2
+last_updated: "2026-09-30"
 
-requirements: []
+# Seeded 2026-09-30 by /architecture-review from architecture.md Appendix A (164 IDs).
+# `deferred:` marks requirements parked by a scope decision — still active IDs, not deprecated.
+requirements:
+  - id: TR-platform-001
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Одна HTML5/WebGL2-сборка, один URL (браузер ПК и телефона)"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-002
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Детект контекста: `window.Telegram.WebApp` + успешный `ready()` → TMA, иначе Standalone"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+    deferred: "2026-09-30 — Telegram Mini App выведен из MVP; не брать в истории до пересмотра scope"
+  - id: TR-platform-003
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "SDK есть, но init упал или вышел по таймауту → тихо как Standalone, без UI ошибки"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+    deferred: "2026-09-30 — Telegram Mini App выведен из MVP; не брать в истории до пересмотра scope"
+  - id: TR-platform-004
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Scope TG SDK: safe-area инсеты + опционально тема; без платежей"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+    deferred: "2026-09-30 — Telegram Mini App выведен из MVP; не брать в истории до пересмотра scope"
+  - id: TR-platform-005
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Safe area = `innerWidth/Height` на resize/orientationchange"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-006
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Экран загрузки с прогрессом до готовности кухни, без жёсткого таймаута"
+    domain: "UI"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-007
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Stretch mode/aspect задаются явно, не дефолт 4.7"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-008
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Clamp `safe_aspect` в [0,45; 1,0], letterbox, playfield по центру safe area"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-009
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "`safe_h = max(1, …)` против деления на ноль"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-010
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Пересчёт safe area не чаще 1 раза за кадр"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-011
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Нет WebGL2 → статичный экран «обновите браузер», движок не грузится"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-012
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Один visibility-сигнал (Page Visibility API)"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-013
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Состояние `Ready` запускает первый матч"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-014
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "TG `initData`/user ID опциональны, их отсутствие ничего не блокирует"
+    domain: "Save-Load"
+    created: 2026-09-30
+    revised: ""
+    status: active
+    deferred: "2026-09-30 — Telegram Mini App выведен из MVP; не брать в истории до пересмотра scope"
+  - id: TR-platform-015
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Флаг контекста доступен для будущей монетизации"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+    deferred: "2026-09-30 — Telegram Mini App выведен из MVP; не брать в истории до пересмотра scope"
+  - id: TR-platform-016
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "`viewport_aspect_min`/`max` — данные из реестра"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-017
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Resize посреди партии не сбрасывает состояние матча"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-platform-018
+    system: platform
+    gdd: design/gdd/platform-integration-telegram-mini-app.md
+    requirement: "Переход Loading→Ready без белой вспышки"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-001
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Фиксированная кухня ~8×11 м, одна раскладка в MVP"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-002
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Станции по периметру с промежутками, остров 2×4 м делит кухню на два прохода"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-003
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "7 слотов: 5 на острове + по 1 у боковых стен"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-004
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Сплошная низкая столешница; станции — блоки; слоты — площадки"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-005
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Till-anchor — фиксированная мировая точка, не станция и не слот"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-006
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Занятость слотов принадлежит Brewing; layout только объявляет слоты"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-007
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Bake NavMesh без ошибок и предупреждений"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-008
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Путь из till-anchor до каждого слота и станции существует, изолированных карманов нет"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-009
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "`station_types` точно совпадает с расставленными станциями"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-010
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Кухня заполняет ≥ 0,95 playfield при любом `safe_aspect` ∈ [0,45; 1,0], равномерный масштаб"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-011
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Камера фиксирована, zoom/ortho-size пересчитывается от `safe_aspect`"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-012
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Зазор у точек взаимодействия ≥ `agent_radius` = 0,40 м (приёмка пути: ≥ `agent_radius − 0,05`)"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: "2026-09-30"
+    status: active
+  - id: TR-layout-013
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Footprints станций, столешниц и стен (данные `KitchenConfig`, не коллизионные формы) не пересекаются"
+    domain: "Physics"
+    created: 2026-09-30
+    revised: "2026-09-30"
+    status: active
+  - id: TR-layout-014
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Минимальная зона тапа 48×48 dp на эталоне 360×640 dp"
+    domain: "UI/Input"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-015
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "`playfield_min_fill` = 0,95, `min_tap_target` = 48 dp — данные из реестра"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-016
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Без шейдерных анимаций и параллакса; запечённый свет; статичное свечение till-anchor"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-layout-017
+    system: layout
+    gdd: design/gdd/kitchen-station-layout.md
+    requirement: "Для гостей: 1 точка спавна, 4 точки очереди со стабильными ID, 1 выход — все на навигационной области"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-001
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Выбор тапа: ближайший pick-якорь (иконка станции / жетон гостя) в `tap_pick_radius` → иначе луч против статических AABB и плоскости пола (без физики) → иначе no-op"
+    domain: "Input"
+    created: 2026-09-30
+    revised: "2026-09-30"
+    status: active
+  - id: TR-control-002
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Тап вне навигационной области → ближайшая достижимая точка XZ"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-003
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Очереди тапов нет: последний тап сразу заменяет цель в любом состоянии"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-004
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Запрос валидности у владельца цели до выхода; пол всегда валиден"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-005
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Станция с несколькими точками подхода: кратчайший путь, при равенстве — меньший ID"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-006
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "`effective_speed = 4,0 м/с × speed_multiplier` {1,0; 1,15; 1,3; 1,5}"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-007
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Путь держит `body_clearance = agent_radius` (допуск −0,05 м из-за эрозии Recast целыми ячейками), спрямляется по прямой видимости"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: "2026-09-30"
+    status: active
+  - id: TR-control-008
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "`agent_radius = work_gap 0,45 − clearance_margin 0,05 = 0,40 м`"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-009
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Holding: предложение действия раз за тик; EXECUTE→Idle / WAIT→Holding / REFUSE→Idle"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-010
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Цель «пол» никогда не переводит в Holding"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-011
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "`tap_pick_radius` = 28 dp, пересчёт в px при смене масштаба"
+    domain: "Input/UI"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-012
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "`t_step` = 2,0 с — авторитетное значение для Order & Recipe"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-013
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Состояния Idle/Walking/Holding с заданными переходами"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-014
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "`AnimatedSprite3D`, ходьба в 4 направлениях, без бленда"
+    domain: "Animation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-015
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Задержка ≤ 50 мс (3 кадра) на маркер, старт, перенаправление, отказ — внутри движка"
+    domain: "Input/Perf"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-016
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Пауза только через игровое время Guest AI, не через visibility-сигнал"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-017
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Шаг кадра `speed × dt` может пройти несколько точек пути без проскока"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-018
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Тапом считается только press; последний press за кадр побеждает"
+    domain: "Input"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-control-019
+    system: control
+    gdd: design/gdd/player-control-barista-movement.md
+    requirement: "Конец матча: ввод отклоняется, путь сбрасывается, бариста стоит на месте"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-001
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Рецепт `{recipe_id, steps, tier}`; ровно 5 рецептов MVP"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-002
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "`recipe_price` — поиск по таблице, не вычисление"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-003
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Цены: cold_tea 2, black_tea 5, green_tea 5, *_lemon 7"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-004
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Инварианты цен в целых числах, проверка при загрузке"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-005
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Первый шаг — `cup`, последний — `serve` (ровно один)"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-006
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Каждый шаг, кроме `serve`, есть в `station_types`"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-007
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Нет двух рецептов с одинаковой последовательностью (префикс допустим)"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-008
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "В каждом уровне ≥ 1 рецепт"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-009
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "`is_valid_next`; чёрный лист → water_100, зелёный лист → water_80"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-010
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "`matches(steps)` сравнивает без `serve`"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-011
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "`recipes_by_tier` разбивает 5 рецептов без пересечений"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-012
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Карта цветов шагов (7 записей)"
+    domain: "UI"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-013
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Цена — целое ≥ 1, иначе ошибка загрузки"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-recipe-014
+    system: recipe
+    gdd: design/gdd/order-recipe-system.md
+    requirement: "Балансовая формула `coins_per_sec` — без runtime-кода"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-001
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "Чашка `{steps, ruined}`; `held_cup` — максимум одна"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-002
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "2 независимых чайника: EMPTY → BREWING → READY → EMPTY"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-003
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "`t_brew = 3,0 / speed_multiplier`"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-004
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "Мгновенные станции: выполнить или отказать в том же тике"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-005
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "Таблица ответов чайника: 12 комбинаций"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-006
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "WRONG_TEMP на пустом чайнике → `ruined = true`, чайник остаётся пустым"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-007
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "7 слотов EMPTY/HOLDING, безусловный обмен"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-008
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "`consume_held_cup()` — ровно один раз на подачу"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-009
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "Таймер чайника идёт в фоне каждый кадр симуляции"
+    domain: "Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-010
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "Таймеры на игровом времени с clamp `max_step_delta` = 0,25 с"
+    domain: "Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-011
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "`match_started` сбрасывает чайники, слоты и `held_cup`"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-012
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "Повторное добавление воды = OTHER (отказ), а не WRONG_TEMP"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-brewing-013
+    system: brewing
+    gdd: design/gdd/brewing-crafting-mechanic.md
+    requirement: "`speed_multiplier` — данные; в MVP 1,0"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-001
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Машина состояний гостя Approaching → Waiting → {Served \\| Leaving} → удалён"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-002
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "`guest_slot_count` = 4 со стабильными ID; невалидное значение — ошибка загрузки"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-003
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "`spawn_interval = 60 / (gpm(t) × onboarding_multiplier)`; фиксируется при спавне"
+    domain: "Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-004
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Отложенный спавн при занятых слотах; в очереди максимум один"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-005
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Терпение тикает с момента спавна"
+    domain: "Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-006
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Путь к слоту на 3,0 м/с; нет пути → сразу Waiting + лог"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-007
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Точка взаимодействия — всегда слот гостя"
+    domain: "Navigation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-008
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Подача: `matches()` → `consume_held_cup()` один раз → Served в том же тике"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-009
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "`remaining_fraction = clamp(1 − t/patience_max_g, 0, 1)`; `patience_max_g` фиксируется при спавне"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-010
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Слот освобождается при переходе в Served/Leaving"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-011
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Порядок тика: подачи → таймауты → конец → спавн; подача побеждает таймаут"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-012
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Player Control обновляется раньше Guest AI в том же кадре"
+    domain: "Core/Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-013
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "`guests_lost == 3` → заморозка, `match_ended` ровно один раз"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-014
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Онбординг 30 с: только простые рецепты, спавн ×0,5"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-015
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Guest AI — единственный владелец паузы игрового времени"
+    domain: "Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-016
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "`max_step_delta` = 0,25 с"
+    domain: "Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-017
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Валидация констант при загрузке"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-018
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Повторная валидация выходов DifficultyCurve при спавне с откатом к базовым значениям"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-019
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "`match_started` ровно один раз; дубликаты `request_new_match` игнорируются"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-020
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "RNG уровня рецепта `U[0,1)`, детерминирован через `FakeRng`"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-021
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Свободный слот с наименьшим стабильным ID"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-022
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Guest AI ≤ 0,5 мс в среднем / ≤ 1,0 мс p99 на кадр"
+    domain: "Perf"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-023
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Гость на `AnimatedSprite3D` в 4 направлениях; именованные ассеты"
+    domain: "Animation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-guest-024
+    system: guest
+    gdd: design/gdd/guest-ai-patience.md
+    requirement: "Кольцо терпения: billboard, 3 уровня (0,60 / 0,25), снимается мгновенно"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-001
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "`progress = clamp(t/180, 0, 1)^2,0`"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-002
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "Три кривые (гостей/мин 7→18, терпение 50→25, доля сложных 0→0,40)"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-003
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "Чистые функции от `t` (без учёта паузы), одинаковые для всех игроков"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-004
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "Без состояния; `t` передаётся аргументом"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-005
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "Онбординг применяет Guest AI, а не кривые"
+    domain: "AI"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-006
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "При `t ≥ ramp_duration` — плато на `_end`"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-007
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "Касса — не вход для кривых"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-008
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "Валидация при загрузке (диапазоны, NaN, `_end` не легче `_start`)"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-009
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "Детерминизм: побитово равные результаты"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-010
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "`t` сбрасывается по `match_started`"
+    domain: "Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-pacing-011
+    system: pacing
+    gdd: design/gdd/difficulty-curve-session-pacing.md
+    requirement: "`guests_per_minute_start` = 7,0 синхронизирован с Guest AI"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-001
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`coins_earned = recipe_price`"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-002
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`score_earned = round_half_up(price × 10 × (1 + rf))`"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-003
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`score_multiplier_base` = 10 — данные"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-004
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`match_score`: Idle → Accumulating → Frozen"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-005
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`match_score = 0` на `match_started`"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-006
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`best_score` сохраняется локально и никогда не уменьшается"
+    domain: "Save-Load"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-007
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`is_new_record` вычисляется на `match_ended` до обновления `best_score`"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-008
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`is_new_record = false` на `match_started`"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-009
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "`best_score := match_score` только при `is_new_record`"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-010
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "Монеты и очки не зависят от состояния кассы"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-011
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "Нет трат монет и конвертации монеты↔очки"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-012
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "Единственный триггер — `served(recipe_id, rf)`"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-currency-013
+    system: currency
+    gdd: design/gdd/currency-coins-score.md
+    requirement: "Несколько подач в одном тике — порядок не важен"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-001
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "`till_amount` ∈ [0, 250], `till_capacity` = 250, Open/Full, `full_since_utc`"
+    domain: "State"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-002
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "`coins_added = min(amount + coins, cap) − amount`, эмитится всегда (включая 0)"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-003
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "Open→Full в том же тике, когда касса заполнилась"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-004
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "Full не блокирует матчи"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-005
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "При переходе в Full сохраняется `full_since_utc`"
+    domain: "Save-Load"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-006
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "`daily_reset_time_utc` = 00:00 UTC"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-007
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "Проверка сброса только на `match_started` и холодном старте"
+    domain: "Time"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-008
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "Сброс: amount = 0, `full_since_utc` очищается"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-009
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "`till_amount` переживает перезапуск"
+    domain: "Save-Load"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-010
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "Незаполненная касса не сбрасывается"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-011
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "Несколько пропущенных полуночей → ровно один сброс"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-012
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "Подкрутка часов устройства — принятый риск MVP"
+    domain: "Platform-Web"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-till-013
+    system: till
+    gdd: design/gdd/till-day-cycle.md
+    requirement: "Till не трогает score"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-001
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Экранные полосы: счёт, 3 страйка, всплывающие числа, оверлей итогов; мир в полосы не заходит"
+    domain: "UI"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-002
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Мировые оверлеи: касса, чайники, кольцо и жетон гостя, жетоны чашки, метки станций, контур цели и кольцо на полу"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-003
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "HUD ничего не хранит и не кэширует, значения читаются каждый кадр"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-004
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Состояния Inactive → Active → MatchEnd → Active"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-005
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Жетон и кольцо появляются уже в состоянии Approaching"
+    domain: "UI"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-006
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Тапы по полосам не уходят в кухню; при открытом оверлее тапы получает только оверлей"
+    domain: "Input"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-007
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "«Играть снова» принимает тапы после fade ~250 мс + grace 500 мс"
+    domain: "Input"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-008
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Анимации HUD паузятся через игровое время"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-009
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "`till_fill_ratio = amount / capacity` каждый кадр"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-010
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Open→Full — только акцент на кассе, без чисел в полосе"
+    domain: "UI"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-011
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Испорченная чашка отличается силуэтом, не только цветом"
+    domain: "Rendering"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-012
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "При 9:20 постоянные элементы — счёт и страйки; страйки не скрываются"
+    domain: "UI"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-013
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Жетоны в Approaching рисуются с масштабом и прозрачностью 0,7; Waiting — поверх"
+    domain: "Animation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-014
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Два ухода в одном кадре — пульсы со сдвигом 100 мс"
+    domain: "Animation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-015
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Всплывающие числа с полным значением сразу, дуга ~400 мс; overflow — отскок без числа"
+    domain: "Animation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-016
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "`is_new_record` читается готовым флагом из Currency"
+    domain: "Core"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-017
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Разделение snap и smooth для анимаций"
+    domain: "Animation"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-018
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Отдельный звук на каждое событие"
+    domain: "Audio"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-019
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Константы тюнинга HUD — данные"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-020
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Чужие константы только читаются"
+    domain: "Data-Config"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-021
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Контур цели и кольцо на полу меняются в том же кадре, что и цель Player Control"
+    domain: "Input"
+    created: 2026-09-30
+    revised: ""
+    status: active
+  - id: TR-hud-022
+    system: hud
+    gdd: design/gdd/hud-feedback-ui.md
+    requirement: "Опция reduced-motion для пульса колец (решается в `/ux-design`)"
+    domain: "UI"
+    created: 2026-09-30
+    revised: ""
+    status: active
 
 # --- EXAMPLE ENTRIES (remove when first real entries are added) ---
 #

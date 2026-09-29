@@ -346,8 +346,8 @@ Formulas (добавлена при ревью 2026-09-28); остальные �
 
 | # | Вопрос | Владелец | Когда решать |
 |---|---|---|---|
-| 1 | Точный бюджет времени/размера загрузки на слабых Android | technical-director / прототип | До конца MVP (2–3 недели) |
+| ~~1~~ | ~~Точный бюджет времени/размера загрузки на слабых Android~~ **Решено ADR-0007 (2026-09-30, Proposed):** загрузка ≤ 13,5 МБ сжатыми (движок 10,2 МБ — замерено на шаблоне 4.7.2), TTI холодный ≤ 20 с при 10 Мбит/с / тёплый ≤ 6 с на эталонном классе устройств; числа на устройстве подтверждает spike ADR-0001 | technical-director / прототип | Закрыто (ждёт spike) |
 | 2 | Платёжный метод вместо Telegram Stars | economy-designer (Monetization / IAP Integration) | Alpha |
 | 3 | ~~Поведение при сворачивании Telegram Mini App / уходе вкладки в фон — пауза партии или потеря~~ **Решено 2026-09-28**: пауза, отсчёт продолжается после возврата (`guest-ai-patience.md`, Rule 11) | game-designer (Guest AI & Patience) | Закрыто |
 | 4 | Механизм идентификации игрока в Standalone Web без Telegram user ID | technical-director (Backend & Persistence) | Vertical Slice |
-| 5 | Какой "кадр" имеется в виду в AC#7 — Godot `_process`/`_physics_process` или браузерный `requestAnimationFrame` (Standalone Web и Telegram Mini App — разные раннеры одного экспорта) | gameplay-programmer / technical-director | При разбиении на stories |
+| ~~5~~ | ~~Какой "кадр" имеется в виду в AC#7 — Godot `_process`/`_physics_process` или браузерный `requestAnimationFrame`~~ **Решено ADR-0001 (2026-09-30):** кадр = один тик Godot `_process`; флаг «грязный» гасится там раз за кадр | gameplay-programmer / technical-director | Закрыто |

@@ -953,13 +953,13 @@ Integration — в `tests/integration/guest_ai/`.
 
 ### Производительность
 
-48. **[Performance, ADVISORY, порог TBD]** **GIVEN** web-сборка
-    (Compatibility) на эталонном слабом Android в Telegram Mini App, 4
-    гостя, 18 гостей/мин, 180 с, **WHEN** замеряется время обновления
-    Guest AI за кадр (NavigationAgent отдельно), **THEN** среднее и p99 не
-    превышают порога из perf-ADR. Предварительно ≤ 0.5 мс / ≤ 1.0 мс при
-    общем бюджете 16.6 мс; порог утверждает technical-director (Open
-    Questions #8).
+48. **[Performance, ADVISORY]** **GIVEN** web-сборка
+    (Compatibility) на эталонном слабом Android (класс — ADR-0007), 4
+    гостя, 18 гостей/мин, 180 с, **WHEN** замеряется время шага
+    `GuestSim` за кадр (путевые запросы — отдельной строкой, ADR-0006),
+    **THEN** среднее ≤ 0.5 мс и p99 ≤ 1.0 мс при общем бюджете 16.6 мс
+    (порог утверждён в ADR-0007, ожидает подписи technical-director;
+    Open Questions #8).
 
 ### Жизненный цикл партии и игровое время (Rule 8, Rule 11, Rule 13)
 
@@ -1016,7 +1016,7 @@ Integration — в `tests/integration/guest_ai/`.
 | 5 | Структура данных гостя и переиспользование объектов (пул на 4 слота + уходящие гости) → становится ADR | lead-programmer | ADR до первой реализации гостей |
 | 6 | Пульсация кольца (0.5 Гц и быстрее) и опция reduced motion: нужна ли статичная альтернатива для доступности? | accessibility-specialist | При `/ux-design` HUD (Pre-Production) |
 | ~~7~~ | ~~Контракт с Currency: Coins & Score (`recipe_id`, `remaining_fraction` на Served) предварительный. Проверить, что Currency принимает именно его~~ **Решено 2026-09-28**: подтверждено без изменений — Currency: Coins & Score Core Rule 1 и Formula 1/2 принимают ровно этот payload | economy-designer | Закрыто |
-| 8 | Бюджет производительности Guest AI на кадр и эталонное слабое устройство (AC 48). В проекте есть только общий бюджет 16.6 мс | technical-director | perf-ADR до Vertical Slice |
+| ~~8~~ | ~~Бюджет производительности Guest AI на кадр и эталонное слабое устройство (AC 48)~~ **Решено ADR-0007 (2026-09-30, Proposed):** ≤ 0.5 мс avg / ≤ 1.0 мс p99 на `GuestSim.step`, путевые запросы отдельной строкой 0.1/0.3 мс; замер `PerfProbe` на устройстве, подпись technical-director при Accepted | technical-director | Закрыто (ждёт Accepted) |
 | 9 | ~~Выбор рецепта внутри уровня — второй бросок из того же потока RNG или отдельного? Влияет на детерминизм тестов → становится ADR~~ **Решено ADR-0004 (2026-09-30):** отдельные потоки `guest_tier` и `guest_recipe`, инъецируемый `Rng`, seed партии логируется в debug | lead-programmer | Закрыто |
 | 10 | Формат стабильного ID слотов гостей (правило ничьей Rule 3) — тот же вопрос открыт в Player Control | level-designer | Вместе с #1 |
 | 11 | `guest_walk_speed` = 3.0 м/с — предварительное значение, в прототипе гостей не было. Проверить плейтестом: сколько терпения съедает путь до слота | game-designer | Первый плейтест с гостями |

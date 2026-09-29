@@ -122,6 +122,28 @@ state_ownership:
     added: 2026-09-30
     revised: ""
 
+  - state: navigation_map
+    status: active
+    owner_system: pathing
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    interface: "Navigator.path(from, to) -> PathResult(points y=0, length, reached); Pathing.shortest_to(from, points); poll_ready() (boot, one forced map sync per call); verify(kitchen) -> Array[String]; dispose(). Private NavigationServer3D map + region; NavigationMesh baked at boot by NavMeshBaker from KitchenConfig footprints"
+    write_access: pathing-only (bake, map, region); no other module calls NavigationServer3D
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: interaction_point_ids
+    status: active
+    owner_system: kitchen-layout
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    interface: "InteractionPoint(owner_id: StringName [a-z0-9_]+, index: int); order = owner_id by String <, then index. Stations use data id, guest slots guest_slot_0..3; footprints, pick anchors, floor_bounds and points come from KitchenConfig"
+    write_access: none-after-load (KitchenConfig, ADR-0004)
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -319,6 +341,62 @@ interfaces:
     added: 2026-09-30
     revised: ""
 
+  - contract: path_query
+    status: active
+    pattern: direct_call
+    producer: pathing
+    consumers:
+      - barista-controller
+      - guest-sim          # walkers; same map and radius
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    signal_signature: "Navigator.path(from: Vector3, to: Vector3) -> PathResult {points: PackedVector3Array (y = 0.0), length: float, reached: bool (end within 0.05 m XZ of target)}; unreachable/outside target ends at nearest mesh point"
+    notes: "Path computed once per accepted target, never repathed while walking (Player Control Rule 5). Tests use FakeNavigator"
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: tap_resolved
+    status: active
+    pattern: signal
+    producer: tap-picker
+    consumers:
+      - barista-controller
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    signal_signature: "tapped(target: TapTarget)  # TapTarget {kind: FLOOR|STATION|GUEST, owner_id: StringName, point_index: int, point: Vector3 (FLOOR only, pre-clamp)}; emitted from TapPicker.flush at tick step 2 only"
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: guest_pick_targets
+    status: active
+    pattern: direct_call
+    producer: guest-sim
+    consumers:
+      - tap-picker
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    signal_signature: "GuestTargets.active_targets() -> Array[PickCandidate]  # Approaching/Waiting guests only: id, pick anchor, hit-box AABB; read-only"
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: boot_navigation_ready
+    status: active
+    pattern: direct_call
+    producer: pathing
+    consumers:
+      - match-director     # polls each Booting frame, then verify(), then PlatformBridge.mark_boot_complete() / fail_boot()
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    signal_signature: "Pathing.poll_ready() -> bool; Pathing.verify(kitchen) -> Array[String] (empty = ok)"
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
 # Example:
 #
 # interfaces:
@@ -346,7 +424,91 @@ interfaces:
 # Register a budget when an ADR explicitly claims a frame time allocation.
 # The registry lets /architecture-review verify the total doesn't exceed the target.
 
-performance_budgets: []
+performance_budgets:
+  - target_fps: 60
+    floor_fps: 30
+    total_frame_budget_ms: 16.6
+    floor_frame_budget_ms: 33.3
+    platform: "Web (WebGL2); floor applies to the reference low-end Android class (RD)"
+    script_total_ms: "avg <= 2.0, p99 <= 4.0 (sim + presentation scripts on RD)"
+    render: "draw calls <= 100 target / 150 ceiling per frame incl. HUD; <= 75 renderable 3D instances worst case; textures <= 48 MB incl. mipmaps; 3D pixel budget 1.5 Mpx via scaling_3d_scale (floor 0.6)"
+    memory: "wasm heap peak <= 256 MB (read from JS); <= 2 MB growth over 5 matches"
+    load: "compressed download <= 13.5 MB (engine 10.2 MB measured); cold TTI <= 20 s @10 Mbps, warm <= 6 s"
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    added: 2026-09-30
+    revised: ""
+
+  - system: match-director
+    status: active
+    budget_ms: 0.05
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "Incl. GameClock; RD avg"
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md]
+    added: 2026-09-30
+    revised: ""
+
+  - system: tap-picker
+    status: active
+    budget_ms: 0.05
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "Tick step 2; p99 0.30 reported"
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md, docs/architecture/adr-0006-navigation-tap-picking.md]
+    added: 2026-09-30
+    revised: ""
+
+  - system: barista-controller
+    status: active
+    budget_ms: 0.10
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "Tick step 3 incl. PathFollower and <= 3 path queries per tap"
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md]
+    added: 2026-09-30
+    revised: ""
+
+  - system: brewing
+    status: active
+    budget_ms: 0.05
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "Tick step 4"
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md]
+    added: 2026-09-30
+    revised: ""
+
+  - system: guest-sim
+    status: active
+    budget_ms: 0.50
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "Tick step 5; p99 1.0 (Guest AI AC 48); path queries are a separate 0.10 ms line"
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md]
+    added: 2026-09-30
+    revised: ""
+
+  - system: guest-pathing
+    status: active
+    budget_ms: 0.10
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "Guest path queries inside step 5"
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md, docs/architecture/adr-0006-navigation-tap-picking.md]
+    added: 2026-09-30
+    revised: ""
+
+  - system: economy-and-save
+    status: active
+    budget_ms: 0.05
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "Tick step 6 (Currency/Till/SaveStore check); a dirty localStorage flush <= 2.0 ms once per change"
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md, docs/architecture/adr-0005-local-persistence-savestore.md]
+    added: 2026-09-30
+    revised: ""
+
+  - system: presentation
+    status: active
+    budget_ms: 0.80
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    notes: "Sprite state, rings, pop numbers, HUD scripts; sum of averages 1.70 of 2.00, 0.30 reserve"
+    referenced_by: [docs/architecture/adr-0007-performance-load-budgets.md]
+    added: 2026-09-30
+    revised: ""
 
 # Example:
 #
@@ -488,6 +650,88 @@ api_decisions:
     added: 2026-09-30
     revised: ""
 
+  - purpose: barista_and_guest_pathfinding
+    status: active
+    api: "NavigationServer3D.map_get_path(map, from, to, optimize=true) on a private map, behind the Navigator interface (NavServerNavigator)"
+    not: "NavigationAgent3D / NavigationRegion3D / NavigationObstacle3D nodes; AStarGrid2D (kept only as GridNavigator contingency behind Navigator); RVO avoidance"
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    reason: "Agent nodes need per-node _physics_process and auto-repath (ADR-0003, Rule 5) and duplicate the radius; measured path length 0.958x the prototype, clearance 0.380 m at r 0.40"
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: navmesh_bake
+    status: active
+    api: "Runtime NavigationServer3D.bake_from_source_geometry_data from KitchenConfig footprints: floor triangles + add_projected_obstruction(carve=false); cell_size = cell_height = 0.05, agent_radius = ControlConfig.agent_radius (multiple of 0.05), agent_height 1.0, agent_max_climb 0.0, edge_max_error 0.5"
+    not: "carve=true (clearance 0.000); cell_size 0.125/0.25 (radius ceiled to 0.50, 15/19 points off the mesh); editor-baked NavigationRegion3D (stale radius); NavigationMesh y as floor height (surface sits 0.10 m up)"
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    reason: "Verified on 4.7.2; single source for radius; bake ~5 ms desktop (wasm unmeasured; contingency pre-baked .res from the same baker)"
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: navigation_map_sync
+    status: active
+    api: "Private map with map_set_use_async_iterations(false); Pathing.poll_ready() calls map_force_update once per Booting frame; ready = map_get_iteration_id(map) > 0 and map_get_closest_point(spawn) within 0.01 m XZ"
+    not: "Querying right after setup; relying on the engine loop to sync a hand-made map; the world's default navigation map"
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    reason: "Queries before first sync print an engine ERROR and return empty; normal runs sync by frame 1 but --script/headless tests never do without force_update, so forcing keeps both identical (observed 4.7.2)"
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: tap_picking
+    status: active
+    api: "Camera3D-based TapProjector: to_screen (unproject_position) for anchor proximity <= tap_pick_radius, then AABB.intersects_ray over static footprints/guest hit-boxes, then Plane(UP, 0).intersects_ray; input via _unhandled_input (ScreenTouch pressed + left MouseButton pressed), one stored press, resolved in flush()"
+    not: "PhysicsDirectSpaceState3D.intersect_ray / RayCast3D / Area3D / any CollisionObject3D in the kitchen; resolving inside the input callback; pick by work point on the floor"
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    reason: "Principle 6 (no physics world); Logic-testable with FakeProjector; pick anchors match the playtested prototype"
+    referenced_by:
+      - docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: render_resolution_cap
+    status: active
+    api: "Viewport.scaling_3d_scale (Bilinear) = clamp(sqrt(render_pixel_budget / canvas_px_area), render_scale_min, render_scale_3d), static per canvas size, from ViewConfig"
+    not: "Runtime adaptive/dynamic resolution; allow_hidpi=false as the primary cap (kept as WebGL2 fallback)"
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    reason: "Fill-rate dominates on high-DPR phones; scale verified applied in 4.7.2 gl_compatibility (desktop)"
+    referenced_by:
+      - docs/architecture/adr-0007-performance-load-budgets.md
+      - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: boot_shader_prewarm
+    status: active
+    api: "RenderPrewarm during Booting: visible, in-frustum instances of every material variant + AnimatedSprite3D sets under the gameplay Environment/camera, full charset on a live Label3D, each SFX at zero volume; await RenderingServer.frame_post_draw x2; then mark_boot_complete()"
+    not: "visible=false / off-screen / modulate.a=0 instances (not drawn, compile nothing); Shader Baker (no GL/WebGL support)"
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    reason: "Compatibility compiles programs on first draw; avoid first-spawn hitch"
+    referenced_by:
+      - docs/architecture/adr-0007-performance-load-budgets.md
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0003-match-simulation-clock-tick-events.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: perf_measurement
+    status: active
+    api: "PerfProbe (RefCounted) created only when OS.has_feature(\"perf_probe\"); wraps step() calls in MatchDirector with Time.get_ticks_usec; export presets web-perf (release: timings, wasm heap via JS) and web-perf-debug (debug: orphans, MEMORY_STATIC leak run)"
+    not: "MEMORY_STATIC / OBJECT_ORPHAN_NODE_COUNT as evidence from release builds (read 0); timing assertions in CI"
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    reason: "Debug-only counters; coarse web timers; determinism rule for tests"
+    referenced_by:
+      - docs/architecture/adr-0007-performance-load-budgets.md
+    added: 2026-09-30
+    revised: ""
+
 # Example:
 #
 # api_decisions:
@@ -623,6 +867,62 @@ forbidden_patterns:
     description: "A corrupt, missing or unavailable save must never block boot or a match; fall back to per-key defaults (persistent=false when storage is unavailable or the save is from a newer schema)."
     why: "Save is player data, unlike config (ADR-0004); the game must stay playable in private mode."
     adr: docs/architecture/adr-0005-local-persistence-savestore.md
+    added: 2026-09-30
+
+  - pattern: navigation_agent_nodes
+    status: active
+    description: "No NavigationAgent3D, NavigationRegion3D, NavigationObstacle3D or navigation links anywhere; no use of the world's default navigation map; NavigationServer3D is called only from NavServerNavigator, NavMeshBaker and Pathing."
+    why: "Single radius source, no per-node physics-frame processing, no auto-repath (ADR-0003, Player Control Rule 5); engine calls stay behind Navigator so GridNavigator can replace them."
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+
+  - pattern: physics_objects_in_kitchen
+    status: active
+    description: "The kitchen scene and picking must not use PhysicsServer3D, PhysicsDirectSpaceState3D, RayCast3D, Area3D or any CollisionObject3D/CollisionShape3D. Footprints are data (KitchenConfig)."
+    why: "Architecture Principle 6; picking and navigation share one data source and are testable without a SceneTree. Enforced by CI grep over src/ and kitchen scenes."
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+
+  - pattern: navmesh_carve_or_unaligned_cell
+    status: active
+    description: "Obstructions must not be added with carve=true; NavMesh cell_size must stay 0.05; agent_radius must be a multiple of it within 1e-6, snapped with snappedf before baking, and below work_gap."
+    why: "carve=true gives zero clearance; a non-multiple radius is silently ceiled by the engine and pushes work points off the mesh (measured 4.7.2)."
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+
+  - pattern: navmesh_height_as_floor
+    status: active
+    description: "Gameplay must not use the y of returned navigation paths or closest points; Pathing forces y = 0.0."
+    why: "Baked surface sits 2 x cell_height (0.10 m) above the source floor; using it lifts the barista off the ground."
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+
+  - pattern: repath_while_walking
+    status: active
+    description: "A walking barista or guest must not recompute its path; only a new accepted target (including a tap on the current target) computes one, from the current position."
+    why: "Player Control Rule 5 (no recompute mid-path) and deterministic replays."
+    adr: docs/architecture/adr-0006-navigation-tap-picking.md
+    added: 2026-09-30
+
+  - pattern: timing_assertions_in_tests
+    status: active
+    description: "Automated tests must not assert on measured time (ms, fps); CI perf gates are deterministic only (compressed export size, instance census, texture bytes)."
+    why: "Testing Standards determinism; desktop headless timings do not represent the reference device."
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    added: 2026-09-30
+
+  - pattern: gameplay_timing_calls
+    status: active
+    description: "Gameplay and presentation code must not call Time/OS timing functions for profiling; only PerfProbe, only from MatchDirector, only in perf_probe builds."
+    why: "Zero cost in shipped builds; one measurement point aligned with tick steps."
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
+    added: 2026-09-30
+
+  - pattern: unbudgeted_render_sources
+    status: active
+    description: "No GPU particles, real-time lights, shadows or post-processing; any new per-frame render source must be added to the worst-case census scene and fit <= 75 instances / <= 150 draw calls."
+    why: "Compatibility does not batch 3D instances; cost scales with count on the reference device."
+    adr: docs/architecture/adr-0007-performance-load-budgets.md
     added: 2026-09-30
 
 # Example:

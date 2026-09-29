@@ -58,7 +58,7 @@ Currency must keep `best_score` across restarts and never lower it; Till must ke
 
 **1. `SaveStore` is an in-memory model with owner scopes.** `SaveStore` (`RefCounted`) holds a `Dictionary` of primitive values (`int`, `String`, `StringName` stored as `String`), loaded once at boot (init step 4). Owners never touch keys directly: `MatchDirector._compose()` hands each owner a `SaveScope` (`save_store.scope(&"currency")`) that prefixes keys (`currency.best_score`) and exposes typed `read_int/write_int`, `read_string/write_string`. A scope can only read and write its own prefix, which enforces single-writer ownership and Pillar 4 structurally. `write_*` only updates memory and marks the store dirty.
 
-**2. Flush policy — owners never flush.** `MatchDirector._process` calls `save_store.flush_if_dirty()` once, after tick step 5 (a new ADR-0003 step 6), so all writes from one frame (e.g. Served → Till amount + Full transition, or `match_ended` → `best_score`) become one durable write. `MatchLifecycle.on_visibility_changed(false)` also calls `flush_if_dirty()` synchronously inside the JS visibility callback — on web this is the last reliable moment before the browser may kill the page. There is no periodic or async flush.
+**2. Flush policy — owners never flush.** `MatchDirector._process` calls `save_store.flush_if_dirty()` once, after tick step 5 (a new ADR-0003 step 6), so all writes from one frame (e.g. Served → Till amount + Full transition, or `match_ended` → `best_score`) become one durable write. The `_compose()`-owned visibility handler (ADR-0003 §4) calls `lifecycle.on_visibility_changed(false)` and then `flush_if_dirty()` synchronously inside the JS visibility callback — `MatchLifecycle` itself has no `SaveStore` dependency — on web this is the last reliable moment before the browser may kill the page. There is no periodic or async flush.
 
 **3. Blob format: one versioned JSON object.** `{"schema_version": 1, "currency.best_score": 950, "till.amount": 120, "till.day_state": "open", "till.full_since_utc": 0}`. Serialized with `JSON.stringify`, parsed with a `JSON` instance's `parse()` (no engine error spam). Because JSON numbers come back as `float`, reads go through a validator that accepts only finite, integral, in-range numbers and casts with `int()`. Each key is validated independently: an invalid or missing key falls back to its owner-declared default and is logged once; valid keys are kept. An unparseable blob or an older unmigratable `schema_version` yields all defaults; the original blob is copied once via `backend.write_backup()` (web key `tea_rush.save.corrupt`, file `save.json.corrupt`) before the next overwrite. A **newer** `schema_version` than this build knows (stale cached build) yields defaults for the session and sets `persistent = false` — the newer save is never overwritten. Future versions migrate forward through `_migrate_vN_to_vN1(data)` functions applied in order.
 
@@ -90,8 +90,8 @@ Boot step 4: backend = WebStorageBackend | FileBackend | MemoryBackend
 Frame:  MatchDirector._process
           0–5  (ADR-0003 tick) ── Currency/Till: scope.write_int(...)  → memory + dirty
           6    save_store.flush_if_dirty() ─► backend.write_blob(JSON) ─► localStorage.setItem (sync)
-Hide:   JS visibilitychange ─► PlatformBridge ─► MatchLifecycle.on_visibility_changed(false)
-                                               ├─► clock.pause()
+Hide:   JS visibilitychange ─► PlatformBridge ─► MatchDirector (_compose handler)
+                                               ├─► lifecycle.on_visibility_changed(false) ─► clock.pause()
                                                └─► save_store.flush_if_dirty()   (same JS callback)
 ```
 

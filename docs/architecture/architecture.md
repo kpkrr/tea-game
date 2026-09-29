@@ -12,7 +12,7 @@
   order-recipe-system, player-control-barista-movement, brewing-crafting-mechanic,
   guest-ai-patience, difficulty-curve-session-pacing, currency-coins-score,
   till-day-cycle, hud-feedback-ui (10/10 MVP)
-- ADRs Referenced: ADR-0001 (Web build & platform shell, Proposed), ADR-0002 (Viewport, camera fit & 2.5D presentation, Proposed), ADR-0003 (Match simulation: clock, tick order, pause & events, Proposed), ADR-0004 (Data config & load-time validation, Proposed), ADR-0005 (Local persistence — SaveStore, Proposed)
+- ADRs Referenced: ADR-0001 (Web build & platform shell, Proposed), ADR-0002 (Viewport, camera fit & 2.5D presentation, Proposed), ADR-0003 (Match simulation: clock, tick order, pause & events, Proposed), ADR-0004 (Data config & load-time validation, Proposed), ADR-0005 (Local persistence — SaveStore, Proposed), ADR-0006 (Navigation & tap picking, Proposed), ADR-0007 (Performance & load budgets, Proposed)
 - Technical Director Sign-Off: 2026-09-30 — APPROVED WITH CONDITIONS (код не
   начинать, пока ADR-0001…0005 не Accepted; ADR-0001 начинается с модуля
   `engine-reference/godot/modules/web.md` и spike на реальном телефоне)
@@ -32,7 +32,7 @@
 | Rendering | ⚠️ HIGH | Compatibility = WebGL2. В 4.7 дефолт stretch сменился на `canvas_items`/`expand` — задаём явно (TR-platform-007). Линии `CanvasItem` в 4.7 тоньше (нет AA-feather) — касается колец терпения, если рисовать их 2D-линиями. |
 | Input | ⚠️ HIGH | Именованные `InputEvent.DEVICE_ID_MOUSE/KEYBOARD` (4.7); dual-focus (4.6) — касается кнопки «Играть снова» при мыши и тапе. |
 | GUI | ⚠️ HIGH | `Control` offset-transform независим от layout (4.7) — использовать для анимаций оверлея итогов и всплывающих чисел. |
-| Navigation | MEDIUM | 3D API (`NavigationAgent3D`, `NavigationServer3D`) стабилен; изменения 4.5 касались 2D. Нерешённый вопрос — даёт ли NavMesh «середину прохода + спрямление» без постобработки (ADR-0006). |
+| Navigation | MEDIUM | Решено ADR-0006 и проверено пробой на 4.7.2: прямые запросы `NavigationServer3D` на собственной карте, NavMesh запекается на старте из данных; `NavigationAgent3D` не используется. Карта не готова сразу после создания — нужен `map_force_update` и опрос готовности; `agent_radius` округляется вверх до целого числа ячеек (`modules/navigation.md`). |
 | Physics (Jolt) | MEDIUM → не используется | Архитектура не опирается на 3D-физику (см. принцип 6). Критические изменения Jolt в 4.7 (WorldBoundary, SoftBody) проект не затрагивают. |
 | Animation / Audio | LOW | `AnimatedSprite3D`, `Sprite3D`, `AudioStreamPlayer` — стабильны. |
 
@@ -58,7 +58,7 @@
 │               · ConfigLoader · SaveStore · KitchenLayout (статика + NavMesh)│
 ├────────────────────────────────────────────────────────────────────────────┤
 │ PLATFORM      Godot web export (WebGL2, single-thread) · HTML-оболочка      │
-│               · Page Visibility API · IndexedDB   [Telegram SDK — отложен]  │
+│               · Page Visibility API · localStorage [Telegram SDK — отложен] │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -85,20 +85,20 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 
 | Модуль | Слой | Владеет | Отдаёт наружу | Потребляет | Engine API |
 |---|---|---|---|---|---|
-| **PlatformBridge** (autoload) | Foundation | safe-area rect (= вьюпорт браузера), состояние `Loading/Ready` | `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached` | браузер: resize/orientationchange, Page Visibility API | ⚠️ `JavaScriptBridge` (только visibility), `get_viewport().size_changed` |
+| **PlatformBridge** (autoload) | Foundation | safe-area rect (= вьюпорт браузера в px окна, `DisplayServer.window_get_size()`), видимость (`is_visible()`), состояние `Loading/Ready/Failed` | `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached` | браузер: resize/orientationchange, Page Visibility API | ⚠️ `JavaScriptBridge` (только visibility), `get_viewport().size_changed` |
 | **ViewFit** | Foundation | `safe_aspect`, playfield rect, letterbox, размер и смещение ortho-камеры, `kitchen_rect` (ADR-0002; 1 единица канваса = 1 dp) | `playfield_changed(playfield, kitchen_rect)` | `PlatformBridge.safe_area_changed`, габариты кухни | ⚠️ stretch mode, `Camera3D` (ortho `size`) |
 | **GameClock** | Foundation | игровое время `t`, флаги `hidden` и `frozen`, clamp `max_step_delta` (ADR-0003) | `t`, `sim_dt`, `ui_dt`, `running_changed(running)` | команды pause/resume/freeze/reset от MatchLifecycle | — (чистый GDScript) |
 | **MatchDirector** | Foundation | порядок тика, корень композиции матча (DI) | — | все модули матча | `_process` с `process_priority = -100` (ADR-0003; не `_physics_process`) |
 | **ConfigLoader** | Foundation | загруженные и провалидированные данные тюнинга (ADR-0004: `GameConfig` + подресурсы на систему, `.tres` в `assets/data/config/`, `ConfigValidator` собирает все ошибки во всех сборках) | типизированные `Resource`-конфиги, инъекция через конструкторы | файлы данных | `ResourceLoader`, `Resource` |
 | **SaveStore** | Foundation | формат и версия сохранения (JSON-блоб, `schema_version`), backend по платформе (ADR-0005) | `scope(owner) -> SaveScope` (`read_int/write_int`, …), `flush_if_dirty()` | — | web: `localStorage` через хелпер оболочки + `JavaScriptBridge.get_interface`; desktop: `user://` + атомарная замена; `user://` на web не используется |
-| **KitchenLayout** | Foundation | станции, 7 слотов, 4 слота гостей, spawn/exit, till-anchor, `station_types`, NavMesh | позиции + стабильные ID, `station_types` | — | `NavigationRegion3D`, `Sprite3D` |
+| **KitchenLayout** | Foundation | станции, 7 слотов, 4 слота гостей, spawn/exit, till-anchor, `station_types`, footprints (данные для NavMesh и выбора тапа), pick-якоря, точки взаимодействия со стабильными ID `(owner_id, index)` (ADR-0006) | позиции + стабильные ID, `station_types`, footprints | `KitchenConfig` | `Sprite3D` (коллизий и `NavigationRegion3D` нет) |
 | **RecipeBook** | Core | 5 рецептов, прайс, грамматика шагов, цвета шагов | `is_valid_next`, `matches`, `recipe_price`, `recipes_by_tier` | `station_types`, конфиг | — |
-| **TapPicker** | Core | правило выбора цели тапа | `tapped(target)` | ввод (в dp, ADR-0002), позиции KitchenLayout/Guests | `Camera3D.unproject_position`, `project_ray_*`, `Plane.intersects_ray` |
+| **TapPicker** | Core | правило выбора цели тапа (ADR-0006): reject вне `kitchen_rect` → близость к pick-якорю ≤ 28 dp → ray-vs-AABB → плоскость пола | `tapped(target: TapTarget)`, `on_press(pos)`, `flush(running)` | ввод (в dp, ADR-0002), KitchenLayout, `GuestTargets` | `Camera3D` через `TapProjector`, `AABB.intersects_ray`, `Plane.intersects_ray`; физики нет |
 | **BaristaController** | Core | состояние `Idle/Walking/Holding`, путь, текущая цель | `state`, `target`, `offer_action()` | `tapped`, Pathing, валидность от Brewing/Guest | `AnimatedSprite3D` |
-| **Pathing** | Core | запросы пути, `agent_radius` (одно значение) | `path_to(point) -> PackedVector3Array` | NavMesh / сетку KitchenLayout | ⚠️ `NavigationServer3D` *или* `AStarGrid2D` (решает ADR-0006) |
-| **Brewing** | Feature | `held_cup`, 2 чайника (`EMPTY/BREWING/READY`), 7 слотов | ответы `EXECUTE/WAIT/REFUSE`, `consume_held_cup()`, состояния для HUD | RecipeBook, `GameClock.step_dt`, `match_started` | — |
+| **Pathing** | Core | приватная карта навигации + регион, `agent_radius` (одно значение, из `ControlConfig`), готовность карты (ADR-0006) | `Navigator.path(from, to) -> PathResult`, `shortest_to(from, points)`, `poll_ready()`, `verify(kitchen)`, `dispose()` | footprints KitchenLayout, `ControlConfig.agent_radius` | `NavigationServer3D` (карта/регион/`map_get_path`, `bake_from_source_geometry_data`); запасной вариант — `GridNavigator` (`AStarGrid2D`) за тем же интерфейсом |
+| **Brewing** | Feature | `held_cup`, 2 чайника (`EMPTY/BREWING/READY`), 7 слотов | ответы `EXECUTE/WAIT/REFUSE`, `consume_held_cup()`, состояния для HUD | RecipeBook, `step(dt)` от MatchDirector, `match_started` | — |
 | **MatchLifecycle** (Guest AI) | Feature | `match_started`/`match_ended`, `guests_lost`, политика паузы | `match_started`, `match_ended`, команды GameClock | `ready_reached`, `visibility_changed`, `request_new_match` | — |
-| **GuestSim** (Guest AI) | Feature | гости (4 слота), терпение, спавн, RNG выбора рецепта | `served(recipe_id, remaining_fraction)`, `target_vanished`, данные гостей для HUD | DifficultyCurve, RecipeBook, Brewing, Pathing | `AnimatedSprite3D`, агент навигации |
+| **GuestSim** (Guest AI) | Feature | гости (4 слота), терпение, спавн, RNG выбора рецепта | `served(recipe_id, remaining_fraction)`, `target_vanished`, данные гостей для HUD | DifficultyCurve, RecipeBook, Brewing, Pathing (`Navigator`) | `AnimatedSprite3D` (без `NavigationAgent3D`, ADR-0006) |
 | **DifficultyCurve** | Feature | ничего (без состояния) | `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` | конфиг | — |
 | **Currency** | Feature | `match_score`, `best_score`, `is_new_record` | `coins_earned(n)`, `score_earned(n)`, геттеры | `served`, `match_started`, `match_ended`, SaveStore | — |
 | **Till** | Feature | `till_amount`, `Open/Full`, `full_since_utc` | `coins_added(n)`, `day_state`, `till_fill_ratio` | `coins_earned`, `match_started`, `UtcClock`, SaveStore | — |
@@ -160,7 +160,7 @@ GuestSim ─served(recipe_id, rf)─► Currency: coins = recipe_price; score = 
 ### 3. Жизненный цикл матча и пауза
 
 ```
-PlatformBridge.ready_reached + KitchenLayout загружен ─► MatchLifecycle.start()
+PlatformBridge.ready_reached (конфиг валиден + Pathing готов + самопроверка достижимости точек, ADR-0006) ─► MatchLifecycle.start()
 HUD «Играть снова» (после grace 500 мс) ─request_new_match() (метод, ставит старт в очередь)─► MatchLifecycle
 MatchLifecycle.apply_pending() (шаг 0 тика): GameClock.reset(); emit match_started
     → Brewing сбрасывает всё, Currency: match_score=0, Till: проверка UTC-сброса,
@@ -198,7 +198,7 @@ IndexedDB: момент синхронизации и поведение при 
 2. PlatformBridge (autoload): первая safe area (= вьюпорт), подписка на resize и visibility
 3. ConfigLoader: загрузка и валидация всех данных → ошибка = `PlatformBridge.fail_boot()`, статичный экран «обновите страницу» во всех сборках, полный список ошибок в debug (ADR-0004)
 4. SaveStore: чтение блоба (при повреждении или его отсутствии — дефолты по ключам, игра не блокируется; ADR-0005)
-5. Kitchen-сцена: KitchenLayout, ViewFit (камера), MatchDirector собирает граф модулей (DI)
+5. Kitchen-сцена: KitchenLayout, ViewFit (камера), MatchDirector собирает граф модулей (DI); Pathing запекает NavMesh и опрашивается каждый кадр `Booting`, пока карта не готова (обычно 1 кадр), затем `verify()` — путь от spawn до каждой точки взаимодействия, иначе `fail_boot` (ADR-0006)
 6. Till: проверка UTC-сброса на холодном старте
 7. PlatformBridge.ready_reached → экран загрузки уходит без белой вспышки → MatchLifecycle.start()
 ```
@@ -257,8 +257,11 @@ func request_new_match() -> void    # MatchLifecycle; вызывает HUD (ко
 
 ## ADR Audit
 
-ADR пока нет. Traceability: **0 из 164 требований покрыто ADR.** Каждое
-требование ниже приписано к ADR, который его закроет.
+Написаны ADR-0001…0007 (все Proposed). По `/architecture-review` 2026-09-30:
+145 из 159 активных требований закрыты Proposed-ADR, 11 частично, 3 уходят в
+UX-спеку, 5 отложены вместе с Telegram, пробелов нет. Постоянные ID —
+`tr-registry.yaml`, полная матрица — `architecture-traceability.md`. Таблица
+ниже — исходное распределение.
 
 | Группа TR | Всего | Закроет |
 |---|---|---|
@@ -294,19 +297,20 @@ ADR пока нет. Traceability: **0 из 164 требований покры�
 
 | # | `/architecture-decision` | Решает |
 |---|---|---|
-| **ADR-0006** | **Navigation & tap picking** | NavMesh + `NavigationAgent3D` (так в GDD) против `AStarGrid2D` + спрямление по прямой видимости (так в прототипе, ощущение уже проверено). Единственный источник `agent_radius`, RVO для гостей да/нет, выбор тапа без физики (`unproject_position` + пересечение с плоскостью пола), стабильные ID точек. |
+| **ADR-0006** | **Navigation & tap picking** | ✅ Написан (Proposed): NavMesh из данных + прямые запросы `NavigationServer3D` (без `NavigationAgent3D`), один `agent_radius` из конфига, без RVO, выбор тапа без физики, ID `(owner_id, index)`. Запасной вариант — `GridNavigator` за тем же интерфейсом. |
 
 ### Before Vertical Slice
 
 | # | `/architecture-decision` | Решает |
 |---|---|---|
-| **ADR-0007** | **Performance & load budgets** | Размер загрузки (MB), time-to-interactive на эталонном слабом Android, 60/30 fps, потолок памяти, мс на систему (Guest AI ≤ 0,5 мс в среднем). Опирается на измерения spike из ADR-0001. |
+| **ADR-0007** | **Performance & load budgets** | ✅ Написан (Proposed): эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. |
 
 ### Can defer to implementation
 
 - Пул объектов гостей на 4 слота (guest OQ5): решается в истории GuestSim.
-- Формат стабильных ID слотов (guest OQ10, control OQ): решается в истории
-  KitchenLayout в рамках ADR-0006.
+- ~~Формат стабильных ID слотов (guest OQ10, control OQ)~~ **Решено ADR-0006:**
+  `StringName` `[a-z0-9_]+`, точка взаимодействия = `(owner_id, index)`,
+  порядок — `owner_id` по `String <`, затем `index`.
 - Владение `till_fill_ratio` в реестре (hud OQ5): только когда появится второй
   потребитель.
 
@@ -326,8 +330,12 @@ ADR пока нет. Traceability: **0 из 164 требований покры�
    приходит из провалидированного конфига. Невалидный конфиг блокирует старт
    матча, а не падает посреди партии.
 5. **Веб прежде всего.** Каждое решение проверяется на WebGL2 в мобильном
-   браузере на слабом Android. Никакой 3D-физики, пост-обработки,
-   потоков и тяжёлых шейдеров без измерения на реальном устройстве.
+   браузере на слабом Android. Никакой пост-обработки, потоков и тяжёлых
+   шейдеров без измерения на реальном устройстве.
+6. **Без 3D-физики.** В кухне нет `CollisionObject3D`, `Area3D`, `RayCast3D`
+   и запросов к `PhysicsServer3D`: пути — `NavigationServer3D`, выбор тапа —
+   математика над статическими AABB из данных (ADR-0006). На этот принцип
+   ссылаются ADR-0003, ADR-0006 и таблица рисков движка выше.
 
 ---
 
@@ -336,7 +344,7 @@ ADR пока нет. Traceability: **0 из 164 требований покры�
 | ID | Вопрос | Приоритет | Где решается |
 |---|---|---|---|
 | AQ-01 | Single-thread или threads для web-экспорта 4.7 в мобильных браузерах (Chrome Android, Safari iOS), реальный размер сборки и время загрузки? | High | ADR-0001 (spike) |
-| AQ-02 | NavMesh или `AStarGrid2D`: воспроизводит ли NavMesh «середину прохода + спрямление» без постобработки? | High | ADR-0006 |
+| AQ-02 | ~~NavMesh или `AStarGrid2D`: воспроизводит ли NavMesh «середину прохода + спрямление» без постобработки?~~ **Решено ADR-0006 (замер на 4.7.2):** да — длина путей 0,958× от прототипа, зазор 0,380 м при `agent_radius` 0,40, все 19 точек на сетке. Остаток — запекание и готовность карты на wasm/слабом Android (spike ADR-0001) | High | ADR-0006 (spike) |
 | AQ-03 | ~~Когда `user://` на web реально попадает в IndexedDB, и что будет при очистке данных сайта / приватном режиме?~~ **Решено ADR-0005:** на web `localStorage`, не `user://`; приватный режим → `persistent = false`, игра продолжается; очистка данных → первый запуск. Остаток — проверка на устройстве | High | ADR-0005 (spike) |
 | AQ-04 | Задержка «касание → движок» в мобильном браузере не измерена (бюджет ≤ 50 мс только внутри движка). | Medium | ADR-0001 spike → ADR-0007 |
 | AQ-05 | Что считается «кадром» для debounce safe area: `_process` или `requestAnimationFrame` (platform OQ5)? | Low | ADR-0001 |

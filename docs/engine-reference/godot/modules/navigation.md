@@ -1,6 +1,56 @@
 # Godot Navigation — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-02-12 | Engine: Godot 4.6 | Section "Verified on 4.7.2" added 2026-09-30
+
+## Verified on 4.7.2 (headless probe, 2026-09-30 — used by ADR-0006)
+
+Everything below was observed on `4.7.2.stable.official.ed1daf0bf` with a
+hand-made map (`NavigationServer3D.map_create()` + `region_create()`), not
+taken from documentation. Re-probe on any engine upgrade.
+
+- **Map is not queryable right after setup.** A query before the first sync
+  prints `ERROR: ... query failed because it was made before first map
+  synchronization` and returns empty / `Vector3.ZERO`. In a **normal
+  main-scene run** an active hand-made map syncs from the main loop by frame 1
+  (`map_changed` fires, `map_get_iteration_id` 0 → 1). In a `--script`
+  SceneTree run it is **never** synced (40–120 frames);
+  `NavigationServer3D.map_force_update(map)` is required there. Readiness
+  signals: `map_get_iteration_id(map) > 0` / `map_changed`
+  (`region_get_iteration_id` is not useful). With
+  `map_set_use_async_iterations(map, false)` one call is enough (1 frame); with
+  async iterations it took 3 frames. Consecutive `map_force_update` calls in
+  the same frame do not finish the sync (worker-thread hand-off) — poll once
+  per frame and probe with `map_get_closest_point`.
+- **Runtime bake is synchronous**: `NavigationServer3D.bake_from_source_geometry_data(nm, src)`
+  (8×11 m floor + 27 obstructions: ~5 ms, 70 polygons, `cell_size` 0.05).
+- **`agent_radius` is ceiled to whole cells** (`ceil(radius / cell_size)`);
+  the engine warns *"agent_radius is ceiled to cell_size voxel units and loses
+  precision"* when it is not a multiple. `agent_max_climb` is floored to
+  `cell_height` units with a similar warning (set it to 0 on flat floors).
+  Cell sizes 0.05/0.1/0.2 are exact for radius 0.40; 0.125/0.25 erode 0.50 m.
+  Radius 0.20–0.60 in 0.05 steps erodes exactly k cells with no warning, but
+  0.400005 already ceils to 9 cells — snap the radius (`snappedf`) before baking.
+- Recast and the bake API are compiled into the official `web_nothreads_release`
+  template (strings present in `godot.wasm`); the ceil warning is emitted in release.
+- Touch input: `emulate_mouse_from_touch` is on by default; one touch yields an
+  emulated `InputEventMouseButton` (`device == InputEvent.DEVICE_ID_EMULATION`)
+  first, then the `InputEventScreenTouch`, same frame and position. A `Control`
+  with `mouse_filter` STOP consumes both before `_unhandled_input`.
+- **Erosion is coarse**: with radius 0.40, measured minimum path clearance to
+  an obstruction was 0.380 m at `cell_size` 0.05 / `edge_max_error` 0.5, 0.354
+  at 0.1, 0.300 at 0.2. Do not assume clearance ≥ `agent_radius`.
+- **`add_projected_obstruction(..., carve = true)`** carves exactly and ignores
+  the agent radius (path clearance 0.000). Use `carve = false`.
+- **Baked surface height** is `2 × cell_height` above the source floor
+  (0.10 m for 0.05). Never use returned path `y` for placement.
+- **Path behaviour**: `map_get_path(map, from, to, true)` returns the funnel
+  (string-pulled) path; target inside an obstruction or outside the mesh ends at
+  the nearest mesh point; a start off the mesh is projected onto it silently.
+  Query cost 8–17 µs (macOS, 19-point kitchen).
+- **RID hygiene**: freeing a map/region is manual (`free_rid`); the engine
+  reports leaked `NavMap3D`/`NavRegion3D` RIDs at exit otherwise.
+- `AABB.intersects_ray(from, dir)` and `Plane.intersects_ray(from, dir)`
+  return a `Vector3` on hit, `null` on miss.
 
 ## What Changed Since ~4.3 (LLM Cutoff)
 
