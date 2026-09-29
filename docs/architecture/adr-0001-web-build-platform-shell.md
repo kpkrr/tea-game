@@ -1,7 +1,9 @@
 # ADR-0001: Web build & platform shell
 
 ## Status
-Proposed
+Accepted
+
+> Accepted 2026-09-30 by the owner. Open items (not blockers): WebGL2-unsupported fallback page and mid-match rotation not yet verified on device; `create_callback` on Android Chrome assumed equal to iPhone Safari. OQ 4 closed at acceptance: `prefers_reduced_motion()` / `reduced_motion_changed` added to the contract.
 
 ## Date
 2026-09-30
@@ -95,9 +97,11 @@ extends Node
 signal safe_area_changed(rect: Rect2)    # window px = DisplayServer.window_get_size() (CSS px × DPR with allow_hidpi on); ViewFit/ADR-0002 converts to viewport coords
 signal visibility_changed(visible: bool) # single source of truth for both directions
 signal ready_reached()                   # WebGL2 confirmed + ConfigLoader + KitchenLayout + Pathing ready (ADR-0006)
+signal reduced_motion_changed(enabled: bool) # OS/browser setting toggled while the page is open (rare; HUD re-reads)
 
 func get_safe_area() -> Rect2            # last known value, readable without waiting on a signal
 func is_visible() -> bool                # seeded from document.visibilityState at startup, then tracked
+func prefers_reduced_motion() -> bool    # seeded from matchMedia('(prefers-reduced-motion: reduce)') at startup, then tracked; false off-web
 func fail_boot(message: String) -> void  # Loading -> Failed (ADR-0004); called only by MatchDirector (from _compose() or its Booting-frame poll, ADR-0006)
 func mark_boot_complete() -> void        # Loading -> Ready, emits ready_reached once; called only by MatchDirector after config valid + Pathing ready + verify() passed (ADR-0006) + RenderPrewarm done (ADR-0007)
 ```
@@ -115,6 +119,7 @@ func mark_boot_complete() -> void        # Loading -> Ready, emits ready_reached
 - Coalesce resize/orientationchange into one `safe_area_changed` per `_process` tick via a dirty flag; never emit synchronously from the raw JS handler.
 - The safe-area value must come from `DisplayServer.window_get_size()`; `innerWidth`/`innerHeight` may be used only as a trigger. Keep `allow_hidpi` on unless ADR-0002's fallback is taken (then window px = CSS px and ADR-0007's render scale must be re-derived).
 - The `create_callback` handler takes a single `args: Array`.
+- Reduced motion (accessibility-requirements.md OQ 4, TR-hud-022): `PlatformBridge` must seed `prefers_reduced_motion()` from `window.matchMedia('(prefers-reduced-motion: reduce)').matches` at startup and register a `change` listener on the same `MediaQueryList` through a second `create_callback` (kept in a member, like the visibility one); it emits `reduced_motion_changed` only on an actual change. Consumers (HUD, world overlays) must read this flag, never query the browser themselves. There is no in-game settings toggle in MVP. Off-web (editor, tests) the value is `false`.
 - Run the WebGL2 check in plain JS in the HTML shell, strictly before requesting the engine's loader script.
 - Do not treat `OS.is_userfs_persistent()` as authoritative (documented false-positive behavior) — `SaveStore` (ADR-0005) must design around that, not this module.
 - Do not introduce `SharedArrayBuffer`-dependent code paths under an assumption threads might be toggled on later without a new/superseding ADR.
@@ -174,6 +179,7 @@ func mark_boot_complete() -> void        # Loading -> Ready, emits ready_reached
 | platform-integration-telegram-mini-app.md | TR-platform-013 — `Ready` starts the first match | `ready_reached` → `MatchLifecycle.start()` |
 | platform-integration-telegram-mini-app.md | TR-platform-017 — mid-match resize doesn't reset match state | `safe_area_changed` scoped to `ViewFit`/HUD only, never to `GameClock`/`MatchLifecycle` |
 | platform-integration-telegram-mini-app.md | TR-platform-018 — Loading→Ready with no white flash | HTML shell CSS cross-fade, canvas hidden until first frame drawable |
+| hud-feedback-ui.md (via accessibility-requirements.md OQ 4) | TR-hud-022 — reduced motion from the browser's `prefers-reduced-motion` | `prefers_reduced_motion()` + `reduced_motion_changed`, read in the shell via `matchMedia` |
 | till-day-cycle.md | TR-till-012 — device clock manipulation, accepted MVP risk | This ADR provides no trusted external clock; noted here because the platform shell is where a future trusted-time source would need to be introduced, and none is in scope for MVP |
 
 ## Performance Implications

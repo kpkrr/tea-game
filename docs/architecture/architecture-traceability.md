@@ -5,7 +5,7 @@ Engine: Godot 4.7.2
 ## Coverage Summary
 - Total requirements: 164 (active 159, deferred 5)
 - Covered by Accepted ADR: 0
-- Covered by Proposed ADR (🟡): 145 (91% of active)
+- Covered by Proposed ADR (🟡): 145 (91% of active) — all seven ADRs Accepted 2026-09-30; counts are as of the review
 - Partial: 11
 - Routed to UX spec: 3
 - Gaps: 0

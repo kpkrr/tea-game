@@ -1,7 +1,9 @@
 # ADR-0002: Viewport, camera fit & 2.5D presentation
 
 ## Status
-Proposed
+Accepted
+
+> Accepted 2026-09-30 by the owner. Open item (not a blocker): price `Label3D` ≈ 7.7 dp vs the 12 dp accessibility target — to be settled in `/ux-design hud`.
 
 ## Date
 2026-09-30

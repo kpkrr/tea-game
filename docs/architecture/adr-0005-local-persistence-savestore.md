@@ -1,7 +1,7 @@
 # ADR-0005: Local persistence (SaveStore)
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-09-30

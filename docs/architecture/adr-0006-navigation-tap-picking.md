@@ -1,7 +1,7 @@
 # ADR-0006: Navigation & tap picking
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-09-30

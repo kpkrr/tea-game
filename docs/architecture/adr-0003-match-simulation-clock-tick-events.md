@@ -1,7 +1,9 @@
 # ADR-0003: Match simulation — game clock, tick order, pause & event wiring
 
 ## Status
-Proposed
+Accepted
+
+> Accepted 2026-09-30 by the owner. Open item (not a blocker): first-frame-after-return delta (tab back to foreground) not captured on device.
 
 ## Date
 2026-09-30

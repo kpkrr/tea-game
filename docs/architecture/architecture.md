@@ -12,7 +12,7 @@
   order-recipe-system, player-control-barista-movement, brewing-crafting-mechanic,
   guest-ai-patience, difficulty-curve-session-pacing, currency-coins-score,
   till-day-cycle, hud-feedback-ui (10/10 MVP)
-- ADRs Referenced: ADR-0001 (Web build & platform shell, Proposed), ADR-0002 (Viewport, camera fit & 2.5D presentation, Proposed), ADR-0003 (Match simulation: clock, tick order, pause & events, Proposed), ADR-0004 (Data config & load-time validation, Proposed), ADR-0005 (Local persistence — SaveStore, Proposed), ADR-0006 (Navigation & tap picking, Proposed), ADR-0007 (Performance & load budgets, Proposed)
+- ADRs Referenced: ADR-0001 (Web build & platform shell, Accepted), ADR-0002 (Viewport, camera fit & 2.5D presentation, Accepted), ADR-0003 (Match simulation: clock, tick order, pause & events, Accepted), ADR-0004 (Data config & load-time validation, Accepted), ADR-0005 (Local persistence — SaveStore, Accepted), ADR-0006 (Navigation & tap picking, Accepted), ADR-0007 (Performance & load budgets, Accepted)
 - Technical Director Sign-Off: 2026-09-30 — APPROVED WITH CONDITIONS (код не
   начинать, пока ADR-0001…0005 не Accepted; ADR-0001 начинается с модуля
   `engine-reference/godot/modules/web.md` и spike на реальном телефоне)
@@ -257,8 +257,8 @@ func request_new_match() -> void    # MatchLifecycle; вызывает HUD (ко
 
 ## ADR Audit
 
-Написаны ADR-0001…0007 (все Proposed). По `/architecture-review` 2026-09-30:
-145 из 159 активных требований закрыты Proposed-ADR, 11 частично, 3 уходят в
+Написаны ADR-0001…0007; все Accepted 2026-09-30. По `/architecture-review` 2026-09-30:
+145 из 159 активных требований закрыты ADR (на момент ревью Proposed, с 2026-09-30 Accepted), 11 частично, 3 уходят в
 UX-спеку, 5 отложены вместе с Telegram, пробелов нет. Постоянные ID —
 `tr-registry.yaml`, полная матрица — `architecture-traceability.md`. Таблица
 ниже — исходное распределение.
@@ -297,13 +297,13 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 
 | # | `/architecture-decision` | Решает |
 |---|---|---|
-| **ADR-0006** | **Navigation & tap picking** | ✅ Написан (Proposed): NavMesh из данных + прямые запросы `NavigationServer3D` (без `NavigationAgent3D`), один `agent_radius` из конфига, без RVO, выбор тапа без физики, ID `(owner_id, index)`. Запасной вариант — `GridNavigator` за тем же интерфейсом. |
+| **ADR-0006** | **Navigation & tap picking** | ✅ Accepted: NavMesh из данных + прямые запросы `NavigationServer3D` (без `NavigationAgent3D`), один `agent_radius` из конфига, без RVO, выбор тапа без физики, ID `(owner_id, index)`. Запасной вариант — `GridNavigator` за тем же интерфейсом. |
 
 ### Before Vertical Slice
 
 | # | `/architecture-decision` | Решает |
 |---|---|---|
-| **ADR-0007** | **Performance & load budgets** | ✅ Написан (Proposed): эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. |
+| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. |
 
 ### Can defer to implementation
 

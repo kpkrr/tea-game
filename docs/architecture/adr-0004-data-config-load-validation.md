@@ -1,7 +1,7 @@
 # ADR-0004: Data config & load-time validation
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-09-30

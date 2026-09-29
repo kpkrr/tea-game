@@ -1,13 +1,15 @@
 # ADR-0007: Performance & Load Budgets
 
 ## Status
-Proposed
+Accepted
+
+> Accepted 2026-09-30 by the owner. Technical-director sign-off: APPROVED WITH CONDITIONS (2026-09-30). Frame-time and per-system ms lines and the device boot sub-budget stay provisional until the first weak-Android `perf_probe` run, required at the Vertical Slice gate at the latest; pre-warm's 0.5 s benefit (Verification 4) re-checked in the same run.
 
 ## Date
 2026-09-30
 
 ## Last Verified
-2026-09-30 (template sizes measured on the installed 4.7.2 web export template; all device numbers are **provisional targets**, not measurements — see Verification Required)
+2026-09-30 (template sizes measured on the installed 4.7.2 web export template; size, TTI, heap and draw-call figures checked on iPhone Safari in the ADR-0001 spike — see Spike Results; **frame-time, per-system ms and RD boot sub-budget remain provisional** until a weak-Android run)
 
 ## Decision Makers
 User (project owner); godot-specialist (engine validation, 3 blocking findings resolved). `technical-director` sign-off on the numbers is pending (TD-ADR skipped in Lean review mode) and is required before Accepted, as Guest AI Open Question #8 assigns the threshold to that role.
@@ -24,7 +26,7 @@ Tea Rush has only a global 16.6 ms budget; GDDs ask for per-system thresholds (G
 | **Knowledge Risk** | HIGH — 4.7 is post-cutoff; the APIs used here (`Performance` monitors, `Viewport.scaling_3d_scale`, `Time.get_ticks_usec`, export-preset custom features) predate 4.4 and have no entries in `breaking-changes.md` / `deprecated-apis.md` |
 | **References Consulted** | `docs/engine-reference/godot/VERSION.md`, `breaking-changes.md`, `deprecated-apis.md`, `modules/rendering.md`, `modules/web.md`; installed template `~/Library/Application Support/Godot/export_templates/4.7.2.stable/web_nothreads_release.zip` (unzipped and measured 2026-09-30) |
 | **Post-Cutoff APIs Used** | None |
-| **Verification Required** | (1) On the reference device: every table value below re-measured with the `perf_probe` build; numbers that fail are revised in this ADR (not silently exceeded). (2) `Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME` reports real values in Compatibility/WebGL2 and `ALPHA_CUT_OPAQUE_PREPASS` sprites cost 1 or 2 calls each (sets the census ceiling). (3) Web timer resolution: `Time.get_ticks_usec()` is coarsened by browsers (≈100 µs Chromium, ≈1 ms Firefox/Safari) — confirm that windowed sums over ≥ 600 frames give stable per-step averages. (4) First-use hitch: frame-time spike on first guest spawn / first `Label3D` glyphs with and without the boot pre-warm. (5) Whether `Engine.max_fps` has any effect in a web export (needed to cap 90/120 Hz phones; if it has none, capping is dropped, not emulated). (6) Brotli/gzip actually served by the chosen host for `.wasm` (compressed sizes below assume it). (7) Custom-feature tag `perf_probe` in the perf export presets is honoured by `OS.has_feature()` on web. (8) ✅ **Verified on 4.7.2 desktop (opengl3, `gl_compatibility`, 2026-09-30):** `Viewport.scaling_3d_scale` = 0.25 renders the 3D scene visibly at quarter resolution and upscales it (Bilinear) — the knob is not ignored in Compatibility. Still to confirm on WebGL2 on the RD (render at 0.5, compare screenshots). Fallback if it is ignored there: `display/window/dpi/allow_hidpi = false` (ADR-0002). (9) Which memory figure is real on web: `Performance.MEMORY_STATIC` and `OBJECT_ORPHAN_NODE_COUNT` are expected to read 0 in release templates (debug-only counters, per godot-specialist) — confirm, and fix the JS expression that reads the wasm heap size. |
+| **Verification Required** | (1) On the reference device: every table value below re-measured with the `perf_probe` build; numbers that fail are revised in this ADR (not silently exceeded). (2) `Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME` reports real values in Compatibility/WebGL2 and `ALPHA_CUT_OPAQUE_PREPASS` sprites cost 1 or 2 calls each (sets the census ceiling). (3) Web timer resolution: `Time.get_ticks_usec()` is coarsened by browsers (≈100 µs Chromium, ≈1 ms Firefox/Safari) — confirm that windowed sums over ≥ 600 frames give stable per-step averages. (4) First-use hitch: frame-time spike on first guest spawn / first `Label3D` glyphs with and without the boot pre-warm. (5) ✅ spike: works on web. Whether `Engine.max_fps` has any effect in a web export (needed to cap 90/120 Hz phones; if it has none, capping is dropped, not emulated). (6) Brotli/gzip actually served by the chosen host for `.wasm` (compressed sizes below assume it). (7) Custom-feature tag `perf_probe` in the perf export presets is honoured by `OS.has_feature()` on web. (8) ✅ **Verified on 4.7.2 desktop (opengl3, `gl_compatibility`, 2026-09-30):** `Viewport.scaling_3d_scale` = 0.25 renders the 3D scene visibly at quarter resolution and upscales it (Bilinear) — the knob is not ignored in Compatibility. Still to confirm on WebGL2 on the RD (render at 0.5, compare screenshots). Fallback if it is ignored there: `display/window/dpi/allow_hidpi = false` (ADR-0002). (9) Which memory figure is real on web: `Performance.MEMORY_STATIC` and `OBJECT_ORPHAN_NODE_COUNT` are expected to read 0 in release templates (debug-only counters, per godot-specialist) — confirm, and fix the JS expression that reads the wasm heap size. |
 
 ## ADR Dependencies
 
@@ -33,7 +35,7 @@ Tea Rush has only a global 16.6 ms budget; GDDs ask for per-system thresholds (G
 | **Depends On** | ADR-0001 (spike supplies the device and the measured TTI/size; ADR-0001 is Proposed), ADR-0002 (draw-call estimate, `render_scale_3d` knob; Proposed), ADR-0003 (tick steps that are timed; Proposed). None is Accepted yet, so this ADR cannot be Accepted first |
 | **Enables** | Vertical Slice perf gate; `tests/performance/` protocol; control-manifest guardrails; `/test-setup` CI size check |
 | **Blocks** | Vertical Slice gate-check (perf evidence required there) |
-| **Ordering Note** | Numbers marked *provisional* become binding only after the ADR-0001 spike records the reference device; if measurements disagree, this ADR is amended before either is Accepted. Constrains ADR-0005 (flush cost) and ADR-0006 (bake/verify cost) — both already state figures that are consistent with this table |
+| **Ordering Note** | The ADR-0001 spike ran on iPhone only (Android not run, owner decision). Size, TTI, heap and draw-call lines are checked against it. Frame-time (table 1), per-system ms (table 2) and the RD local-boot sub-budget stay *provisional* and become binding only after the first weak-Android `perf_probe` run (at the latest the Vertical Slice gate); if that run disagrees, this ADR is amended, not silently exceeded. Constrains ADR-0005 (flush cost) and ADR-0006 (bake/verify cost) — both already state figures that are consistent with this table |
 
 ## Context
 
@@ -44,7 +46,7 @@ Tea Rush has only a global 16.6 ms budget; GDDs ask for per-system thresholds (G
 - Web only (WebGL2, Compatibility), single-thread export (ADR-0001) — no worker threads to hide cost.
 - Everything in the kitchen is `Sprite3D`/`AnimatedSprite3D`/`Label3D`; Compatibility does not batch 3D instances, so cost scales with instance count (ADR-0002 §4).
 - Coding standards: tests must be deterministic and free of time-dependent assertions, so on-device timings cannot be unit tests.
-- Real-device numbers do not exist yet (ADR-0001 spike pending); the installed engine template does exist and is measurable.
+- Real-device numbers exist for iPhone Safari only (ADR-0001 spike, 2026-09-30); no weak-Android measurement exists yet.
 
 ### Requirements
 - Guest AI ≤ 0.5 ms avg / ≤ 1.0 ms p99 per frame (Guest AI AC 48; 4 guests, 18 guests/min, 180 s).
@@ -55,7 +57,7 @@ Tea Rush has only a global 16.6 ms budget; GDDs ask for per-system thresholds (G
 ## Decision
 
 ### 1. Reference device and frame targets
-The **reference device (RD)** is a class, not a model: Android 9–12-era phone, 2–3 GB RAM, entry-level SoC (Adreno 5xx / Mali-G5x-class GPU), current Chrome for Android, canvas 720×1600 to 1080×2400 device px. The concrete phone is chosen and recorded in the ADR-0001 spike; every "RD" number below is defined on it.
+The **reference device (RD)** is a class, not a model: Android 9–12-era phone, 2–3 GB RAM, entry-level SoC (Adreno 5xx / Mali-G5x-class GPU), current Chrome for Android, canvas 720×1600 to 1080×2400 device px. The concrete phone was **not** chosen in the ADR-0001 spike (iPhone only); it is recorded with the first weak-Android `perf_probe` run, and every "RD" frame-time/CPU number below is provisional until then.
 
 | Target | Value |
 |---|---|
@@ -210,7 +212,7 @@ static func render_scale(canvas_px: Vector2i, pixel_budget: int, scale_min: floa
 - Static render scale can soften art on very high-DPR phones.
 
 ## Risks
-- **Numbers were set before the RD exists.** *Mitigation*: status stays Proposed; amend on spike results; nothing here is called measured except template sizes.
+- **Numbers were set before the RD exists.** *Mitigation*: iPhone spike confirmed size/TTI/heap/draw calls; frame-time and per-system lines are explicitly provisional and amended on the first weak-Android run.
 - **Coarse browser timers hide sub-0.1 ms step costs.** *Mitigation*: windowed sums over ≥ 600 frames; p99 only asserted on total script time.
 - **Prepass sprites may cost 2 draw calls each.** *Mitigation*: census ceiling 75 leaves room; Verification (2) sets the real ratio; fallback `ALPHA_CUT_DISCARD` for characters (ADR-0002).
 - **Host may not compress `.wasm`.** *Mitigation*: hosting requirement recorded; CI measures compressed size; release checklist verifies served `Content-Encoding`.
@@ -221,7 +223,7 @@ static func render_scale(canvas_px: Vector2i, pixel_budget: int, scale_min: floa
 
 Source: `prototypes/web-spike/README.md` (session `0b7b7c05`, iPhone Safari, DPR 3). **The reference device (weak Android) was not available**: iPhone numbers confirm size, load and memory budgets but say nothing about the 30 fps floor. Frame-time and per-system lines stay provisional until a weak-Android run.
 - §4 ✅ engine gzip 10.11 MB + 0.07 MB js (as measured on the template).
-- §5 ✅ (iPhone): local boot ≈ 3.5 s; modelled cold TTI at 10 Mbps ≈ 13 s; warm 1.2 s.
+- §5 ✅ (iPhone): measured cold ready 9.6 s over a phone hotspot; local boot ≈ 3.5 s; modelled cold TTI at 10 Mbps ≈ 13 s with the spike's ≈ 30 KB `.pck` — ≈ 15.5 s with a full 3.0 MB `.pck`, still ≤ 20 s; warm 1.2 s. Weak-Android local boot (budget ≤ 9 s) unmeasured.
 - §6 ✅ wasm heap 48.4 MB after boot (JS-side `Memory.buffer.byteLength`).
 - §3: 83 draw calls at 75 instances; 60 fps (display cap) at every render scale.
 - Verification (5) ✅ `Engine.max_fps = 30` works on web (30.0 fps in iOS Safari and desktop Chromium) — 90/120 Hz phones can be capped; see Risks.
@@ -249,7 +251,7 @@ No production code exists. Doc syncs done with this ADR: `architecture.md` (ADR-
 - CI: export size ≤ 13.5 MB (gzip-6) and engine bytes ≤ 10.5 MB; census test ≤ 75 instances and ≤ 48 MB textures, every worst-case material in the pre-warm set.
 - gdUnit4 Logic: `ViewFitMath.render_scale` — 720×1600 → 1.0; 1080×2400 → ≈ 0.76; tiny budget → clamped to `render_scale_min`; `ConfigValidator` rejects bad `ViewConfig` render fields.
 - On RD with `perf_probe` (Vertical Slice): table 1–3, 5, 6 met or the ADR amended with the measured values; no frame > 100 ms after ready; 5-match memory check passes.
-- Spike recorded before Accepted: RD model, cold/warm TTI, wasm size as served, draw-call count, first-spawn hitch with/without pre-warm.
+- Spike recorded before Accepted (iPhone, done): cold/warm TTI, wasm size as served, draw-call count. Still open, due at the first weak-Android run / Vertical Slice gate: RD model, frame time, first-spawn hitch with/without pre-warm (Verification 4).
 
 ## Related
 - Depends on ADR-0001 (spike, size/TTI), ADR-0002 (`render_scale_3d`, draw-call estimate), ADR-0003 (tick steps timed).
