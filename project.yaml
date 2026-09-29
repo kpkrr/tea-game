@@ -8,11 +8,11 @@ framework:
   last_upgraded: 2026-09-24
 
 project:
-  stage: Concept
+  stage: Technical Setup
 
 modes:
   rigor: standard
-  automation: guided
+  automation: autonomous
 
 engine:
   name: "Godot"

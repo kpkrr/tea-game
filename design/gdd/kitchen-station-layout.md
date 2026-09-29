@@ -95,15 +95,18 @@ state-machine у этой системы нет.
 - `playfield_w`, `playfield_h` — размеры playfield rect для текущего
   `safe_aspect`, вычисленные Platform Integration (см.
   `platform-integration-telegram-mini-app.md`, Formulas)
-- `rendered_kitchen_dim` — отрендеренный размер кухни (px) вдоль
-  **ограничивающей** стороны playfield: ширина на телефоне при
-  `safe_aspect < 1`, высота на квадратном/широком окне
+- `rendered_kitchen_dim` — отрендеренный размер кухни (dp) вдоль
+  **ограничивающей** стороны playfield — той, в которую кухня упирается
+  при равномерном масштабе (зависит от соотношения сторон playfield и
+  спроецированного кадра кухни, а не только от `safe_aspect < 1`)
+- `binding_playfield_dim` — длина этой же стороны playfield (`playfield_w`
+  или `playfield_h`)
 - `playfield_min_fill = 0.95`
 
 **Требование к заполнению (контракт для камеры, не сам алгоритм камеры):**
 
 ```
-kitchen_fill_ratio = rendered_kitchen_dim / min(playfield_w, playfield_h)
+kitchen_fill_ratio = rendered_kitchen_dim / binding_playfield_dim
 assert kitchen_fill_ratio >= playfield_min_fill
   for every safe_aspect in [viewport_aspect_min, viewport_aspect_max]  # 0.45–1.0
 ```
@@ -119,7 +122,11 @@ Game Feel) означает **не панорамируется и не пово
 предмет уже запланированного ADR (см. Open Questions: «Как реализовать
 вписывание: stretch mode проекта и подгонка камеры»), не этого документа;
 здесь фиксируется только сам контракт (assert выше), который тот ADR обязан
-удовлетворить.
+удовлетворить. *(Реализовано в ADR-0002: `s = kitchen_fill_target ×
+min(P.w/F_w, P.h/F_h)`, заполнение ограничивающей стороны равно
+`kitchen_fill_target` ≥ 0.95 по построению. Знаменатель уточнён 2026-09-30:
+было `min(playfield_w, playfield_h)`, что при кухне, упирающейся в высоту,
+давало долю > 1 и проверяло не ту сторону.)*
 
 ## Edge Cases
 

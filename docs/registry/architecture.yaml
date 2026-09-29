@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: ""
+last_updated: "2026-09-30"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -43,7 +43,39 @@ last_updated: ""
 # interface: how other systems access this state (read-only property, method call,
 #   signal, shared resource, etc.) — this is the contract other ADRs depend on.
 
-state_ownership: []
+state_ownership:
+  - state: safe_area_rect
+    status: active
+    owner_system: platform-bridge
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    interface: "PlatformBridge.safe_area_changed(rect: Rect2) signal + get_safe_area() -> Rect2; window px; emitted at most once per _process tick"
+    write_access: platform-bridge-only
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: platform_ready_state
+    status: active
+    owner_system: platform-bridge
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    interface: "PlatformBridge.ready_reached() signal, emitted once (Loading -> Ready) after ConfigLoader + KitchenLayout are ready"
+    write_access: platform-bridge-only
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+    revised: ""
+
+  - state: playfield_and_kitchen_rect
+    status: active
+    owner_system: view-fit
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    interface: "ViewFit.playfield_changed(playfield: Rect2, kitchen_rect: Rect2) signal + get_playfield()/get_kitchen_rect(); dp (1 viewport unit = 1 reference dp)"
+    write_access: view-fit-only
+    referenced_by:
+      - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
 
 # Example:
 #
@@ -71,7 +103,47 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: visibility_change
+    status: active
+    pattern: signal
+    producer: platform-bridge
+    consumers:
+      - match-lifecycle   # pauses/resumes GameClock
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    signal_signature: "visibility_changed(visible: bool)"
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+    revised: ""
+
+  - contract: safe_area_update
+    status: active
+    pattern: signal
+    producer: platform-bridge
+    consumers:
+      - view-fit          # sole consumer; HUD lays out from view-fit's playfield_update (ADR-0002)
+    # revised 2026-09-30 by ADR-0002 — old consumers: [view-fit, hud]
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    signal_signature: "safe_area_changed(rect: Rect2)"
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+      - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: 2026-09-30
+
+  - contract: playfield_update
+    status: active
+    pattern: signal
+    producer: view-fit
+    consumers:
+      - hud               # lays out screen strips outside kitchen_rect
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    signal_signature: "playfield_changed(playfield: Rect2, kitchen_rect: Rect2)"
+    referenced_by:
+      - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
 
 # Example:
 #
@@ -131,7 +203,72 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: web_visibility_detection
+    status: active
+    api: "JavaScriptBridge.create_callback bound to document.visibilitychange"
+    not: "NOTIFICATION_APPLICATION_FOCUS_IN/OUT, NOTIFICATION_APPLICATION_PAUSED/RESUMED (broken on web, godotengine/godot#87014)"
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    reason: "Built-in lifecycle notifications do not fire on web export; browser also halts _process while hidden, so polling cannot work"
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: web_export_threading
+    status: active
+    api: "Web export preset Thread Support: OFF (single-thread)"
+    not: "Threaded export requiring COOP/COEP headers or PWA service-worker header injection"
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    reason: "Host-agnostic, no cross-origin isolation dependency; avoids unverified iOS SharedArrayBuffer risk; Architecture Principle 5"
+    referenced_by:
+      - docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: stretch_and_dp_unit
+    status: active
+    api: "window/stretch/mode=canvas_items, aspect=expand, base viewport 360x640; 1 viewport unit = 1 reference dp"
+    not: "Implicit 4.7 stretch defaults; 540x960 base with a dp_scale factor"
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    reason: "Taps, Control layout and unproject_position share one unit; no conversion anywhere"
+    referenced_by:
+      - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: world_overlays
+    status: active
+    api: "Sprite3D/Label3D children of entities, fixed camera-facing rotation, no_depth_test + render_priority bands"
+    not: "Control nodes positioned via Camera3D.unproject_position each frame"
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    reason: "Follow entities, scale with kitchen, pause with game time; GDDs specify world-space billboards"
+    referenced_by:
+      - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: sprite_camera_facing
+    status: active
+    api: "Fixed rotation.x = -camera_pitch_deg set once"
+    not: "BILLBOARD_ENABLED / billboard modes"
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    reason: "Camera never rotates; identical result with zero per-frame cost"
+    referenced_by:
+      - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
+
+  - purpose: lighting_and_shadows
+    status: active
+    api: "Unshaded materials, no real-time lights; painted blob-shadow quads under characters, station shadows painted into textures"
+    not: "DirectionalLight3D/OmniLight3D with shadow maps"
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    reason: "Architecture Principle 5 (WebGL2, weak Android); Kitchen GDD baked lighting"
+    referenced_by:
+      - docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+    revised: ""
 
 # Example:
 #
@@ -157,7 +294,34 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: sharedarraybuffer_dependency
+    status: active
+    description: "No code path may require threads, SharedArrayBuffer or cross-origin isolation (COOP/COEP) on web."
+    why: "Web export is single-thread and host-agnostic by ADR-0001; changing that requires a superseding ADR backed by on-device measurement."
+    adr: docs/architecture/adr-0001-web-build-platform-shell.md
+    added: 2026-09-30
+
+  - pattern: canvas_line_primitives_for_rings
+    status: active
+    description: "Rings, arcs and outlines must not be drawn with CanvasItem line primitives (draw_arc, draw_line, draw_polyline)."
+    why: "Godot 4.7 removed line antialiasing feather; lines render visibly thinner. Use textures/sprite frames."
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+
+  - pattern: screen_scale_conversion_in_gameplay
+    status: active
+    description: "Gameplay, TapPicker and HUD code must not multiply by devicePixelRatio, window size or screen scale."
+    why: "One viewport unit is one dp by ADR-0002; ad-hoc scale factors reintroduce the unit bugs the base canvas choice removed."
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
+
+  - pattern: viewport_size_listening_outside_platform_bridge
+    status: active
+    description: "No module other than PlatformBridge may connect to get_viewport().size_changed or read DisplayServer window size; ViewFit reacts only to safe_area_changed."
+    why: "Single debounced source of viewport changes (ADR-0001); parallel listeners recompute out of order and bypass the once-per-frame debounce."
+    adr: docs/architecture/adr-0002-viewport-camera-fit-presentation.md
+    added: 2026-09-30
 
 # Example:
 #
