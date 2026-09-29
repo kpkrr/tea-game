@@ -1,8 +1,8 @@
 # Currency: Coins & Score
 
-> **Status**: Approved (/design-review 2026-09-28 — APPROVED, 3 recommended revisions logged)
+> **Status**: Approved (batch-fix 2026-09-29: все находки `gdd-cross-review-2026-09-29b.md`/`-29c.md` закрыты, см. review-log)
 > **Author**: Yan + systems-designer, economy-designer, qa-lead
-> **Last Updated**: 2026-09-28
+> **Last Updated**: 2026-09-29
 > **Last Verified**: 2026-09-28
 > **Implements Pillar**: Pillar 4 — Монеты за работу, очки за мастерство
 > **Creative Director Review (CD-GDD-ALIGN)**: пропущен — Lean mode
@@ -39,7 +39,7 @@ Tea Coin (заработок, накапливается в кассе) и Score
 
 ### Core Rules
 
-1. На каждое событие Served (владеет Guest AI & Patience, Rule 8) эта
+1. На каждое событие Served (владеет Guest AI & Patience, Rule 5) эта
    система получает `(recipe_id, remaining_fraction)` и вычисляет два
    независимых значения: `coins_earned` и `score_earned` (Formula 1 и 2 —
    Formulas).
@@ -63,12 +63,18 @@ Tea Coin (заработок, накапливается в кассе) и Score
    кассе; будущий механизм траты (если появится) — вне этой GDD
    (game-concept, Economy & Access Model).
 7. `match_score` сбрасывается в 0 в начале каждой партии. По окончании
-   партии (сигнал `match_ended` от Guest AI & Patience), если
-   `match_score` > `best_score`, `best_score` обновляется и сохраняется
-   локально (в MVP бэкенда нет — см. Dependencies).
+   партии (сигнал `match_ended` от Guest AI & Patience) система сначала
+   вычисляет `is_new_record = match_score > best_score` (сравнение со
+   значением **до** обновления), затем, если `is_new_record`, обновляет
+   `best_score` и сохраняет его локально (в MVP бэкенда нет — см.
+   Dependencies). `is_new_record` держится до следующего `match_started`,
+   где сбрасывается в `false`; HUD читает его для акцента нового рекорда
+   (HUD Core Rule 13) — сам HUD сравнение не повторяет, т.к. к моменту
+   рендера `best_score` уже обновлён. *(Исправлено 2026-09-29 batch-fix:
+   S4 — раньше флага не было, и HUD не мог вычислить «новый рекорд».)*
 8. `best_score` никогда не уменьшается и не сбрасывается ничем в этой
-   GDD — ни новой партией, ни заполнением кассы, ни закрытием дня (это вне
-   области Till & Day Cycle).
+   GDD — ни новой партией, ни заполнением кассы (состояние Full), ни
+   дневным сбросом кассы (это вне области Till & Day Cycle).
 9. Монеты и очки никогда не делят путь конвертации, который позволил бы
    купить одно за счёт другого: ничто в Progression & Upgrades,
    Monetization или Token Integration не может превращать
@@ -79,19 +85,20 @@ Tea Coin (заработок, накапливается в кассе) и Score
 
 | State | Entry Condition | Exit Condition | Behavior |
 |-------|----------------|----------------|----------|
-| `match_score`: Idle | Партия начинается (значение = 0) | Первое событие Served | Очки ещё не начислялись |
+| `match_score`: Idle | Партия начинается (значение = 0) | Первое событие Served → Accumulating; или `match_ended` без единого Served → Frozen со значением 0 | Очки ещё не начислялись |
 | `match_score`: Accumulating | Первое событие Served | Сигнал `match_ended` | Увеличивается на `score_earned` при каждом Served |
-| `match_score`: Frozen | Сигнал `match_ended` | Старт следующей партии (сброс в Idle) | Значение зафиксировано; читается HUD/итогами партии |
+| `match_score`: Frozen | Сигнал `match_ended` | Старт следующей партии — сигнал `match_started` (Guest AI & Patience Rule 13), сброс в Idle | Значение зафиксировано; читается HUD/итогами партии |
 | `best_score`: Held | Всегда (хранится между партиями, локальное сохранение) | Никогда не выходит | При переходе `match_score` в Frozen сравнивается и при необходимости обновляется на месте |
+| `is_new_record` (bool) | `match_ended`: вычисляется как `match_score > best_score` до обновления `best_score` | `match_started` — сброс в `false` | Читается HUD на оверлее итогов (HUD Core Rule 13) |
 
 ### Interactions with Other Systems
 
 | Система | Направление | Интерфейс |
 |---|---|---|
 | Order & Recipe System | Upstream, Hard | `recipe_price(recipe_id)` — вход обеих формул (монет и очков) |
-| Guest AI & Patience | Upstream, Hard | Событие Served с `(recipe_id, remaining_fraction)` — единственный триггер расчёта; тот же контракт уже зафиксирован в Downstream этой GDD |
+| Guest AI & Patience | Upstream, Hard | Событие Served с `(recipe_id, remaining_fraction)` — единственный триггер расчёта; `match_ended` — заморозка `match_score` и сравнение с `best_score`; `match_started` (её Rule 13) — сброс `match_score` в Idle. Тот же контракт зафиксирован в Downstream Guest AI |
 | Till & Day Cycle | Downstream, Hard | Получает `coins_earned` на каждый Served; владеет суммой кассы и её вместимостью — эта система не знает, приняты монеты или отброшены |
-| HUD & Feedback UI | Downstream, Hard | Читает `match_score`, `best_score`, `coins_earned`/`score_earned` по каждому событию (для всплывающих чисел и счётчиков) |
+| HUD & Feedback UI | Downstream, Hard | Читает `match_score`, `best_score`, `score_earned` по каждому событию (счётчик и попап очков; попап монет HUD берёт из `coins_added` Till & Day Cycle); `is_new_record` на `match_ended` — для акцента нового рекорда (HUD Core Rule 13) |
 | Audio & Juice Feedback | Downstream, Hard, Vertical Slice | Реагирует на выход события Served (звон монет из game-concept) |
 | Backend & Persistence | Downstream, Hard, Vertical Slice | Позже возьмёт на себя серверный учёт `best_score`/лидерборда; в MVP `best_score` — только в локальном сохранении, серверных вызовов из этой системы нет |
 | Leaderboard & Leagues | Downstream, Hard, Vertical Slice | Ранжирует игроков по `best_score`/`match_score` |
@@ -228,13 +235,14 @@ D/H; часть кейсов ниже перенесена из валидаци
 
 - **Если событие Served происходит в тот же тик, что и `match_ended`**
   (третий потерянный гость — другой, не тот, кого только что подали):
-  порядок тика уже зафиксирован в `guest-ai-patience.md` Rule 9 (подачи и
+  порядок тика уже зафиксирован в `guest-ai-patience.md` Rule 8 (подачи и
   уходы обрабатываются раньше проверки конца партии) — `score_earned` от
   этого Served добавляется в `match_score` до перехода в Frozen.
 - **Если партия заканчивается без единого Served** (все три потерянных
-  гостя — до первой подачи): `match_score` остаётся 0 (Idle, не переходил
-  в Accumulating); сравнение с `best_score` при Frozen корректно не
-  повышает рекорд.
+  гостя — до первой подачи): `match_score` = 0, переходит Idle → Frozen
+  напрямую (минуя Accumulating); сравнение с `best_score` корректно не
+  повышает рекорд, `is_new_record = false` (даже в первой партии: `0 > 0`
+  ложно).
 - **Если это первая партия за всё время игры**: `best_score` не имеет
   сохранённого значения — считается 0 при первом сравнении; любой
   `match_score` > 0 устанавливает `best_score`.
@@ -266,14 +274,14 @@ D/H; часть кейсов ниже перенесена из валидаци
 | Система | Тип | Интерфейс |
 |---|---|---|
 | Order & Recipe System | Hard | `recipe_price(recipe_id)` — вход обеих формул (уже перечисляет эту систему в своём Downstream: «`recipe_price(recipe_id)` — монеты и множитель в формуле очков») |
-| Guest AI & Patience | Hard | Событие Served с `(recipe_id, remaining_fraction)` — единственный триггер расчёта (уже перечисляет эту систему в своём Downstream с тем же контрактом) |
+| Guest AI & Patience | Hard | Событие Served с `(recipe_id, remaining_fraction)` — единственный триггер расчёта; `match_ended` (Rule 9) — заморозка `match_score`, вычисление `is_new_record`, обновление `best_score`; `match_started` (Rule 13) — сброс `match_score` в Idle и `is_new_record` в `false` (уже перечисляет эту систему в своём Downstream с тем же контрактом) |
 
 **Downstream (зависят от этой системы)** — все hard:
 
 | Система | Что получает |
 |---|---|
-| Till & Day Cycle *(не спроектирована)* | `coins_earned` на каждое событие Served — решает, добавлять ли в видимую сумму кассы |
-| HUD & Feedback UI *(не спроектирована)* | `match_score`, `best_score`, `coins_earned`/`score_earned` по каждому событию — для счётчиков и всплывающих чисел |
+| Till & Day Cycle | `coins_earned` на каждое событие Served — решает, сколько добавить в видимую сумму кассы (`coins_added`, её Core Rule 2) |
+| HUD & Feedback UI | `match_score`, `best_score`, `score_earned` по каждому событию — для счётчика и попапа очков; `is_new_record` на `match_ended` — акцент нового рекорда |
 | Backend & Persistence *(не спроектирована, Vertical Slice)* | Возьмёт на себя серверный учёт `best_score`; в MVP это локальное сохранение |
 | Leaderboard & Leagues *(не спроектирована, Vertical Slice)* | `best_score`/`match_score` для ранжирования игроков |
 | Audio & Juice Feedback *(не спроектирована, Vertical Slice)* | Выход события Served (звон монет) как триггер звука |
@@ -291,10 +299,11 @@ D/H; часть кейсов ниже перенесена из валидаци
   — вход для формулы монет и очков») — сходится; её же секция Dependencies
   явно требует, чтобы Currency, когда будет спроектирована, перечислила
   Guest AI & Patience в ответ — выполнено выше.
-- Ни одна из семи downstream-систем ещё не спроектирована; каждая должна
-  перечислить Currency: Coins & Score в своей секции Dependencies, когда
-  будет написана (тот же паттерн уже используют Order & Recipe System и
-  Guest AI & Patience для своих неспроектированных downstream).
+- Till & Day Cycle и HUD & Feedback UI спроектированы и перечисляют
+  Currency: Coins & Score как Upstream (HUD — включая `is_new_record`) —
+  сходится. Остальные пять downstream-систем ещё не спроектированы;
+  каждая должна перечислить Currency: Coins & Score в своей секции
+  Dependencies, когда будет написана.
 
 ## Visual/Audio Requirements
 
@@ -309,7 +318,7 @@ HUD & Feedback UI и Audio & Juice Feedback при своём проектиро
 |---|---|---|---|
 | Served → `coins_earned` | Всплывающее число `+coins_earned`, визуально связанное с кассой (например, монеты «летят» к ней) — ассет и анимация за HUD & Feedback UI | Короткий звон монет (game-concept: «звон монет в кассе») — за Audio & Juice Feedback | High — заработок должен быть виден мгновенно (Pillar 2/4) |
 | Served → `score_earned` | Отдельное всплывающее число `+score_earned`, **визуально отличное** от монет (другой цвет/иконка — не золото, чтобы не путать с Tea Coin; Pillar 4: «две валюты не пересекаются никогда») | Отдельный, более «лёгкий»/мастерский звук, не совпадающий со звоном монет | Medium |
-| `match_ended`, новый рекорд (`match_score` > предыдущий `best_score`) | Заметное выделение нового рекорда на итоговом экране партии — форму определяет HUD & Feedback UI / `/art-bible` | Отдельный «триумфальный» звук/стингер | Medium |
+| `match_ended`, новый рекорд (`is_new_record = true`) | Заметное выделение нового рекорда на итоговом экране партии — форму определяет HUD & Feedback UI / `/art-bible` | Отдельный «триумфальный» звук/стингер | Medium |
 | Касса приняла/отклонила `coins_earned` (касса полна) | Вне scope этой системы — визуальную/аудио реакцию на отказ кассы специфицирует Till & Day Cycle | Вне scope | — |
 
 > 📌 **Asset Spec** — Visual/Audio requirements определены. После утверждения
@@ -358,17 +367,17 @@ Mechanic / Player Control), не эта система.
 
 ## UI Requirements
 
-*HUD & Feedback UI ещё не спроектирована — эта таблица фиксирует, что
-именно ей понадобится от Currency; раскладку и стиль экрана утверждает
-`/ux-design` при проектировании HUD.*
+*Таблица фиксирует, что HUD & Feedback UI берёт от Currency (реализовано
+в `hud-feedback-ui.md`); раскладку и стиль экрана утверждает `/ux-design`
+для HUD.*
 
 | Information | Display Location | Update Frequency | Condition |
 |---|---|---|---|
 | `match_score` (текущий счёт партии) | Постоянный счётчик на HUD | На каждое событие Served | Всегда во время партии |
 | `coins_earned` за событие | Временный popup рядом с кассой/тикетом | На событие Served | Только в момент подачи |
 | `score_earned` за событие | Временный popup рядом со счётчиком очков | На событие Served | Только в момент подачи |
-| `best_score` (личный рекорд) | Экран старта партии и итоговый экран | При старте партии; при `match_ended` | Всегда |
-| Индикатор нового рекорда | Итоговый экран партии | Один раз при `match_ended` | Только если `match_score` > предыдущий `best_score` |
+| `best_score` (личный рекорд) | Оверлей итогов партии | При `match_ended` | На оверлее итогов (стартового экрана нет — `guest-ai-patience.md` Rule 13) *(Исправлено 2026-09-29 batch-fix: N5)* |
+| Индикатор нового рекорда | Оверлей итогов партии | Один раз при `match_ended` | Только если `is_new_record = true` |
 
 > **📌 UX Flag — Currency: Coins & Score**: у этой системы есть UI-требования.
 > В Phase 4 (Pre-Production) запустите `/ux-design` для каждого экрана/
@@ -388,9 +397,11 @@ Mechanic / Player Control), не эта система.
 | `coins_earned = recipe_price(recipe_id)` (Formula 2) | `design/gdd/order-recipe-system.md` | `recipe_price` formula (Formula 1) output | Data dependency |
 | `score_earned` множитель `(1 + remaining_fraction)` (Formula 1) | `design/gdd/guest-ai-patience.md` | `remaining_fraction` formula (Formula 2) output | Data dependency |
 | Событие Served запускает расчёт монет и очков (Core Rule 1) | `design/gdd/guest-ai-patience.md` | Served state transition / payload `(recipe_id, remaining_fraction)` | State trigger |
-| Сигнал `match_ended` замораживает `match_score` и запускает сравнение с `best_score` (Core Rule 7, States and Transitions) | `design/gdd/guest-ai-patience.md` | `match_ended` signal | State trigger |
+| Сигнал `match_ended` замораживает `match_score`, вычисляет `is_new_record` и запускает сравнение с `best_score` (Core Rule 7, States and Transitions) | `design/gdd/guest-ai-patience.md` | `match_ended` signal (Rule 9) | State trigger |
+| Сигнал `match_started` сбрасывает `match_score` в Idle и `is_new_record` в `false` (States and Transitions) | `design/gdd/guest-ai-patience.md` | `match_started` signal (Rule 13) | State trigger |
+| `is_new_record` читается HUD для акцента нового рекорда (Core Rule 7) | `design/gdd/hud-feedback-ui.md` | Core Rule 13, AC 26/41 | Data dependency |
 | Касса полна → монеты не начисляются, очки всё равно считаются (Core Rule 4, Edge Cases) | `design/gdd/order-recipe-system.md` | Edge Cases: «если касса полна — `recipe_price` по-прежнему используется в формуле очков; монеты не начисляются — решение Till & Day Cycle» | Rule dependency |
-| Served и `match_ended` в один тик — очки от Served учитываются до заморозки (Edge Cases) | `design/gdd/guest-ai-patience.md` | Rule 9 — порядок обработки тика (подачи/уходы раньше проверки конца партии) | Rule dependency |
+| Served и `match_ended` в один тик — очки от Served учитываются до заморозки (Edge Cases) | `design/gdd/guest-ai-patience.md` | Rule 8 — порядок обработки тика (подачи/уходы раньше проверки конца партии) | Rule dependency |
 | `remaining_fraction = 0` при Served всё равно возможен (Edge Cases) | `design/gdd/guest-ai-patience.md` | Rule 8 — «подача побеждает» при одновременном истечении терпения и подаче | Rule dependency |
 
 ## Acceptance Criteria
@@ -412,7 +423,7 @@ Mechanic / Player Control), не эта система.
 5. **GIVEN** касса Till & Day Cycle уже полна, **WHEN** происходит Served после этого момента (вплоть до конца партии), **THEN** `score_earned` всё равно прибавляется к `match_score` — начисление очков не блокируется состоянием кассы (Core Rule 5).
 6. **GIVEN** исходный код системы, **WHEN** производится поиск публичных методов/сигналов, уменьшающих `coins_earned`, сумму кассы или `match_score`, **THEN** такой метод/путь отсутствует — система экспортирует только начисление, не списание (Core Rule 6; code-review-style проверка, не игровой сценарий).
 7. **GIVEN** партия завершается сигналом `match_ended`, **WHEN** `match_score` на этот момент строго больше текущего `best_score`, **THEN** `best_score` обновляется до значения `match_score` и сохраняется локально; **AND GIVEN** `match_score` равен или меньше `best_score`, **WHEN** `match_ended`, **THEN** `best_score` не изменяется (Core Rule 7).
-8. **GIVEN** `best_score` имеет сохранённое значение > 0, **WHEN** происходит старт новой партии, заполнение кассы, закрытие дня или переход `match_score` в Frozen с меньшим значением, **THEN** `best_score` не уменьшается и не сбрасывается ни в одном из этих случаев (Core Rule 8).
+8. **GIVEN** `best_score` имеет сохранённое значение > 0, **WHEN** происходит старт новой партии, заполнение кассы (Full), дневной сброс кассы или переход `match_score` в Frozen с меньшим значением, **THEN** `best_score` не уменьшается и не сбрасывается ни в одном из этих случаев (Core Rule 8).
 9. **GIVEN** исходный код системы и её downstream-потребителей (Progression & Upgrades, Token Integration), **WHEN** производится поиск функции, принимающей `coins_earned`/сумму кассы на входе и изменяющей `score_earned`/`match_score` на выходе (или наоборот), **THEN** такая функция отсутствует (Core Rule 9, design test Pillar 4; code-review-style проверка).
 
 **Formula 1 — `score_earned`**
@@ -435,7 +446,7 @@ Mechanic / Player Control), не эта система.
 19. **GIVEN** гость подан ровно в тот тик, когда истёк бы лимит его терпения (`remaining_fraction = 0` на момент Served), **WHEN** вычисляется `score_earned`, **THEN** результат равен `recipe_price × 10` и никогда не равен 0.
 20. **GIVEN** два и более гостя поданы в один и тот же тик, **WHEN** оба события обрабатываются в любом порядке, **THEN** итоговый `match_score` после тика равен сумме индивидуальных `score_earned` — результат не зависит от порядка обработки.
 21. **GIVEN** третий потерянный гость истекает в тот же тик, в который другой гость подан (Served), **WHEN** тик обрабатывается, **THEN** `score_earned` от Served добавляется к `match_score` до перехода в Frozen.
-22. **GIVEN** партия завершилась без единого Served (три страйка до первой подачи), **WHEN** приходит `match_ended`, **THEN** `match_score = 0` (осталось Idle), **AND** `best_score` не понижается.
+22. **GIVEN** партия завершилась без единого Served (три страйка до первой подачи), **WHEN** приходит `match_ended`, **THEN** `match_score = 0` и переходит Idle → Frozen, **AND** `best_score` не понижается, **AND** `is_new_record = false`.
 23. **GIVEN** это первая партия за всё время игры (сохранённого `best_score` не существует), **WHEN** партия завершается с `match_score = N > 0`, **THEN** `best_score` устанавливается в `N`.
 24. **GIVEN** medium-рецепт (`recipe_price = 5`) подан с `remaining_fraction = 1.0` (`score_earned = 100`) и в той же партии complex-рецепт (`recipe_price = 7`) подан на грани ухода гостя с `remaining_fraction = 0` (`score_earned = 70`), **WHEN** сравниваются два значения, **THEN** medium даёт больше очков, чем complex — ожидаемое поведение формулы при `remaining_fraction > 0.4`, не дефект.
 
@@ -447,8 +458,12 @@ Mechanic / Player Control), не эта система.
 28. **GIVEN** `match_score` в Frozen, **WHEN** HUD или итоговый экран читают значение, **THEN** возвращается зафиксированное значение, идентичное моменту `match_ended`.
 29. **GIVEN** `match_score` в Frozen, **WHEN** начинается следующая партия, **THEN** `match_score` переходит обратно в Idle со значением `0`.
 30. **GIVEN** `best_score` в Held, **WHEN** `match_score` переходит в Frozen со значением строго больше текущего `best_score`, **THEN** `best_score` обновляется в этот момент — и только в этот момент.
-31. **GIVEN** `best_score` в Held, **WHEN** происходит любое событие вне перехода `match_score` в Frozen (Served, старт партии, закрытие дня, Progression & Upgrades), **THEN** `best_score` не изменяется этим событием.
+31. **GIVEN** `best_score` в Held, **WHEN** происходит любое событие вне перехода `match_score` в Frozen (Served, старт партии, заполнение или дневной сброс кассы, Progression & Upgrades), **THEN** `best_score` не изменяется этим событием.
 32. **GIVEN** приложение закрывается или теряет соединение до `match_ended`, **WHEN** партия не завершилась штатно, **THEN** промежуточный `match_score` не сохраняется, и `best_score` не повышается этой незавершённой партией.
+
+**`is_new_record`** *(добавлено 2026-09-29 batch-fix, S4)*
+
+35. **[Logic]** **GIVEN** `best_score = 900`, **WHEN** партия завершается `match_ended` с `match_score = 950`, **THEN** `is_new_record = true` и `best_score = 950`; **AND GIVEN** `match_score = 900` (равенство) или `850`, **THEN** `is_new_record = false`, `best_score = 900`; **AND GIVEN** первая партия за всё время (сохранённого `best_score` нет) и `match_score = 120`, **THEN** `is_new_record = true`; **AND WHEN** затем приходит `match_started`, **THEN** `is_new_record = false`.
 
 **Производительность**
 

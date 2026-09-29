@@ -177,14 +177,14 @@ AC#10 этой GDD уже полагались на safe-area/viewport-конт�
 | Player Control / Barista Movement | Hard | NavMesh + точки взаимодействия |
 | Brewing & Crafting Mechanic | Hard | `slots`, позиции станций |
 | Guest AI & Patience | Hard | Точка появления, 4 точки очереди (стабильные ID), точка выхода — *число и точка выхода добавлены 2026-09-28 при проектировании `guest-ai-patience.md` (`guest_slot_count` = 4, реестр)* |
-| HUD & Feedback UI ⚠️ | Hard | Till anchor, позиции станций для индикаторов |
+| HUD & Feedback UI | Hard | Till anchor, позиции станций для индикаторов |
 | Co-op / Multiplayer (Full Vision) | Hard | Общее пространство для нескольких игроков |
 
-**Двунаправленность:** ни одна из этих систем ещё не спроектирована (все
-"Not Started" в индексе), поэтому обратных ссылок в их GDD пока нет — это
-ожидаемо, так как Kitchen & Station Layout идёт первой в Recommended Design
-Order. Когда будут написаны их GDD, каждая должна перечислить Kitchen &
-Station Layout в своей секции Dependencies.
+**Двунаправленность:** все MVP-системы из таблицы спроектированы и
+перечисляют Kitchen & Station Layout в своих Dependencies. Co-op /
+Multiplayer (Full Vision) ещё не спроектирована и должна сделать это при
+написании. *(Исправлено 2026-09-29 batch-fix: было «ни одна не
+спроектирована».)*
 
 ## Visual/Audio Requirements
 

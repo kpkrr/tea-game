@@ -13,3 +13,14 @@ Findings:
 
 Reviewed-Content-Hash: design/gdd/currency-coins-score.md f19341378361d5a9f7abba9decfaad42f2f536b0
 Reviewed-Content-Hash: design/registry/entities.yaml 2b9f0ee77ba6f29fd6f0aa5c02d3b568e3d19a32
+
+## Review — 2026-09-29 — Verdict: APPROVED (batch-fix, без отдельного прохода /design-review)
+Scope signal: —
+Specialists: none (batch-fix: три параллельных fork-правки + сверка grep)
+Blocking items: 0 | Recommended: 0
+Summary: Все открытые находки `gdd-cross-review-2026-09-29b.md` и `-29c.md`, касавшиеся этого документа, закрыты одним пакетом правок по всем MVP GDD (решение пользователя — выйти из цикла ревью). Итоговая сверка: `is_new_record` согласован Currency↔HUD↔registry, нет живых пометок «не спроектирована» у спроектированных систем, registry YAML валиден.
+Prior verdict resolved: Yes
+Findings:
+- none
+Reviewed-Content-Hash: design/gdd/currency-coins-score.md 144421f641a1eb3944dce35484d4bc504709a229
+Reviewed-Content-Hash: design/registry/entities.yaml 53c076ca63df672c5d1c9a52d22afecbeba952b3

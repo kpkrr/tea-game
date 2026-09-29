@@ -1,8 +1,8 @@
 # Guest AI & Patience
 
-> **Status**: Approved (/design-review 2026-09-28 — NEEDS REVISION → исправлено в той же сессии)
+> **Status**: Approved (batch-fix 2026-09-29: все находки `gdd-cross-review-2026-09-29b.md`/`-29c.md` закрыты, см. review-log)
 > **Author**: Yan + ai-programmer, game-designer
-> **Last Updated**: 2026-09-28
+> **Last Updated**: 2026-09-29
 > **Last Verified**: 2026-09-28
 > **Implements Pillar**: Pillar 1 (Хаос за стойкой), Pillar 4 (Монеты за работу, очки за мастерство)
 > **Creative Director Review (CD-GDD-ALIGN)**: пропущен — Lean mode
@@ -43,7 +43,8 @@ Questions как «→ становится ADR», а не решаются зд
 
 ### Core Rules
 
-1. **Спавн**: первый гость появляется в t = 0. Каждый спавн сразу
+1. **Спавн**: первый гость появляется в t = 0 — в тике старта партии
+   (Rule 13). Каждый спавн сразу
    фиксирует интервал до следующего: `spawn_interval(t_spawn)` (Formula 1),
    пересчёта по ходу нет — так же, как `patience_max_g`. Когда интервал
    истекает и есть свободный слот очереди (из 4), создаётся гость: ему
@@ -70,6 +71,13 @@ Questions как «→ становится ADR», а не решаются зд
    его не сбрасывает и не приостанавливает. Точкой взаимодействия для
    баристы всегда служит **слот** гостя, а не его текущая позиция: подавая
    гостю в Approaching, бариста идёт к слоту.
+   **Гость читаем с момента спавна** (решение 2026-09-29, C1
+   `gdd-cross-review-2026-09-29.md`): раз терпение уже тает и подать уже
+   можно, всё, что объясняет уход гостя, должно быть видно уже в
+   Approaching — HUD показывает его жетон заказа и кольцо терпения с
+   тика спавна, а не с прихода в слот (Pillar 3: правило, которое видно,
+   полностью объясняет уход). Контракт данных (UI Requirements) уже
+   отдаёт `recipe_id` и `remaining_fraction` для Approaching.
 5. **Подача**: если бариста держит чашку, тап по **любому** гостю в
    Approaching или Waiting, чей `recipe_id` совпадает с рецептом чашки
    (`matches(held_cup.steps)` — Order & Recipe; незавершённая или
@@ -91,12 +99,18 @@ Questions как «→ становится ADR», а не решаются зд
    кончается терпение и ему же подают заказ, побеждает подача («успел в
    последнюю секунду»). Подача другому гостю в тике, где случился третий
    уход, засчитывается, потому что подачи обрабатываются раньше.
+   **Стык с Player Control в кадре** (решение 2026-09-29): Player Control
+   обновляется раньше Guest AI. «Выполнить» из Holding, полученное в
+   кадре N, обрабатывается как шаг (1) тика Guest AI в том же кадре N —
+   до уходов по терпению. Поэтому «подача побеждает» действует и между
+   системами, а не только внутри этой (AC 23, AC 49).
 9. **Конец партии**: как только `guests_lost` = `max_guests_lost` (3),
    система замораживается в том же тике. Новых спавнов нет, терпение всех
    оставшихся гостей стоит, гости в Approaching останавливаются на месте,
    тапы по гостям получают «нет». Сигнал `match_ended` отправляется один
    раз (его получают Currency: Coins & Score, HUD и другие — вне этой
    GDD). Уже начатые анимации ухода (Served / Leaving) доигрываются.
+   Замороженная партия ждёт запроса на новую (Rule 13).
    *(Till & Day Cycle исключена из получателей `/propagate-design-change`
    2026-09-29: после ревизии её Core Rule 4/5 переход Open → Full больше
    не зависит от `match_ended` — касса реагирует напрямую на событие
@@ -109,21 +123,54 @@ Questions как «→ становится ADR», а не решаются зд
     Open Question #3 в `platform-integration-telegram-mini-app.md`: при
     уходе в фон партия ставится на паузу, а не теряется). В MVP
     триггер один: сигнал Platform Integration об уходе приложения в фон.
-    Кнопки паузы нет. Эта система переводит игровое время в паузу и
-    сообщает об этом Player Control, который подчиняется. Замирает всё:
-    время партии `t`, таймер спавна, терпение, движение гостей,
-    анимации и пульсация колец. После возврата отсчёт продолжается с того
-    же места. Механизм (общее игровое время или `SceneTree.paused`)
-    решает ADR.
+    Кнопки паузы нет. **Единое игровое время** (решение 2026-09-29):
+    все таймеры партии идут от одного игрового времени, которое эта
+    система ставит на паузу, — единственный источник паузы в проекте.
+    Другие системы не слушают сигнал Platform напрямую, а подчиняются
+    игровому времени. Замирает всё: время партии `t` (его читает
+    Difficulty Curve), таймер спавна, терпение, движение гостей,
+    движение баристы (Player Control), таймеры заварки `t_brew` в обоих
+    чайниках (Brewing & Crafting), анимации и пульсация колец (HUD).
+    После возврата отсчёт продолжается с того же места.
+    **Кламп шага**: игровое время за один шаг продвигается не больше чем
+    на `max_step_delta` (0.25 с). Если WebView заморозит JS раньше, чем
+    дойдёт сигнал ухода в фон, первый кадр после возврата не спишет
+    разом терпение всех гостей (иначе — три ухода и `match_ended` без
+    единого видимого кадра угрозы). Механизм (общее игровое время или
+    `SceneTree.paused`) решает ADR; требование — здесь.
 12. **Валидация данных**: константы (`guest_slot_count`,
     `max_guests_lost` ≥ 1, `onboarding_factor` ∈ (0, 1],
     `onboarding_duration` ≥ 0, `medium_share_of_remaining` ∈ [0, 1],
-    пороги Formula 4, `guest_walk_speed` > 0)
+    пороги Formula 4, `guest_walk_speed` > 0, `max_step_delta` > 0)
     проверяются при загрузке. Значение вне диапазона — ошибка загрузки,
     партия не стартует. Функции Difficulty Curve проверяются при каждом
     чтении (на спавне): `complex_order_share` зажимается в [0, 1];
     `guests_per_minute` ≤ 0 или `patience_max` ≤ 0 заменяются baseline (7 /
     50). Каждый вид ошибки пишется в лог один раз за партию.
+13. **Старт партии** (решение 2026-09-29, C2
+    `gdd-cross-review-2026-09-29.md`): эта система владеет всем жизненным
+    циклом партии — и `match_ended` (Rule 9), и её началом. Партия
+    стартует в двух случаях:
+    - **первая партия запуска** — автоматически, как только Platform
+      Integration перешла в состояние `Ready` **и** сцена кухни загружена;
+      стартового экрана нет. HUD переходит `Inactive` → `Active` только по
+      `match_started` этой системы, а не по готовности кухни сама. *(Исправлено
+      2026-09-29 batch-fix: N1 — было циклическое «тот же триггер, по
+      которому HUD переходит…»)*;
+    - **следующая партия** — по входящему запросу `request_new_match`,
+      который шлёт HUD при тапе «Играть снова» на оверлее итогов.
+      Запрос принимается только после `match_ended`; во время активной
+      партии он игнорируется (без ошибки, одна запись в debug-лог).
+    Старт выполняется в одном тике, до шага (1) Rule 8: все гости
+    удаляются (включая замороженных и доигрывающих уход), `guests_lost`
+    = 0, `t` = 0, флаг конца партии снят, сигнал `match_started`
+    отправляется ровно один раз, затем в этом же тике спавнится первый
+    гость (Rule 1). Получатели `match_started` — Currency (сброс
+    `match_score` в Idle), Brewing (чайники, слоты, руки → пусто), Player
+    Control (бариста Idle), Till (проверка дневного сброса «между
+    партиями»), HUD (`MatchEnd` → `Active`); что именно делает каждый
+    получатель, задаёт его GDD. Difficulty Curve отдельного сигнала не
+    ждёт: она читает `t` этой системы, который обнулился.
 
 ### States and Transitions
 
@@ -139,19 +186,22 @@ Questions как «→ становится ADR», а не решаются зд
 
 Пауза (Rule 11) и конец партии (Rule 9) — не состояния гостя, а
 глобальные флаги. Под ними гость остаётся в своём состоянии, но переходы
-Approaching → Waiting, терпение и спавн стоят.
+Approaching → Waiting, терпение и спавн стоят. Старт партии (Rule 13)
+удаляет всех гостей в любом состоянии — отдельного перехода гостя у
+него нет.
 
 ### Interactions with Other Systems
 
 | Система | Направление | Что течёт |
 |---|---|---|
 | Kitchen & Station Layout | Kitchen → Guest AI | Точка появления гостей + ровно 4 точки ожидания в очереди со стабильными ID и точка выхода (`guest_slot_count` = 4, реестр; зафиксировано в обоих документах 2026-09-28) |
-| Brewing & Crafting Mechanic | двунаправленно | Brewing → Guest AI: `held_cup.steps` (рецепт чашки через `matches()` Order & Recipe). Guest AI → Brewing: вызов `consume_held_cup()` при подаче (Rule 5). Контракт зафиксирован в `brewing-crafting-mechanic.md` |
+| Brewing & Crafting Mechanic | двунаправленно | Brewing → Guest AI: `held_cup.steps` (рецепт чашки через `matches()` Order & Recipe). Guest AI → Brewing: вызов `consume_held_cup()` при подаче (Rule 5); `match_started` (Rule 13) — сброс чайников, слотов и рук; игровое время с паузой (Rule 11) — таймеры `t_brew` идут от него. Контракт подачи зафиксирован в `brewing-crafting-mechanic.md` |
 | Order & Recipe System | Order & Recipe → Guest AI | `recipes_by_tier(tier)` для назначения `recipe_id` гостю (Formula 3); правило совпадения чашки с заказом (владеет Brewing/Order & Recipe, эта система лишь сравнивает `recipe_id`) |
-| Player Control / Barista Movement | двунаправленно | Guest AI отвечает на запрос допустимости тапа по гостю (да / нет) и на «выполнить» в Holding (Rule 5); точка взаимодействия — слот гостя (Rule 4). Guest AI сообщает Player Control о паузе (Rule 11). При уходе гостя эта система шлёт Player Control сигнал «цель исчезла» (Rule 6 → Leaving), если бариста шёл к нему |
-| Currency: Coins & Score | Guest AI → Currency | На каждое событие Served: `(recipe_id, remaining_fraction)` — Currency считает монеты (`coins_earned = recipe_price`) и очки (`score_earned`). Контракт подтверждён Currency: Coins & Score (Core Rule 1, Formula 1/2) без изменений 2026-09-28 |
+| Player Control / Barista Movement | двунаправленно | Guest AI отвечает на запрос допустимости тапа по гостю (да / нет) и на «выполнить» в Holding (Rule 5); «выполнить» из кадра N обрабатывается шагом (1) тика этого же кадра (Rule 8); точка взаимодействия — слот гостя (Rule 4). Движение баристы идёт от игрового времени этой системы (пауза и кламп шага, Rule 11) — сигнал Platform напрямую Player Control не слушает. `match_started` (Rule 13) — бариста Idle. При уходе гостя эта система шлёт Player Control сигнал «цель исчезла» (Rule 6 → Leaving), если бариста шёл к нему |
+| Currency: Coins & Score | Guest AI → Currency | На каждое событие Served: `(recipe_id, remaining_fraction)` — Currency считает монеты (`coins_earned = recipe_price`) и очки (`score_earned`). Контракт подтверждён Currency: Coins & Score (Core Rule 1, Formula 1/2) без изменений 2026-09-28. `match_ended` (Rule 9) — заморозка `match_score`; `match_started` (Rule 13) — сброс `match_score` в Idle |
+| Till & Day Cycle | Guest AI → Till | Только `match_started` (Rule 13) — граница «между партиями», на которой Till проверяет пересечение `daily_reset_time_utc`. `match_ended` Till не получает (исключена 2026-09-29) |
 | Difficulty Curve & Session Pacing | двунаправленно | Эта система выставляет три параметра как точки расширения: `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)`. Их реализует Difficulty Curve (Formula 2–4 там, ease-in по общему `difficulty_progress(t)`, 180 с); значения при t = 0 совпадают с baseline этой GDD (7 / 50 / 0; поток снижен 8 → 7 `/balance-check` 2026-09-29, Difficulty Curve OQ #7) |
-| HUD & Feedback UI *(не спроектирована)* | Guest AI → HUD | На каждого активного гостя: `recipe_id` (для тикета заказа), `remaining_fraction` (для индикатора терпения), состояние (Approaching/Waiting/Leaving/Served). На партию: `guests_lost`, `match_ended` |
+| HUD & Feedback UI | двунаправленно | Guest AI → HUD: на каждого активного гостя — `recipe_id` (жетон заказа), `remaining_fraction` (кольцо терпения), состояние (Approaching/Waiting/Leaving/Served); жетон и кольцо показываются уже в Approaching (Rule 4). На партию: `guests_lost`, `match_ended`, `match_started`. HUD → Guest AI: `request_new_match` по тапу «Играть снова» (Rule 13) |
 | Co-op / Multiplayer *(Full Vision)* | — | Не в MVP; модель "один бариста — общая очередь" потребует пересмотра при добавлении второго игрока |
 
 Имена контрактов — описание, не API; реализация — в ADR.
@@ -163,10 +213,11 @@ Approaching → Waiting, терпение и спавн стоят.
 0.5.*
 
 Три входа — `guests_per_minute(t)`, `patience_max(t)`,
-`complex_order_share(t)` — принадлежат Difficulty Curve & Session Pacing
-(ещё не спроектирована). Эта GDD фиксирует механизм, в котором они
-используются, и baseline при t = 0 из game-concept. Сами функции от
-времени определены в `design/gdd/difficulty-curve-session-pacing.md` (Formula 2–4, спроектирована 2026-09-28);
+`complex_order_share(t)` — принадлежат Difficulty Curve & Session Pacing.
+Эта GDD фиксирует механизм, в котором они используются, и baseline при
+t = 0 (значения Difficulty Curve при t = 0; game-concept чисел кривой не
+задаёт). Сами функции от времени определены в
+`design/gdd/difficulty-curve-session-pacing.md` (Formula 2–4);
 примеры ниже считают их константами baseline, как `FakeDifficulty` в AC.
 
 ### Formula 1 — `spawn_interval(t)`
@@ -191,7 +242,7 @@ The `spawn_interval` formula is defined as:
 | `spawn_interval(t)` | float, с | > 0 | calculated | Интервал между спавнами |
 
 **Output Range:** 17.14 с в онбординге, 8.57 с сразу после него (baseline);
-при 18 гостей/мин (конец кривой в game-concept) — 3.33 с. Сверху не
+при 18 гостей/мин (конец кривой Difficulty Curve) — 3.33 с. Сверху не
 ограничено формулой; `guests_per_minute` ≤ 0 заменяется baseline при
 чтении (Rule 12), поэтому деления на ноль нет.
 **Граница t = 30 с — ступенька, а не плавный рост**: поток удваивается
@@ -220,7 +271,7 @@ patience_max_g`.
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
 | `t_since_spawn` | float, с | ≥ 0 | calculated | Время с момента спавна этого гостя (без пауз) |
-| `patience_max_g` | float, с | > 0; baseline 50 | `patience_max(t_spawn)` — Difficulty Curve Formula 3 (внешняя); baseline — game-concept | Терпение гостя, **зафиксированное один раз при спавне** |
+| `patience_max_g` | float, с | > 0; baseline 50 | `patience_max(t_spawn)` — Difficulty Curve Formula 3 (внешняя); baseline — её значение при t = 0 | Терпение гостя, **зафиксированное один раз при спавне** |
 | `remaining_fraction` | float | [0, 1] | calculated | Остаток терпения; его читают HUD (кольцо) и Currency (очки) |
 
 **Ключевое правило: `patience_max_g` фиксируется при спавне** и не
@@ -258,7 +309,7 @@ p_simple + p_medium` → medium; иначе complex. Внутри уровня �
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
 | `t_spawn` | float, с | ≥ 0 | calculated | Время партии в момент спавна гостя |
-| `complex_order_share(t)` | float | [0, 1]; baseline 0 | Difficulty Curve Formula 4 (внешняя); baseline — game-concept (0% → 40%) | Доля сложных заказов (с лимоном) |
+| `complex_order_share(t)` | float | [0, 1]; baseline 0 | Difficulty Curve Formula 4 (внешняя; 0% → 40%); baseline — её значение при t = 0 | Доля сложных заказов (с лимоном) |
 | `medium_share_of_remaining` | float | [0, 1]; 0.5 | data file | Какая часть вероятности, оставшейся после сложных заказов, приходится на средние |
 | `p_simple`, `p_medium`, `p_complex` | float | [0, 1], сумма = 1 | calculated | Вероятности уровней |
 | `r` | float | [0, 1) | RNG | Бросок выбора уровня |
@@ -384,8 +435,18 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
   Holding у другого гостя**: этот гость остаётся в своём текущем
   состоянии (Approaching/Waiting), его таймер терпения замораживается на
   текущем значении (Rule 9) — он не засчитывается ни как Served, ни как
-  потерянный. Судьба таких «зависших» гостей при старте следующей партии
-  вне области этой GDD (новая партия создаёт новый мир заново).
+  потерянный. При старте следующей партии такие «зависшие» гости
+  удаляются без событий Served/Leaving (Rule 13).
+- **Если `request_new_match` приходит во время активной партии**
+  (двойной тап, гонка ввода): запрос игнорируется, партия продолжается,
+  одна запись в debug-лог (Rule 13).
+- **Если `request_new_match` приходит, пока уходящий гость ещё
+  доигрывает анимацию после `match_ended`**: старт не ждёт анимацию —
+  гость удаляется в тике старта (Rule 13); новый мир чистый.
+- **Если приложение вернулось из фона после долгой заморозки WebView,
+  а сигнал ухода в фон не успел прийти**: первый шаг продвигает игровое
+  время не больше чем на `max_step_delta` (0.25 с) — терпение не
+  списывается разом (Rule 11).
 - **Если игра на паузе или приложение ушло в фон**: таймер спавна и все
   таймеры терпения останавливаются одновременно (Rule 11); при возврате
   продолжают с той же точки, время паузы не засчитывается. Эта система
@@ -400,8 +461,9 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 
 - **Если константа вне диапазона** (`guest_slot_count` ≠ 4,
   `max_guests_lost` < 1, `onboarding_factor` вне (0, 1], пороги Formula 4
-  нарушают инвариант, `guest_walk_speed` ≤ 0): ошибка загрузки, партия не
-  стартует (Rule 12).
+  нарушают инвариант, `guest_walk_speed` ≤ 0, `max_step_delta` ≤ 0):
+  ошибка загрузки, партия не стартует (Rule 12). *(`max_step_delta`
+  добавлен 2026-09-29 batch-fix.)*
 - **Если функция Difficulty Curve вернула недопустимое значение**:
   `complex_order_share` зажимается в [0, 1]; `guests_per_minute` ≤ 0 или
   `patience_max` ≤ 0 заменяются baseline (7 / 50). Проверка — при каждом
@@ -416,16 +478,20 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 | Kitchen & Station Layout | Hard | Точка появления гостей + ровно 4 точки ожидания в очереди у прилавка со стабильными ID и точка выхода (NavMesh-координаты) |
 | Order & Recipe System | Hard | `recipes_by_tier(tier)` — список `recipe_id` по уровню сложности, для назначения заказа гостю (Formula 3) |
 | Player Control / Barista Movement | Hard | Контракт допустимости тапа по гостю (да/нет по Rule 4/8) и «выполнить» в Holding (доставка чашки); в обратную сторону — сигнал «цель исчезла», когда гость уходит, пока бариста идёт к нему |
-| Platform Integration (Telegram Mini App) | Soft | Сигнал ухода приложения в фон — триггер паузы (Rule 11). Без него система работает, но партия не встаёт на паузу при сворачивании |
+| Platform Integration (Telegram Mini App) | Hard | Состояние `Ready` — вместе с загрузкой сцены кухни триггер старта первой партии (Rule 13; без него первая партия не стартует). Сигнал ухода приложения в фон — триггер паузы (Rule 11; без него партия просто не встаёт на паузу при сворачивании). *(Soft → Hard 2026-09-29 batch-fix, N1)* |
+| HUD & Feedback UI | Hard | `request_new_match` по тапу «Играть снова» — единственный триггер каждой партии после первой (Rule 13). *(Добавлено 2026-09-29 batch-fix, N4)* |
 | Brewing & Crafting Mechanic | Hard | Владеет чашкой в руках: `held_cup.steps` для проверки допустимости через `matches()` (Rule 5); `consume_held_cup()`, который эта система вызывает при подаче |
 
 **Downstream (зависят от этой системы):**
 
 | Система | Тип | Что получает |
 |---|---|---|
-| Currency: Coins & Score | Hard | `(recipe_id, remaining_fraction)` на каждое событие Served — вход для формул `coins_earned`/`score_earned` (контракт подтверждён 2026-09-28) |
-| Difficulty Curve & Session Pacing | Hard | Реализует точки расширения `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` (её Formula 2–4); эта GDD фиксирует контракт и baseline при t = 0 |
-| HUD & Feedback UI *(не спроектирована)* | Hard | Per-guest `recipe_id`, `remaining_fraction`, состояние (Approaching/Waiting/Leaving/Served); на партию — `guests_lost`, `match_ended` |
+| Currency: Coins & Score | Hard | `(recipe_id, remaining_fraction)` на каждое событие Served — вход для формул `coins_earned`/`score_earned` (контракт подтверждён 2026-09-28); `match_ended` и `match_started` — заморозка и сброс `match_score` |
+| Difficulty Curve & Session Pacing | Hard | Реализует точки расширения `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` (её Formula 2–4); эта GDD фиксирует контракт и baseline при t = 0; `t` — время партии этой системы (обнуляется Rule 13, стоит на паузе Rule 11) |
+| HUD & Feedback UI | Hard | Per-guest `recipe_id`, `remaining_fraction`, состояние (Approaching/Waiting/Leaving/Served), жетон и кольцо — с Approaching (Rule 4); на партию — `guests_lost`, `match_ended`, `match_started`. Обратно HUD шлёт `request_new_match` (Rule 13) |
+| Brewing & Crafting Mechanic | Hard | Кроме upstream-контракта подачи: `match_started` (сброс) и игровое время с паузой для `t_brew` (Rule 11, 13) |
+| Player Control / Barista Movement | Hard | Кроме upstream-контракта цели: игровое время с паузой и клампом (Rule 11), `match_started` (Idle), порядок в кадре (Rule 8) |
+| Till & Day Cycle | Soft | `match_started` — граница «между партиями» для проверки дневного сброса (Rule 13). Без него Till проверяет сброс только при холодном старте |
 | Co-op / Multiplayer *(Full Vision)* | Hard | Модель «один бариста — общая очередь на 4 слота», которую нужно будет расширить на нескольких барист |
 
 Имена контрактов — описание, не API; реализация — в ADR.
@@ -453,8 +519,17 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 - Currency: Coins & Score (2026-09-28) перечисляет эту систему в своих
   Upstream с тем же контрактом `(recipe_id, remaining_fraction)` —
   сходится.
-- HUD & Feedback UI ещё не спроектирована — должна перечислить Guest AI &
-  Patience в своей секции Dependencies, когда будет написана.
+- HUD & Feedback UI перечисляет эту систему как Upstream, Hard (жетон и
+  кольцо с Approaching, `match_started`, игровое время) и как Downstream
+  (`request_new_match`) — сходится (пропагировано 2026-09-29).
+- Platform Integration перечисляет эту систему в Downstream с `Ready` как
+  триггером первой партии (2026-09-29 batch-fix, N1) — сходится.
+- **Требуют отражения новых контрактов 2026-09-29** (Rule 11, 13):
+  Currency (`match_started` как старт следующей партии в States), Brewing
+  (Edge Case «Начало новой партии» — источник `match_started`; `t_brew`
+  от игрового времени), Player Control (пауза от игрового времени, а не
+  от Platform; порядок в кадре), Till (`match_started` как граница «между
+  партиями»; Dependencies), Difficulty Curve (`t` — время этой системы).
 
 ## Tuning Knobs
 
@@ -473,7 +548,9 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 
 `guest_slot_count` (= 4) не включена в эту таблицу: это структурная
 константа (число слотов очереди), а не баланс-ручка — её меняют вместе с
-раскладкой Kitchen, не через `/balance-check`.
+раскладкой Kitchen, не через `/balance-check`. `max_step_delta` (0.25 с,
+Rule 11) — тоже не баланс-ручка, а техническая защита от скачка
+времени; меняется только вместе с ADR игрового времени.
 
 ## Visual/Audio Requirements
 
@@ -558,8 +635,9 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 - **Уход не должен удивлять**: гость не уходит из уровня «Спокоен» —
   между первым видимым сигналом тревоги (0.60) и уходом всегда проходит
   ≥ 60% `patience_max` (≥ 15 с даже при минимальном терпении 25 с из
-  game-concept). Игрок, который смотрел на кухню, всегда успевал увидеть
-  угрозу.
+  Difficulty Curve). Игрок, который смотрел на кухню, всегда успевал
+  увидеть угрозу — в том числе потому, что кольцо видно уже в пути
+  (Rule 4).
 - **Потеря жизни ощущается, но не останавливает игру**: уход гостя не
   ставит паузу и не запускает slow-motion — хаос продолжается. Счётчик
   `guests_lost` обновляется в тот же кадр (HUD).
@@ -568,17 +646,19 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 
 ## UI Requirements
 
-Эта система не рисует UI сама — рендер владеет HUD & Feedback UI (ещё не
-спроектирована). Здесь фиксируется только контракт данных, который Guest
-AI & Patience обязана предоставлять, чтобы HUD могла его отрисовать:
+Эта система не рисует UI сама — рендер владеет HUD & Feedback UI. Здесь
+фиксируется только контракт данных, который Guest AI & Patience обязана
+предоставлять, чтобы HUD могла его отрисовать:
 
 | Данные | Откуда (Rule/Formula) | Зачем HUD |
 |---|---|---|
-| `recipe_id` каждого активного гостя | Rule 1 / Formula 3 | Тикет заказа — какой напиток нужен этому гостю |
-| `remaining_fraction` каждого активного гостя (0.0–1.0) | Formula 2 | Индикатор терпения — диегетический, над гостем (см. Visual/Audio) |
+| `recipe_id` каждого активного гостя (Approaching и Waiting) | Rule 1 / Formula 3 | Тикет заказа — какой напиток нужен этому гостю; виден с тика спавна (Rule 4) |
+| `remaining_fraction` каждого активного гостя (0.0–1.0, Approaching и Waiting) | Formula 2 | Индикатор терпения — диегетический, над гостем (см. Visual/Audio); виден с тика спавна (Rule 4) |
 | Состояние гостя (Approaching / Waiting / Leaving / Served) | States and Transitions | Разная визуализация для «ждёт» vs «уходит» vs «подан» |
-| `guests_lost` (0–3) и `max_guests_lost` (= 3) | Rule 6/7 | Счётчик «жизней» партии |
+| `guests_lost` (0–3) и `max_guests_lost` (= 3) | Rule 6/7 | Счётчик «жизней» партии — HUD рисует 3 иконки-страйка в экранной полосе рядом с `match_score` (HUD Core Rule 10, решено 2026-09-29 batch-fix, D9) |
 | `match_ended` (bool) | Rule 9 | Сигнал закончить показ HUD партии |
+| `match_started` (событие) | Rule 13 | `MatchEnd` → `Active`, сброс HUD партии |
+| Вход: `request_new_match` | Rule 13 | HUD шлёт по тапу «Играть снова»; во время партии игнорируется |
 
 📌 **UX Flag — Guest AI & Patience**: этот контракт напрямую определяет,
 что HUD & Feedback UI должна уметь отрисовать (до 4 одновременных
@@ -626,7 +706,8 @@ Integration — в `tests/integration/guest_ai/`.
    **THEN** `guest_slot_count` = 4, `max_guests_lost` = 3,
    `onboarding_factor` = 0.5, `onboarding_duration` = 30.0,
    `medium_share_of_remaining` = 0.5, `patience_warn_threshold` = 0.60,
-   `patience_urgent_threshold` = 0.25, `guest_walk_speed` = 3.0; baseline 7
+   `patience_urgent_threshold` = 0.25, `guest_walk_speed` = 3.0,
+   `max_step_delta` = 0.25; baseline 7
    гостей/мин, `patience_max` = 50, `complex_order_share` = 0.
 2. **[Logic]** **GIVEN** пары порогов (warn, urgent) = (0.25, 0.60), (0.40,
    0.40), (1.0, 0.25), (0.60, 0.0), **WHEN** каждая загружается, **THEN**
@@ -636,7 +717,8 @@ Integration — в `tests/integration/guest_ai/`.
    **WHEN** выполняется загрузка, **THEN** ошибка загрузки, партия не
    стартует. **AND GIVEN** `onboarding_factor` = 0 или 1.5, либо
    `max_guests_lost` = 0, либо `medium_share_of_remaining` = −0.1 или 1.2,
-   **THEN** тоже ошибка загрузки, с именем константы.
+   либо `max_step_delta` = 0, **THEN** тоже ошибка загрузки, с именем
+   константы.
 4. **[Logic]** **GIVEN** `FakeDifficulty.complex_order_share` = 1.3, **WHEN**
    при t ≥ 30 появляются 20 гостей, **THEN** все 20 получают заказ сложного
    уровня, а в логе ровно одна ошибка. **AND GIVEN** −0.2, **THEN** сложных
@@ -844,23 +926,26 @@ Integration — в `tests/integration/guest_ai/`.
     `consume_held_cup()` (один раз) → Served. *(Закрывает AC 40(b) из
     `player-control-barista-movement.md` и AC-I1 из
     `brewing-crafting-mechanic.md`.)*
-45. **[Integration, ПРОВИЗОРНЫЙ — Currency не спроектирована; до неё —
-    Logic со шпионом]** **GIVEN** гостю с `black_tea` подают заказ при
+45. **[Integration]** **GIVEN** гостю с `black_tea` подают заказ при
     `t_since_spawn` = 20.0, **WHEN** шаг обрабатывается, **THEN** Currency
     получает ровно одно событие (`black_tea`, 0.6). На уход гостя событий
     нет, после `match_ended` — тоже нет.
 46. **[Logic]** **GIVEN** 4 активных гостя в разных состояниях, **WHEN**
     HUD запрашивает контракт данных, **THEN** по каждому возвращаются
     `recipe_id`, `remaining_fraction` ∈ [0, 1] и состояние; по партии —
-    `guests_lost` ∈ [0, 3], `max_guests_lost` = 3, `match_ended`. Рендер с
-    реальным HUD — Integration, заблокирован до HUD & Feedback UI.
+    `guests_lost` ∈ [0, 3], `max_guests_lost` = 3, `match_ended`. **AND
+    GIVEN** гость в Approaching, **THEN** его `recipe_id` и
+    `remaining_fraction` возвращаются так же, как для Waiting (Rule 4).
+    Рендер с реальным HUD — Integration, в `hud-feedback-ui.md` (после
+    правки её Rule 4/5 под Rule 4 этой GDD).
 
 ### Визуал
 
 47. **[Visual]** **GIVEN** сборка с 4 гостями на уровнях calm / warn /
     urgent и одним в Approaching, **WHEN** снимаются скриншоты, **THEN** в
     `production/qa/evidence/` лежат снимки: кольцо нейтрального цвета без
-    смены оттенка на всех уровнях; иконка на warn и urgent; поза «злость»
+    смены оттенка на всех уровнях; у гостя в Approaching кольцо и жетон
+    заказа уже видны (Rule 4); иконка на warn и urgent; поза «злость»
     на urgent; поза «доволен» на Served; сутулая походка и puff на Leaving.
     Нужна подпись лида.
 
@@ -873,6 +958,50 @@ Integration — в `tests/integration/guest_ai/`.
     превышают порога из perf-ADR. Предварительно ≤ 0.5 мс / ≤ 1.0 мс при
     общем бюджете 16.6 мс; порог утверждает technical-director (Open
     Questions #8).
+
+### Жизненный цикл партии и игровое время (Rule 8, Rule 11, Rule 13)
+
+*Добавлено `/design-review` 2026-09-29 (C1/C2 кросс-ревью).*
+
+49. **[Integration]** **GIVEN** реальный Player Control, бариста в Holding
+    у гостя G с подходящей чашкой, у G `t_since_spawn` таков, что в этом
+    кадре `remaining_fraction` доходит до 0, **WHEN** кадр N
+    обрабатывается (Player Control до Guest AI), **THEN** в кадре N G в
+    Served, событие несёт `remaining_fraction` = 0.0, `guests_lost` не
+    меняется, событий Leaving нет (Rule 8, стык в кадре).
+50. **[Logic]** **GIVEN** запуск, Platform Integration ещё не в `Ready`
+    или сцена кухни не загружена, **WHEN** идут шаги, **THEN** гостей нет
+    и `match_started` не отправлен. **AND WHEN** Platform в `Ready` и
+    кухня загружена, **THEN** в этом же шаге
+    `match_started` отправлен ровно один раз, после него — спавн первого
+    гостя при t = 0 (AC 6).
+51. **[Logic]** **GIVEN** партия закончилась (`guests_lost` = 3), один
+    гость заморожен в Waiting, один доигрывает анимацию Leaving, **WHEN**
+    приходит `request_new_match`, **THEN** в этом шаге: оба гостя удалены,
+    событий Served/Leaving нет, `guests_lost` = 0, t = 0, `match_started`
+    отправлен ровно один раз, затем появляется первый гость с `cold_tea`
+    в Approaching.
+52. **[Logic]** **GIVEN** партия активна (`guests_lost` < 3), **WHEN**
+    приходит `request_new_match` (в том числе дважды в одном шаге),
+    **THEN** партия продолжается без изменений, `match_started` не
+    отправлен, в debug-логе одна запись.
+53. **[Logic]** **GIVEN** `max_step_delta` = 0.25, гость с `patience_max_g`
+    = 50 и `remaining_fraction` = 0.5, **WHEN** выполняется `step(30.0)`
+    (имитация заморозки WebView без сигнала ухода в фон), **THEN** t
+    продвинулось ровно на 0.25, `remaining_fraction` = 0.495, гость в
+    Waiting, событий Leaving нет.
+54. **[Integration]** **GIVEN** реальные Brewing & Crafting и Player
+    Control, чайник заваривает (осталось 2.0 с), бариста идёт, **WHEN**
+    Guest AI ставит игровое время на паузу на 10 с (сигнал Platform) и
+    снимает, **THEN** за паузу таймер чайника и позиция баристы не
+    изменились, а после снятия чайник готов через 2.0 с игрового
+    времени; Player Control сигнал Platform напрямую не получал (Rule 11).
+55. **[Logic]** **GIVEN** партия закончилась (`match_ended` отправлен),
+    **WHEN** в одном и том же шаге приходят два `request_new_match`,
+    **THEN** `match_started` отправлен ровно один раз, партия стартует
+    один раз; второй запрос обрабатывается уже как «во время активной
+    партии» (игнор + одна запись в debug-лог, AC 52). *(Добавлено
+    2026-09-29 batch-fix.)*
 
 ## Open Questions
 

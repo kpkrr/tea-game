@@ -112,7 +112,7 @@ Recipe System как baseline-константы при t=0 (`guests_per_minute(
 |---|---|---|
 | Guest AI & Patience | Upstream (владеет механизмом) / Downstream (потребляет вывод) | Guest AI уже зафиксировала контракт в своих Formula 1–3: читает `guests_per_minute(t_spawn)` на каждый спавн, `patience_max(t_spawn)` один раз на гостя (не пересчитывается), `complex_order_share(t_spawn)` на каждый спавн вне онбординга. Эта GDD реализует все три функции |
 | Order & Recipe System | Upstream, Hard | Три уровня сложности (`simple`/`medium`/`complex`) и их `recipes_by_tier(tier)` — `complex_order_share` ссылается на те же три уровня; сам выбор конкретного `recipe_id` внутри уровня остаётся за Guest AI Formula 3 |
-| HUD & Feedback UI *(не спроектирована)* | Downstream, ожидаемый Hard | Вероятно потребуется индикатор прогресса/времени партии (см. Visual/Audio) — контракт зафиксируется при проектировании HUD |
+| HUD & Feedback UI | — (в MVP нет) | HUD спроектирована и не читает эту систему: индикатора прогресса/времени партии в MVP нет (`hud-feedback-ui.md` Core Rule 10 — `match_score` единственный постоянный виджет полосы). `difficulty_progress(t)` остаётся кандидатом Post-MVP. *(Исправлено 2026-09-29 batch-fix — было «не спроектирована, ожидаемый Hard».)* |
 | Till & Day Cycle | — | Явно НЕ зависимость ни в одну сторону (Core Rule 7) |
 
 Имена функций — описание контракта, не API; реализация — в ADR (в проекте
@@ -265,8 +265,11 @@ spawn_interval − 1`, без ходьбы к гостю и без буфера 
   результат — значения `_start`. Партия не прерывается.
 - **Если `t` ровно равно `ramp_duration`**: прогресс = 1 (зажим включает
   границу), состояние Plateaued. Разрыва нет — кривая непрерывна.
-- **Если стартует новая партия** (в том числе 2-я–5-я за день): `t` = 0,
-  прогресс = 0. Сложность между партиями не переносится; касса и день —
+- **Если стартует новая партия** (любая по счёту за день — число партий
+  не ограничено, `till-day-cycle.md` Core Rule 5; старт — `match_started`,
+  `guest-ai-patience.md` Rule 13): `t` = 0, прогресс = 0. *(Исправлено
+  2026-09-29 batch-fix — было «2-я–5-я за день», намекало на лимит 5
+  партий.)* Сложность между партиями не переносится; касса и день —
   не входы (Core Rule 7).
 - **Если партия на паузе или приложение в фоне**: `t` не идёт (паузой
   владеет Guest AI, её Rule 11). У этой системы нет своего таймера,
@@ -327,7 +330,7 @@ spawn_interval − 1`, без ходьбы к гостю и без буфера 
 | Система | Тип | Что получает |
 |---|---|---|
 | Guest AI & Patience | Hard | Единственный вызывающий все три функции этой системы на каждом спавне гостя (её Formula 1–3). Одновременно Upstream и Downstream: Guest AI задаёт интерфейс, но сама же его потребляет |
-| HUD & Feedback UI *(не спроектирована)* | Мягкий, ожидаемый | `difficulty_progress(t)` как вход для индикатора прогресса партии (см. Visual/Audio Requirements) |
+| HUD & Feedback UI | — (в MVP нет) | Не читает `difficulty_progress(t)` в MVP — индикатор прогресса партии не вошёл в HUD (Core Rule 10); Post-MVP кандидат *(исправлено 2026-09-29 batch-fix)* |
 | Audio & Juice Feedback *(не спроектирована, Vertical Slice)* | Мягкий, ожидаемый | `difficulty_progress(t)` как вход для нарастания фоновой музыки/шума (см. Visual/Audio Requirements) |
 
 Имена функций — описание контракта, не API; реализация — в ADR (в проекте
@@ -400,7 +403,7 @@ UI. Показывать ли его и как — решает HUD при св�
 
 | Система | GDD | Что эта GDD использует из неё |
 |---|---|---|
-| Guest AI & Patience | `design/gdd/guest-ai-patience.md` | Formula 1 (`spawn_interval`), Formula 2 (`remaining_fraction` / контракт «`patience_max_g` фиксируется при спавне»), Formula 3 (выбор `recipe_id`, онбординг-оверрайд на `simple`), Formula 4 (пороги тревоги), Rule 12 (защитные clamp/fallback на стороне потребителя) |
+| Guest AI & Patience | `design/gdd/guest-ai-patience.md` | Formula 1 (`spawn_interval`), Formula 2 (`remaining_fraction` / контракт «`patience_max_g` фиксируется при спавне»), Formula 3 (выбор `recipe_id`, онбординг-оверрайд на `simple`), Formula 4 (пороги тревоги), Rule 11 (единое игровое время — `t` не идёт на паузе, кламп `max_step_delta`), Rule 12 (защитные clamp/fallback на стороне потребителя), Rule 13 (`match_started` — сброс `t` = 0 в начале каждой партии) *(Rule 11/13 добавлены 2026-09-29 batch-fix)* |
 | Order & Recipe System | `design/gdd/order-recipe-system.md` | Три уровня сложности рецептов и `recipes_by_tier(tier)`, `recipe_price` (2–7 монет) |
 | Game Concept | `design/gdd/game-concept.md` | Понятие «территория рекордов» и ориентир «~2-я минута» (Flow State Design, Short-Term Core Loop) — **не** источник конкретных чисел рампы: 180 с / 7→18 / 50→25 / 0→40% — решение автора этой GDD, расходящееся с ориентиром game-concept (Core Rule 1, Open Question #6) |
 

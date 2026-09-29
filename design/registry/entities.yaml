@@ -330,6 +330,26 @@ formulas:
     added: 2026-09-28
     revised: ""
 
+  - name: is_new_record
+    status: active
+    source: design/gdd/currency-coins-score.md
+    referenced_by:
+      - design/gdd/currency-coins-score.md
+      - design/gdd/hud-feedback-ui.md
+    variables:
+      - match_score
+      - best_score
+    output_range: [false, true]
+    expression: "match_score > best_score  # evaluated on match_ended BEFORE best_score is updated"
+    notes: "Bool, computed by Currency at the match_ended Frozen transition
+      using best_score's pre-update value (absent best_score = 0). Held
+      until match_started resets it to false. HUD reads it for the
+      new-record accent (HUD Core Rule 13) instead of comparing itself —
+      by render time best_score is already updated. Added 2026-09-29
+      batch-fix (cross-review S4)."
+    added: 2026-09-29
+    revised: ""
+
   - name: coins_earned
     status: active
     source: design/gdd/currency-coins-score.md
@@ -556,8 +576,21 @@ constants:
       - design/gdd/guest-ai-patience.md
     value: 3
     unit: guests
-    notes: "Match ends when guests_lost reaches this value; guests_lost is clamped to it. From game-concept (3 lives). Read by HUD and Till & Day Cycle via match_ended."
+    notes: "Match ends when guests_lost reaches this value; guests_lost is clamped to it. From game-concept (3 lives). Read by HUD and Currency via match_ended (Till & Day Cycle no longer listens to match_ended since its 2026-09-29 revision)."
     added: 2026-09-28
+    revised: "2026-09-29"
+
+  - name: max_step_delta
+    status: active
+    source: design/gdd/guest-ai-patience.md
+    referenced_by:
+      - design/gdd/guest-ai-patience.md
+      - design/gdd/brewing-crafting-mechanic.md
+      - design/gdd/player-control-barista-movement.md
+    value: 0.25
+    unit: s (game time per step)
+    notes: "Clamp on game-time advance per step (Rule 11). Single game time owned by Guest AI & Patience drives all match timers (patience, spawn, t for Difficulty Curve, t_brew in Brewing, barista movement). Guards against a frozen-WebView resume draining all patience in one frame. Equal to the AC fixture step so existing ACs are unaffected. Technical guard, not a balance knob; mechanism in the game-time ADR."
+    added: 2026-09-29
     revised: ""
 
   - name: onboarding_duration
@@ -662,8 +695,11 @@ constants:
     value: 0
     unit: hour UTC (00:00 UTC)
     notes: "User decision — neutral, no audience-geography assumption.
-      Checked only between matches (never mid-match); only applies to a
-      Closed (full) till — an unfilled till never resets. Candidate for
+      Checked only on match_started (Guest AI Rule 13) and on cold start
+      (save load) — never mid-match, on the results screen or on return
+      from background; only applies to a Full till (reset is the first
+      crossing after full_since_utc) — an unfilled (Open) till never
+      resets. Candidate for
       confirmation by analytics-engineer once real DAU-by-timezone data
       exists post-launch (till-day-cycle.md Open Questions)."
     added: 2026-09-29

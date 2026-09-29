@@ -95,7 +95,8 @@ Downstream:
 | Система | Тип | Интерфейс |
 |---|---|---|
 | Kitchen & Station Layout | Hard | Safe-area rect + допустимый диапазон соотношения сторон (9:20–1:1) — кухня масштабируется и центрируется внутри, пересчёт при каждом изменении safe area |
-| HUD & Feedback UI *(не спроектирована)* | Hard (ожидаемо) | Тот же safe-area rect — HUD занимает свободные полосы |
+| HUD & Feedback UI | Hard | Тот же safe-area rect — HUD занимает свободные полосы |
+| Guest AI & Patience | Hard | `Ready` → первая партия стартует (вместе с загрузкой сцены кухни, её Rule 13); сигнал смены видимости (уход в фон / возврат) — пауза игрового времени (её Rule 11) *(`Ready` добавлен 2026-09-29 batch-fix, N1)* |
 | Monetization / IAP Integration *(не спроектирована, Alpha)* | Soft | Флаг контекста (Telegram / Standalone); платёжный метод пока не определён и не Stars |
 | Backend & Persistence *(не спроектирована, Vertical Slice)* | Soft | В Telegram-контексте доступен Telegram user ID (`initData`) для идентификации игрока; в Standalone Web понадобится другой механизм — открытый вопрос, не решается здесь |
 
@@ -201,10 +202,10 @@ Downstream:
 | Система | Тип | Интерфейс |
 |---|---|---|
 | Kitchen & Station Layout | Hard | Safe-area rect + диапазон соотношения сторон (9:20–1:1) |
-| HUD & Feedback UI *(не спроектирована)* | Hard (ожидаемо) | Тот же safe-area rect |
+| HUD & Feedback UI | Hard | Тот же safe-area rect |
 | Monetization / IAP Integration *(не спроектирована, Alpha)* | Soft | Флаг контекста (Telegram / Standalone); платёжный метод не определён |
 | Backend & Persistence *(не спроектирована, Vertical Slice)* | Soft | Telegram user ID в Telegram-контексте, опционален |
-| Guest AI & Patience | Soft | Сигнал смены видимости (уход в фон / возврат) — Guest AI ставит партию на паузу (добавлено 2026-09-28 при проектировании `guest-ai-patience.md`) |
+| Guest AI & Patience | Hard | `Ready` → первая партия стартует (вместе с загрузкой сцены кухни, её Rule 13; добавлено 2026-09-29 batch-fix, N1); сигнал смены видимости (уход в фон / возврат) — Guest AI ставит партию на паузу (добавлено 2026-09-28 при проектировании `guest-ai-patience.md`) |
 
 **Двунаправленная проверка**: `kitchen-station-layout.md` уже полагалось
 на safe-area/viewport-контракт этой системы (AC#6, AC#10), но его секция

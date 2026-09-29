@@ -155,9 +155,9 @@ Brewing & Crafting Mechanic — механика сборки напитка: б
 | Order & Recipe System | Upstream (hard) | `is_valid_next(steps, step_id)` — допустим ли следующий шаг; `matches(steps) → recipe_id \| none` — используется этой системой и вызывающими (Guest AI) для проверки готовности к подаче; список `station_types` и температурная пара лист/вода (Core Rule 3 того GDD) |
 | Player Control / Barista Movement | Upstream/двунаправленно (hard) | Перед выходом: «допустимо действие у станции X?» (да/нет) — эта система отвечает по таблицам Rule 2/3. В Holding: «выполнить / ждать / отказать» каждый тик (Rule 8 того GDD) — эта система формирует ответ |
 | Kitchen & Station Layout | Upstream (hard) | Список `slots` (7, флаг island/wall) и мировые позиции станций/чайников; occupancy слотов и чайников принадлежит этой системе, не Kitchen |
-| Guest AI & Patience | Downstream (hard) | Читает `held_cup.steps` через `matches()` (Order & Recipe) для решения «подходит ли чашка этому гостю»; вызывает `consume_held_cup()` этой системы при успешной подаче |
+| Guest AI & Patience | Двунаправленно (hard) | Guest AI → эта система: `match_started` (её Rule 13 — сброс чайников, слотов, рук) и единое игровое время (её Rule 11 — от него идут таймеры `t_brew`, пауза и кламп `max_step_delta`). Эта система → Guest AI: `held_cup.steps` через `matches()` (Order & Recipe) для решения «подходит ли чашка этому гостю»; Guest AI вызывает `consume_held_cup()` при успешной подаче. *(Исправлено 2026-09-29 batch-fix: добавлены `match_started` и игровое время — N7.)* |
 | Currency: Coins & Score | Нет прямого интерфейса | Начисление читает `recipe_price` (Order & Recipe) и момент подачи (Guest AI) — не состояние чашки напрямую |
-| HUD & Feedback UI ⚠️ *(не спроектирована)* | Downstream (hard, expected) | Состояние `held_cup` (шаги, `ruined`) для отрисовки содержимого чашки в руках и цветовых жетонов; состояние каждого чайника (`EMPTY`/`BREWING` + прогресс/`READY`) для индикатора занятости |
+| HUD & Feedback UI | Downstream (hard) | Состояние `held_cup` (шаги, `ruined`) для отрисовки содержимого чашки в руках и цветовых жетонов; состояние каждого чайника (`EMPTY`/`BREWING` + прогресс/`READY`) для индикатора занятости |
 | Audio & Juice Feedback ⚠️ *(не спроектирована, Vertical Slice)* | Downstream (soft) | События: шаг добавлен, чашка испорчена, чайник готов — на что реагировать звуком |
 
 ## Formulas
@@ -297,17 +297,23 @@ System и Player Control передали этой GDD.*
   1.0, `t_brew` = `t_brew_base` = 3.0 с. Цены рецептов не пересчитываются —
   решение уже зафиксировано как прецедент в `order-recipe-system.md` Edge
   Cases.
-- **Если приложение уходит в фон** (Platform Integration, сигнал паузы —
-  soft-зависимость Player Control): все таймеры `BREWING` останавливаются
-  вместе с общей паузой партии и возобновляются с того же `t_remaining`
-  при возврате — иначе сворачивание приложения превращалось бы в способ
-  «превысить» реальное время заварки без усилия игрока.
+- *(Пауза при уходе в фон — см. «Сброс состояния» ниже: единое игровое
+  время Guest AI & Patience Rule 11. Исправлено 2026-09-29 batch-fix: убран
+  дублирующий пункт про сигнал паузы Platform Integration через Player
+  Control — N2 `gdd-cross-review-2026-09-29b.md`.)*
 
 **Сброс состояния**
 
-- **Начало новой партии**: все чайники → `EMPTY`, все 7 слотов → `EMPTY`,
+- **Начало новой партии** (сигнал `match_started`, `guest-ai-patience.md`
+  Rule 13): все чайники → `EMPTY`, все 7 слотов → `EMPTY`,
   `held_cup` бариста → `null`. Состояние предыдущей партии не переносится
   (партии независимы — как и вся остальная экономика вне кассы).
+- **Если игра на паузе или приложение ушло в фон**: таймеры `t_brew` в
+  обоих чайниках идут от единого игрового времени Guest AI & Patience
+  (её Rule 11) и замирают вместе с ним; после возврата заварка
+  продолжается с той же точки. Шаг времени ограничен `max_step_delta`
+  (0.25 с) — после долгой заморозки WebView чайник не «доваривается»
+  разом. Отдельной обработки паузы в этой системе нет.
 
 **Целостность данных**
 
@@ -326,13 +332,14 @@ System и Player Control передали этой GDD.*
 | Order & Recipe System | Hard | `is_valid_next(steps, step_id)`, `matches(steps) → recipe_id \| none`, `station_types`, температурная пара лист/вода |
 | Player Control / Barista Movement | Hard | Контракт допустимости (да/нет перед выходом, Rule 4) и ответ «выполнить / ждать / отказать» в Holding (Rule 8) — эта система формирует ответ на оба запроса |
 | Kitchen & Station Layout | Hard | Список `slots` (7: 5 остров + 2 стены) и мировые позиции станций/чайников |
+| Guest AI & Patience | Hard | `match_started` (её Rule 13) — сброс чайников, слотов и `held_cup`; единое игровое время (её Rule 11) — источник таймеров `t_brew`, паузы и клампа `max_step_delta`. *(Добавлено 2026-09-29 batch-fix — N7.)* |
 
 **Downstream (зависят от этой системы):**
 
 | Система | Тип | Что получает |
 |---|---|---|
 | Guest AI & Patience | Hard | `held_cup.steps` (через `matches()` Order & Recipe) для решения о подаче; вызывает `consume_held_cup()` при успешной подаче |
-| HUD & Feedback UI ⚠️ *(не спроектирована)* | Hard (ожидаемо) | Состояние `held_cup` (шаги, `ruined`) и состояние каждого чайника (`EMPTY`/`BREWING`+прогресс/`READY`) |
+| HUD & Feedback UI | Hard | Состояние `held_cup` (шаги, `ruined`) и состояние каждого чайника (`EMPTY`/`BREWING`+прогресс/`READY`) |
 | Audio & Juice Feedback ⚠️ *(не спроектирована, Vertical Slice)* | Soft | События: шаг добавлен, чашка испорчена, чайник готов |
 
 **Двунаправленность:**
@@ -350,8 +357,9 @@ System и Player Control передали этой GDD.*
   контрактом — сходится (2026-09-28): `matches(held_cup.steps)` для
   допустимости подачи, `consume_held_cup()` ровно один раз на подачу
   (`guest-ai-patience.md`, Rule 5). AC-I1 закрывается её AC 19 / AC 44.
-- HUD & Feedback UI ещё не спроектирована — должна перечислить эту
-  систему в своей секции Dependencies, когда будет написана.
+- HUD & Feedback UI перечисляет эту систему в Upstream (Hard, `held_cup`,
+  состояние чайников) — сходится. *(Исправлено 2026-09-29 batch-fix —
+  было: «ещё не спроектирована».)*
 
 ## Visual/Audio Requirements
 
@@ -498,6 +506,8 @@ Pillar 1 test «шаг, который не добавляет суеты, вы�
 | `design/gdd/order-recipe-system.md` | `is_valid_next`, `matches`, температурная пара лист/вода (Core Rule 3), визуальный язык 7 цветных жетонов и 3 состояния чашки |
 | `design/gdd/player-control-barista-movement.md` | Контракт допустимости и Holding-ответа (Rules 4, 8), `effective_speed`/`speed_multiplier` (Formula 1) |
 | `design/gdd/kitchen-station-layout.md` | Список `slots` (7: 5 остров + 2 стены), позиции станций и чайников |
+| `design/gdd/guest-ai-patience.md` | `match_started` (Rule 13 — сброс чайников/слотов/рук), единое игровое время и `max_step_delta` (Rule 11 — таймеры `t_brew`, пауза), `consume_held_cup()` на подаче (Rule 5) *(добавлено 2026-09-29 batch-fix — N7)* |
+| `design/gdd/hud-feedback-ui.md` | Читает `held_cup` и состояние чайников (HUD Core Rule 7/8) |
 | `prototypes/kitchen-core/README.md` | Плейтест-провалидированное поведение чайника («забираешь готовое и сразу ставишь новое») и `TUNING.brew_time` = 3.0 с — источник `t_brew_base` |
 | `design/gdd/game-concept.md` | Pillar 1 (Хаос за стойкой), Pillar 2 (Цена видна в чашке), anti-pillar «NOT ресурсная экономика» |
 

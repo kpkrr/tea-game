@@ -1,6 +1,6 @@
 # Order & Recipe System
 
-> **Status**: In Design
+> **Status**: Approved (по `systems-index.md` и review-log; шапка синхронизирована 2026-09-29)
 > **Author**: Yan + agents
 > **Last Updated**: 2026-09-28
 > **Last Verified**: 2026-09-28
@@ -298,9 +298,10 @@ Mechanic.
 Имена функций — описание контракта, не API; реализация — в ADR.
 
 **Двунаправленность:** Kitchen & Station Layout уже перечисляет Order &
-Recipe System в своих Downstream с интерфейсом `station_types`. Ни одна
-downstream-система ещё не спроектирована; каждая должна перечислить Order &
-Recipe System в своей секции Dependencies.
+Recipe System в своих Downstream с интерфейсом `station_types`. Все пять
+downstream-систем спроектированы и перечисляют Order & Recipe System в
+своих Dependencies. *(Исправлено 2026-09-29 batch-fix: было «ни одна не
+спроектирована».)*
 
 ## Visual/Audio Requirements
 

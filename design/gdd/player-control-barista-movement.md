@@ -1,6 +1,6 @@
 # Player Control / Barista Movement
 
-> **Status**: Designed (ждёт /design-review)
+> **Status**: Approved (по `systems-index.md` и review-log; шапка синхронизирована 2026-09-29)
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: Yan + agents (systems-designer, qa-lead)
 > **Last Updated**: 2026-09-28
@@ -127,13 +127,13 @@ Player Control / Barista Movement переводит тап игрока в фи
 
 | Система | Направление | Интерфейс |
 |---|---|---|
-| Platform Integration (Telegram Mini App) | Upstream (soft) | Сигнал смены видимости (пауза) и масштаб канваса для перевода `tap_pick_radius` из dp в пиксели. |
+| Platform Integration (Telegram Mini App) | Upstream (soft) | Масштаб канваса для перевода `tap_pick_radius` из dp в пиксели. Паузу эта система берёт не из сигнала Platform напрямую, а из единого игрового времени Guest AI (её Rule 11). *(Исправлено 2026-09-29 batch-fix.)* |
 | Kitchen & Station Layout | Upstream (hard) | Запечённая навигационная область пола + мировые координаты рабочей точки (одной или нескольких) для каждой станции и слота. Эта система не выбирает, где стоят точки — только ходит между ними. |
-| Brewing & Crafting Mechanic ⚠️ *(не спроектирована)* | Downstream/двунаправленно (hard, provisional) | Перед выходом Player Control спрашивает: «допустимо действие у станции X сейчас?» (Rule 4, да/нет). В Holding он предлагает действие и получает ответ «выполнить / ждать / отказать» (Rule 8). Brewing владеет самим действием (что кладётся/берётся) и своим фидбеком отказа. Контракт провизорный — Brewing ещё не спроектирована. |
-| Guest AI & Patience ⚠️ *(не спроектирована)* | Downstream/двунаправленно (hard, provisional) | Тот же контракт (Rules 4, 8), но для цели-гостя: «допустимо подать гостю Y сейчас (чашка совпадает с заказом)?» Guest AI/Order & Recipe владеют правилом совпадения и своим фидбеком отказа. Контракт провизорный. |
+| Brewing & Crafting Mechanic | Downstream/двунаправленно (hard) | Перед выходом Player Control спрашивает: «допустимо действие у станции X сейчас?» (Rule 4, да/нет). В Holding он предлагает действие и получает ответ «выполнить / ждать / отказать» (Rule 8). Brewing владеет самим действием (что кладётся/берётся) и своим фидбеком отказа. Контракт подтверждён `brewing-crafting-mechanic.md`. *(Исправлено 2026-09-29 batch-fix: снята пометка «не спроектирована».)* |
+| Guest AI & Patience | Downstream/двунаправленно (hard) | Тот же контракт (Rules 4, 8), но для цели-гостя: «допустимо подать гостю Y сейчас (чашка совпадает с заказом)?» Guest AI/Order & Recipe владеют правилом совпадения и своим фидбеком отказа. Контракт подтверждён `guest-ai-patience.md`; Guest AI также шлёт `match_started` (сброс баристы в Idle, её Rule 13) и владеет единым игровым временем (пауза, её Rule 11). |
 | Order & Recipe System | Нет прямого интерфейса | Не взаимодействует с этой системой напрямую — вся логика допустимости действия у станции идёт через Brewing & Crafting Mechanic. |
 | Progression & Upgrades ⚠️ *(не спроектирована, Alpha)* | Downstream (soft для этой системы) | Progression прокачивает `base_walk_speed` этой системы и в рантайме передаёт `speed_multiplier` (уровни 0–3: ×1.0/1.15/1.3/1.5, Rule 6). До Alpha `speed_multiplier` = 1.0 всегда. |
-| HUD & Feedback UI ⚠️ *(не спроектирована)* | Downstream (hard, expected) | Читает состояние (Idle/Walking/Holding) и текущую цель для собственного фидбека (например, подсветку выбранной станции); не участвует в разрешении тапа. |
+| HUD & Feedback UI | Downstream (hard) | Читает состояние (Idle/Walking/Holding) и текущую цель — контур выбранной цели и кольцо точки назначения (`hud-feedback-ui.md` Core Rule 15); не участвует в разрешении тапа. |
 
 ## Formulas
 
@@ -335,8 +335,10 @@ The `t_step` formula is defined as:
 - **Если игра на паузе или приложение ушло в фон**: движение и
   переспросы Holding замирают вместе с игровым временем, тапы
   игнорируются. Решение ставить паузу принадлежит Guest AI & Patience
-  (Platform Integration, Open Question #3); эта система лишь соблюдает
-  общую паузу.
+  (Platform Integration, Open Question #3): движение идёт от её единого
+  игрового времени (её Rule 11, шаг ограничен `max_step_delta` = 0.25 с),
+  сигнал видимости Platform эта система для паузы напрямую не слушает.
+  *(Уточнено 2026-09-29 — единый источник паузы.)*
 - **Если партия закончилась** (третий ушедший гость): ввод больше не
   принимается, текущий путь и Holding сбрасываются, бариста стоит на
   месте.
@@ -361,7 +363,7 @@ The `t_step` formula is defined as:
 | Система | Тип | Что получает |
 |---|---|---|
 | Brewing & Crafting Mechanic | Hard | Контракт запроса допустимости: да/нет перед выходом (Rule 4) и «выполнить / ждать / отказать» в Holding (Rule 8). Brewing реализует ответ для станций и слотов |
-| Guest AI & Patience | Hard | Тот же контракт для цели-гостя. Также сигнал «цель исчезла» (гость ушёл) — остановка баристы (Edge Cases) |
+| Guest AI & Patience | Hard | Тот же контракт для цели-гостя. Также сигнал «цель исчезла» (гость ушёл) — остановка баристы (Edge Cases). Игровое время с паузой (её Rule 11); `match_started` → Idle (её Rule 13). Порядок в кадре: эта система обновляется раньше Guest AI, «выполнить» из Holding кадра N обрабатывается шагом (1) её тика в том же кадре (её Rule 8) |
 | HUD & Feedback UI | Hard (ожидаемо) | Состояние (Idle/Walking/Holding) и текущая цель — для подсветки выбранной станции |
 | Progression & Upgrades (Alpha) | Soft для этой системы | `base_walk_speed`, на который Progression накладывает `speed_multiplier` |
 | Order & Recipe System | Soft (данные для баланса) | Авторитетный `t_step` = 2.0 с (Formula 4) для её Formula 2 `time_to_complete`. В рантайме интерфейса нет |
@@ -492,7 +494,7 @@ HUD не должен перехватывать тапы по кухне: по�
 | Перенаправление без очереди | `design/gdd/kitchen-station-layout.md` | Edge Case «два тапа подряд» | Ownership handoff |
 | HUD вне кухни, тапы по кухне не перехватываются | `design/gdd/kitchen-station-layout.md` | UI Requirements, AC6/AC10 | Rule dependency |
 | Авторитетный `t_step` = 2.0 с | `design/gdd/order-recipe-system.md` | Formula 2 `time_to_complete`, Open Question `t_step` | Ownership handoff |
-| Сигнал смены видимости (пауза) | `design/gdd/platform-integration-telegram-mini-app.md` | Edge Case «сворачивание», AC11, Open Question #3 | State trigger |
+| Сигнал смены видимости (пауза) — косвенно, через единое игровое время `guest-ai-patience.md` Rule 11 | `design/gdd/platform-integration-telegram-mini-app.md` | Edge Case «сворачивание», AC11, Open Question #3 | State trigger |
 | Масштаб канваса, портрет 9:20–1:1 | `design/gdd/platform-integration-telegram-mini-app.md` | Formulas (playfield), `viewport_aspect_min/max` | Data dependency |
 | `speed_multiplier` ×1.0/1.15/1.3/1.5 | `design/gdd/systems-index.md` (Progression & Upgrades, ещё без GDD) | Уровни скорости баристы | Data dependency |
 | Роль баристы, 4-направленная ходьба, `AnimatedSprite3D` | `design/gdd/game-concept.md` | Visual Identity Anchor, Pillar 1 | Rule dependency |

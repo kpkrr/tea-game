@@ -26,3 +26,32 @@ Findings:
 
 Reviewed-Content-Hash: design/gdd/hud-feedback-ui.md 7cbd486f3e7c43b7c61a230eea2b92b9e5e5ceb2
 Reviewed-Content-Hash: design/registry/entities.yaml ff50645403ed7367d621347f425d75230f34cda6
+
+## Review — 2026-09-29 — Verdict: APPROVED (after in-session revision)
+Scope signal: L
+Specialists: none (lean mode)
+Blocking items: 3 (resolved same session) | Recommended: 4
+Summary: Full re-review triggered by doc+registry changes since the last log entry (S3 closure, Rule 11 rewrite) and cross-checked against the untracked `gdd-cross-review-2026-09-29b.md` report, whose open findings against this document (S4, N4, N2, N8, N1-D, N2-D) had not yet been addressed here. Confirmed three of those are genuine blockers, not stylistic: S4 (new-record indicator uncomputable under Core Rule 2 once Currency's `best_score` update races HUD's read), N4 (Dependencies section directly contradicts itself on whether HUD has any downstream), and N2 (Edge Case had HUD listening to the Platform background signal directly, contradicting Guest AI Rule 11's single-pause-source design). All three fixed in-session within this GDD's own text.
+Prior verdict resolved: Yes — this review is against document/registry state that changed after the prior APPROVED entry; both prior findings (Player Control dependency, stale overlay reference) remain fixed and were not reopened.
+Findings:
+- [BLOCKING] Core Rule 13 / AC 26, 41 / Formulas Read-only inputs: new-record accent relied on comparing `match_score` to a "previous" `best_score` HUD cannot access under its own no-cache rule (Currency updates `best_score` in the same `match_ended` event) — fixed by introducing `is_new_record` as an explicit read-only input from Currency; propagation to `currency-coins-score.md` and the registry is not yet done, tracked as Open Question 8.
+- [BLOCKING] Dependencies: section stated both "Guest AI & Patience *(downstream)*" and "зависимых систем у неё нет" two lines apart — fixed, now states Guest AI & Patience as the sole downstream.
+- [BLOCKING] Edge Cases (app backgrounding): described HUD as pausing on a direct Platform Integration signal, contradicting `guest-ai-patience.md` Rule 11's unified-game-time pause mechanism (which explicitly names HUD ring pulsation as an example of what pauses via game time, not the Platform signal) — fixed, Edge Case and Dependencies/Interactions now cite game time from Guest AI.
+- [RECOMMENDED] States table (`MatchEnd`): "world-space элементы... скрываются вместе с гостями" implies guests disappear at `match_ended`, but `guest-ai-patience.md` Rule 9 keeps them frozen in place until the next `match_started` removes them (Rule 13) — not fixed this session, cosmetic given the full-screen overlay likely masks it in practice.
+- [RECOMMENDED] Detailed Design / Game Feel: "Играть снова" is tappable immediately on overlay fade-in with no grace window, risking an accidental skip of the results/new-record moment during frantic end-of-match input — not fixed this session.
+- [RECOMMENDED] Core Rule 4 / Edge Cases: no rule addresses guest order tokens/rings visually overlapping when a walking guest's path crosses an occupied slot in the narrow 9:20 layout — not fixed this session.
+- [RECOMMENDED] Player Fantasy and Tuning Knobs remain absent — advisory only at `standard` tier, not blocking.
+
+Reviewed-Content-Hash: design/gdd/hud-feedback-ui.md 14e6f7bd3420fc274ce96ea41976072a1c7b3a75
+Reviewed-Content-Hash: design/registry/entities.yaml 0f5ce2f38a6a29f10cb24d6d92e0fe07a54cd318
+
+## Review — 2026-09-29 — Verdict: APPROVED (batch-fix, без отдельного прохода /design-review)
+Scope signal: —
+Specialists: none (batch-fix: три параллельных fork-правки + сверка grep)
+Blocking items: 0 | Recommended: 0
+Summary: Все открытые находки `gdd-cross-review-2026-09-29b.md` и `-29c.md`, касавшиеся этого документа, закрыты одним пакетом правок по всем MVP GDD (решение пользователя — выйти из цикла ревью). Итоговая сверка: `is_new_record` согласован Currency↔HUD↔registry, нет живых пометок «не спроектирована» у спроектированных систем, registry YAML валиден.
+Prior verdict resolved: Yes
+Findings:
+- none
+Reviewed-Content-Hash: design/gdd/hud-feedback-ui.md c24e0e04fca773fc93171bd07de891bd28e944a3
+Reviewed-Content-Hash: design/registry/entities.yaml 53c076ca63df672c5d1c9a52d22afecbeba952b3
