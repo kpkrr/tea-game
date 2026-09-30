@@ -1,0 +1,41 @@
+Tea Rush — что изменилось с первого прототипа
+
+⚠️ Важно про графику: всё, что вы видите на экране, — временная заглушка, нарисованная на коленке за вечер. Художник над игрой ещё не работал, арт-стиль не утверждён. Финальная игра будет выглядеть совсем иначе: задуман мягкий рисованный стиль, как иллюстрация. Сейчас мы проверяем механику, а не внешний вид.
+
+Что сделано:
+- Подготовили полную документацию. Описали все 10 игровых систем MVP: кухня, управление, рецепты, заварка, гости, сложность, монеты и очки, касса, интерфейс, платформа. Отдельно расписали интерфейс, доступность и 7 технических решений по архитектуре. Каждый документ прошёл ревью.
+- Пересобрали игру с нуля по этой документации вместо быстрого черновика. Правила задаются настройками, логика покрыта автотестами.
+- Кривая сложности. Первые 30 секунд — спокойное обучение, дальше темп растёт плавно и к 3-й минуте выходит на максимум.
+- Гости. Заходят в чайную и уходят. Терпение видно по кольцу над головой: спокоен → нервничает → злится. Есть реакции на обслуживание и на уход.
+- Заказы. Над каждым гостем плашка с рецептом и ценой, её видно сразу. Цены пересчитаны: 2 / 5 / 7 монет.
+- Касса и день. Дневной лимит 250 монет, счётчик в верхней панели («41 / 250 +6 за смену»), сброс в полночь. Прогресс и рекорд сохраняются между визитами.
+- Интерфейс. Очки, 3 жизни, пауза, выключение звука, экран старта, экран итогов с рекордом, всплывающие монеты и очки.
+- Звук. Музыкальная тема игры и звуки событий: монета, готовый чайник, довольный гость, ушедший гость. Звуки событий пока временные.
+- Экраны. Игра подстраивается под любой телефон, от вытянутых до почти квадратных экранов.
+- Лёгкая загрузка. Вся игра весит около 10 МБ.
+
+Играть: https://kpkrr.github.io/tea-game/
+
+💡 Если открывается старая версия (без экрана «Начать смену»), браузер показывает сохранённую копию. Обновите страницу со сбросом кэша: на компьютере Ctrl+Shift+R (Windows) или Cmd+Shift+R (Mac). На телефоне закройте вкладку и откройте ссылку заново. Если не помогло, откройте ссылку в режиме инкогнито.
+
+------------------------------------------------------------
+
+Tea Rush — changes since the first prototype
+
+⚠️ Important note on visuals: everything on screen is placeholder art we threw together in an evening. No artist has worked on the game yet, and the art style is not approved. The final game will look very different: the plan is a soft, hand-drawn, illustration-like style. Right now we are testing the gameplay, not the look.
+
+What's been done:
+- Full design documentation. All 10 MVP game systems are specified: kitchen, controls, recipes, brewing, guests, difficulty, coins and score, the till, UI and platform. We also wrote UI and accessibility specs and 7 architecture decisions. Every document went through review.
+- Rebuilt the game from scratch on top of that documentation instead of a quick draft. Game rules live in settings, and the logic is covered by automated tests.
+- Difficulty curve. The first 30 seconds are a gentle tutorial, then the pace ramps up smoothly and peaks by minute 3.
+- Guests. They walk into the tea house and leave. A ring above each guest's head shows their patience: calm → nervous → angry. They react when served and when they walk out.
+- Orders. A tag above each guest shows the recipe and the price at a glance. Prices were rebalanced to 2 / 5 / 7 coins.
+- Till and day. A daily cap of 250 coins, a counter in the top bar ("41 / 250 +6 this shift") and a reset at midnight. Progress and the high score are saved between visits.
+- UI. Score, 3 lives, pause, mute, a start screen, a results screen with the high score, and coin and score pop-ups.
+- Audio. The game's music theme plus event sounds: coin, kettle ready, happy guest, guest leaving. The event sounds are temporary for now.
+- Screens. The game adapts to any phone, from tall screens to nearly square ones.
+- Light download. The whole game is about 10 MB.
+
+Play: https://kpkrr.github.io/tea-game/
+
+💡 If you see an old version (no "Начать смену" start screen), your browser is showing a cached copy. Do a hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac) on desktop. On a phone, close the tab and open the link again. If that doesn't help, open the link in a private/incognito window.
