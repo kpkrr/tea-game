@@ -1,6 +1,6 @@
 # Audio & Juice Feedback
 
-> **Status**: Designed (pending review)
+> **Status**: Approved (владелец, 2026-10-01 — без отдельного /design-review)
 > **Author**: владелец + audio-director, sound-designer, godot-specialist (автономный режим)
 > **Last Updated**: 2026-10-01
 > **Last Verified**: 2026-10-01

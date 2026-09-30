@@ -1,6 +1,6 @@
 # Systems Index: Tea Rush (рабочее название)
 
-> **Status**: Draft
+> **Status**: Approved — все 12 MVP-систем зафиксированы владельцем 2026-10-01
 > **Created**: 2026-09-27
 > **Last Updated**: 2026-10-01 (визуальное направление — `design/art/art-bible.md`: 2D-персонажи + 3D-окружение + свет, 4 архетипа гостей в MVP; добавлена #18 Player Stats — MVP, Meta; экраны вне партии — `design/ux/game-flow.md` как часть HUD & Feedback UI)
 > **Source Concept**: design/gdd/game-concept.md
@@ -172,12 +172,12 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 | 10 | HUD & Feedback UI (inferred) | UI | MVP | Approved | design/gdd/hud-feedback-ui.md | Platform Integration (Telegram Mini App), Kitchen & Station Layout, Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic, Player Control / Barista Movement |
 | 11 | Backend & Persistence | Persistence | Vertical Slice | Not Started | — | Till & Day Cycle, Currency: Coins & Score |
 | 12 | Leaderboard & Leagues | Meta | Vertical Slice | Not Started | — | Backend & Persistence, Currency: Coins & Score |
-| 13 | Audio & Juice Feedback (inferred) | Audio | MVP | Designed (pending review) | design/gdd/audio-juice-feedback.md | Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle, Guest AI & Patience, Difficulty Curve & Session Pacing, HUD & Feedback UI |
+| 13 | Audio & Juice Feedback (inferred) | Audio | MVP | Approved | design/gdd/audio-juice-feedback.md | Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle, Guest AI & Patience, Difficulty Curve & Session Pacing, HUD & Feedback UI |
 | 14 | Progression & Upgrades | Progression | Alpha | Not Started | — | Till & Day Cycle, Currency: Coins & Score, Player Control |
 | 15 | Monetization / IAP Integration | Economy | Alpha | Not Started | — | Progression & Upgrades |
 | 16 | Co-op / Multiplayer | Core | Full Vision | Not Started | — | Player Control, Kitchen & Station Layout, Guest AI & Patience, Backend & Persistence |
 | 17 | Token Integration | Economy | Full Vision | Not Started | — | Currency: Coins & Score, Backend & Persistence, Monetization / IAP Integration |
-| 18 | Player Stats | Meta | MVP | Designed (pending review) | design/gdd/player-stats.md | Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle |
+| 18 | Player Stats | Meta | MVP | Approved | design/gdd/player-stats.md | Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle |
 
 ---
 
@@ -308,7 +308,7 @@ Pacing (первые ~15 секунд партии) плюс карточки Ho
 | Design docs started | 12 |
 | Design docs reviewed | 7 |
 | Design docs approved | 10 |
-| MVP systems designed | 12/12 (Player Stats, Audio & Juice Feedback — pending review) |
+| MVP systems designed | 12/12 — все Approved (владелец, 2026-10-01) |
 | Vertical Slice systems designed | 0/2 |
 
 ---

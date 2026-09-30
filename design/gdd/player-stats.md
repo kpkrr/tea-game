@@ -1,6 +1,6 @@
 # Player Stats
 
-> **Status**: Designed (pending review)
+> **Status**: Approved (владелец, 2026-10-01 — без отдельного /design-review)
 > **Author**: Yan + systems-designer (автономный режим)
 > **Last Updated**: 2026-10-01
 > **Implements Pillar**: Pillar 3 (Одна касса, одно правило — серия дней), Pillar 4 (Монеты за работу, очки за мастерство — статистика мастерства)
