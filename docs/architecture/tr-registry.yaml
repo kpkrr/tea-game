@@ -790,10 +790,10 @@ requirements:
   - id: TR-guest-014
     system: guest
     gdd: design/gdd/guest-ai-patience.md
-    requirement: "Онбординг 30 с: только простые рецепты, спавн ×0,5"
+    requirement: "Онбординг 15 с: только простые рецепты, спавн ×1,0 (не замедляется)"
     domain: "Data-Config"
     created: 2026-09-30
-    revised: ""
+    revised: "2026-10-01"
     status: active
   - id: TR-guest-015
     system: guest
@@ -886,10 +886,10 @@ requirements:
   - id: TR-pacing-002
     system: pacing
     gdd: design/gdd/difficulty-curve-session-pacing.md
-    requirement: "Три кривые (гостей/мин 7→18, терпение 50→25, доля сложных 0→0,40)"
+    requirement: "Три кривые (гостей/мин 15→18, терпение 50→25, доля сложных 0→0,40)"
     domain: "Data-Config"
     created: 2026-09-30
-    revised: ""
+    revised: "2026-10-01"
     status: active
   - id: TR-pacing-003
     system: pacing
@@ -958,10 +958,10 @@ requirements:
   - id: TR-pacing-011
     system: pacing
     gdd: design/gdd/difficulty-curve-session-pacing.md
-    requirement: "`guests_per_minute_start` = 7,0 синхронизирован с Guest AI"
+    requirement: "`guests_per_minute_start` = 15,0 синхронизирован с Guest AI"
     domain: "Data-Config"
     created: 2026-09-30
-    revised: ""
+    revised: "2026-10-01"
     status: active
   - id: TR-currency-001
     system: currency

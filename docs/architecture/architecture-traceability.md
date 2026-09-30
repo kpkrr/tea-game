@@ -107,7 +107,7 @@ Engine: Godot 4.7.2
 | TR-guest-011 | Guest AI | Порядок тика: подачи → таймауты → конец → спавн; подача побеждает таймаут | ADR-0003 | 🟡 |
 | TR-guest-012 | Guest AI | Player Control обновляется раньше Guest AI в том же кадре | ADR-0003 | 🟡 |
 | TR-guest-013 | Guest AI | `guests_lost == 3` → заморозка, `match_ended` ровно один раз | ADR-0003 | 🟡 |
-| TR-guest-014 | Guest AI | Онбординг 30 с: только простые рецепты, спавн ×0,5 | ADR-0004 | 🟡 |
+| TR-guest-014 | Guest AI | Онбординг 15 с: только простые рецепты, спавн ×1,0 (не замедляется) | ADR-0004 | 🟡 |
 | TR-guest-015 | Guest AI | Guest AI — единственный владелец паузы игрового времени | ADR-0003 | 🟡 |
 | TR-guest-016 | Guest AI | `max_step_delta` = 0,25 с | ADR-0003 | 🟡 |
 | TR-guest-017 | Guest AI | Валидация констант при загрузке | ADR-0004 | 🟡 |
@@ -119,7 +119,7 @@ Engine: Godot 4.7.2
 | TR-guest-023 | Guest AI | Гость на `AnimatedSprite3D` в 4 направлениях; именованные ассеты | ADR-0002 | 🟡 |
 | TR-guest-024 | Guest AI | Кольцо терпения: billboard, 3 уровня (0,60 / 0,25), снимается мгновенно | ADR-0002 | 🟡 |
 | TR-pacing-001 | Difficulty | `progress = clamp(t/180, 0, 1)^2,0` | ADR-0004 | 🟡 |
-| TR-pacing-002 | Difficulty | Три кривые (гостей/мин 7→18, терпение 50→25, доля сложных 0→0,40) | ADR-0004 | 🟡 |
+| TR-pacing-002 | Difficulty | Три кривые (гостей/мин 15→18, терпение 50→25, доля сложных 0→0,40) | ADR-0004 | 🟡 |
 | TR-pacing-003 | Difficulty | Чистые функции от `t` (без учёта паузы), одинаковые для всех игроков | ADR-0003 | 🟡 |
 | TR-pacing-004 | Difficulty | Без состояния; `t` передаётся аргументом | ADR-0003 | 🟡 |
 | TR-pacing-005 | Difficulty | Онбординг применяет Guest AI, а не кривые | ADR-0004 | 🟡 |
@@ -128,7 +128,7 @@ Engine: Godot 4.7.2
 | TR-pacing-008 | Difficulty | Валидация при загрузке (диапазоны, NaN, `_end` не легче `_start`) | ADR-0004 | 🟡 |
 | TR-pacing-009 | Difficulty | Детерминизм: побитово равные результаты | ADR-0004 | 🟡 |
 | TR-pacing-010 | Difficulty | `t` сбрасывается по `match_started` | ADR-0003 | 🟡 |
-| TR-pacing-011 | Difficulty | `guests_per_minute_start` = 7,0 синхронизирован с Guest AI | ADR-0004 | 🟡 |
+| TR-pacing-011 | Difficulty | `guests_per_minute_start` = 15,0 синхронизирован с Guest AI | ADR-0004 | 🟡 |
 | TR-currency-001 | Currency | `coins_earned = recipe_price` | ADR-0003 | 🟡 |
 | TR-currency-002 | Currency | `score_earned = round_half_up(price × 10 × (1 + rf))` | ADR-0003 | 🟡 |
 | TR-currency-003 | Currency | `score_multiplier_base` = 10 — данные | ADR-0004 | 🟡 |

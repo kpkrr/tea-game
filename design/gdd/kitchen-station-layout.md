@@ -2,7 +2,7 @@
 
 > **Status**: Approved
 > **Author**: Yan + game-designer, level-designer
-> **Last Updated**: 2026-09-27
+> **Last Updated**: 2026-10-01 (добавлена мусорка `trash`, Core Rule 9)
 > **Last Verified**: 2026-09-27
 > **Implements Pillar**: Pillar 1 (Хаос за стойкой), Pillar 3 (Одна касса, одно правило)
 
@@ -53,6 +53,12 @@ Foundation-слой системы — станции, маршруты бари
    вопрос — см. Open Questions).
 8. Раскладка одна на весь MVP — не параметризуется и не меняется во время
    матча.
+9. **Мусорка** — служебная станция типа `trash`, ровно одна, на столешнице
+   у левой стены (вертикальный срез: `kitchen.stations` id `trash`, центр
+   (-3.5, 0.75), footprint 1×1.5 м — та же точка, что в прототипе
+   `kitchen-core`). Как и слоты, это не шаг рецепта: в `station_types` не
+   входит. Правило сброса чашки — Brewing & Crafting Mechanic Core Rule 7.
+   *(2026-09-30, решение владельца; синхронизировано 2026-10-01.)*
 
 ### States and Transitions
 
@@ -70,7 +76,7 @@ state-machine у этой системы нет.
 |---|---|---|
 | Order & Recipe System | Список типов станций на кухне (`station_types`) — рецепт не может ссылаться на несуществующую станцию | Kitchen → Order & Recipe |
 | Player Control / Barista Movement | Навигируемая область пола (запечённый NavMesh) + мировые координаты точки взаимодействия для каждой станции/слота | Kitchen → Player Control |
-| Brewing & Crafting Mechanic | Список слотов (`slots`, с флагом island/wall) и станций, где физически размещаются чашки/чайники; occupancy-состояние Kitchen не принадлежит | Kitchen → Brewing |
+| Brewing & Crafting Mechanic | Список слотов (`slots`, с флагом island/wall) и станций, где физически размещаются чашки/чайники, плюс позиция мусорки `trash` (Core Rule 9); occupancy-состояние Kitchen не принадлежит | Kitchen → Brewing |
 | Guest AI & Patience | Точка появления гостей, ровно 4 точки ожидания в очереди у прилавка со стабильными ID и точка выхода (отдельная сущность, может стоять рядом с точкой появления) — все на NavMesh | Kitchen → Guest AI |
 | HUD & Feedback UI ⚠️ | Мировая позиция кассы (till anchor) для отрисовки заполнения как физического объекта + позиции станций для цветовых индикаторов рецепта | Kitchen → HUD |
 
@@ -186,7 +192,7 @@ AC#10 этой GDD уже полагались на safe-area/viewport-конт�
 |---|---|---|
 | Order & Recipe System | Hard | `station_types` |
 | Player Control / Barista Movement | Hard | NavMesh + точки взаимодействия |
-| Brewing & Crafting Mechanic | Hard | `slots`, позиции станций |
+| Brewing & Crafting Mechanic | Hard | `slots`, позиции станций (включая `trash`) |
 | Guest AI & Patience | Hard | Точка появления, 4 точки очереди (стабильные ID), точка выхода — *число и точка выхода добавлены 2026-09-28 при проектировании `guest-ai-patience.md` (`guest_slot_count` = 4, реестр)* |
 | HUD & Feedback UI | Hard | Till anchor, позиции станций для индикаторов |
 | Co-op / Multiplayer (Full Vision) | Hard | Общее пространство для нескольких игроков |
@@ -302,8 +308,10 @@ Feedback UI:
    которая не совпадает ни с одной станцией или слотом.
 5. **GIVEN** кухня инициализирована, **WHEN** Order & Recipe System
    запрашивает `station_types` (список типов станций, размещённых на кухне),
-   **THEN** список точно совпадает с физически размещёнными станциями: нет
-   станции без типа и нет типа без станции.
+   **THEN** список точно совпадает с физически размещёнными станциями
+   рецепта: нет станции без типа и нет типа без станции. Слоты и мусорка
+   `trash` (Core Rule 9) в `station_types` не входят; мусорка на кухне ровно
+   одна.
 6. **GIVEN** вьюпорт с соотношением сторон от 9:20 до 1:1, **WHEN** кухня
    отображается, **THEN** все 7 слотов, все станции и till anchor видны без
    обрезки, кухня масштабирована равномерно, без растяжения, и занимает не

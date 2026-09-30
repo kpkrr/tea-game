@@ -2,7 +2,7 @@
 
 > **Status**: Approved (batch-fix 2026-09-29: все находки `gdd-cross-review-2026-09-29b.md`/`-29c.md` закрыты, см. review-log)
 > **Author**: Yan + ai-programmer, game-designer
-> **Last Updated**: 2026-09-29
+> **Last Updated**: 2026-10-01 (плейтест владельца: онбординг 30 → 15 с, `onboarding_factor` 0.5 → 1.0, baseline потока 7 → 15 — OQ #12)
 > **Last Verified**: 2026-09-28
 > **Implements Pillar**: Pillar 1 (Хаос за стойкой), Pillar 4 (Монеты за работу, очки за мастерство)
 > **Creative Director Review (CD-GDD-ALIGN)**: пропущен — Lean mode
@@ -115,10 +115,13 @@ Questions как «→ становится ADR», а не решаются зд
    2026-09-29: после ревизии её Core Rule 4/5 переход Open → Full больше
    не зависит от `match_ended` — касса реагирует напрямую на событие
    Served, независимо от конца партии.)*
-10. **Онбординг**: первые `onboarding_duration` (30 с) партии `recipe_id`
+10. **Онбординг**: первые `onboarding_duration` (15 с) партии `recipe_id`
     назначается только из простого уровня (`cold_tea`), а поток
-    умножается на `onboarding_factor` = 0.5 (Formula 1: 3.5 гостя/мин, один
-    раз в ~17.14 с). Уровень выбирается по `t_spawn`.
+    умножается на `onboarding_factor` = 1.0 — то есть **не замедляется**
+    (Formula 1: 15 гостей/мин, один раз в 4 с). Онбординг — это простые
+    заказы, а не редкие гости: так решил плейтест владельца 2026-10-01
+    (OQ #12). Механизм множителя сохранён как ручка тюнинга. Уровень
+    выбирается по `t_spawn`.
 11. **Пауза**: эта система решает, когда игра стоит на паузе (закрывает
     Open Question #3 в `platform-integration-telegram-mini-app.md`: при
     уходе в фон партия ставится на паузу, а не теряется). В MVP
@@ -147,21 +150,28 @@ Questions как «→ становится ADR», а не решаются зд
     проверяются при загрузке. Значение вне диапазона — ошибка загрузки,
     партия не стартует. Функции Difficulty Curve проверяются при каждом
     чтении (на спавне): `complex_order_share` зажимается в [0, 1];
-    `guests_per_minute` ≤ 0 или `patience_max` ≤ 0 заменяются baseline (7 /
+    `guests_per_minute` ≤ 0 или `patience_max` ≤ 0 заменяются baseline (15 /
     50). Каждый вид ошибки пишется в лог один раз за партию.
 13. **Старт партии** (решение 2026-09-29, C2
     `gdd-cross-review-2026-09-29.md`): эта система владеет всем жизненным
     циклом партии — и `match_ended` (Rule 9), и её началом. Партия
     стартует в двух случаях:
-    - **первая партия запуска** — автоматически, как только Platform
-      Integration перешла в состояние `Ready` **и** сцена кухни загружена;
-      стартового экрана нет. HUD переходит `Inactive` → `Active` только по
-      `match_started` этой системы, а не по готовности кухни сама. *(Исправлено
-      2026-09-29 batch-fix: N1 — было циклическое «тот же триггер, по
-      которому HUD переходит…»)*;
-    - **следующая партия** — по входящему запросу `request_new_match`,
+    - **первая партия запуска** — по входящему запросу `request_new_match`,
+      который шлёт HUD при нажатии «Начать смену» на стартовом экране
+      (`hud-feedback-ui.md` Core Rule 19). Запрос принимается, только когда
+      Platform Integration в состоянии `Ready` **и** сцена кухни
+      загружена; раньше — игнорируется (без ошибки, одна запись в
+      debug-лог). Автостарта нет: пока игрок не нажал, гостей нет, `t` не
+      идёт. HUD переходит в `Active` только по `match_started` этой
+      системы. *(Изменено 2026-10-01 по решению владельца 2026-09-30,
+      vertical slice — было: «автоматически, как только Platform в `Ready`
+      и сцена кухни загружена; стартового экрана нет» (2026-09-29
+      batch-fix, N1). Нажатие — ещё и первый жест, разблокирующий звук
+      браузера.)*;
+    - **следующая партия** — по тому же `request_new_match`,
       который шлёт HUD при тапе «Играть снова» на оверлее итогов.
-      Запрос принимается только после `match_ended`; во время активной
+      Запрос принимается только до первой партии (условия выше) или после
+      `match_ended`; во время активной
       партии он игнорируется (без ошибки, одна запись в debug-лог).
     Старт выполняется в одном тике, до шага (1) Rule 8: все гости
     удаляются (включая замороженных и доигрывающих уход), `guests_lost`
@@ -170,7 +180,7 @@ Questions как «→ становится ADR», а не решаются зд
     гость (Rule 1). Получатели `match_started` — Currency (сброс
     `match_score` в Idle), Brewing (чайники, слоты, руки → пусто), Player
     Control (бариста Idle), Till (проверка дневного сброса «между
-    партиями»), HUD (`MatchEnd` → `Active`); что именно делает каждый
+    партиями»), HUD (`Start`/`MatchEnd` → `Active`); что именно делает каждый
     получатель, задаёт его GDD. Difficulty Curve отдельного сигнала не
     ждёт: она читает `t` этой системы, который обнулился.
 
@@ -202,7 +212,7 @@ Approaching → Waiting, терпение и спавн стоят. Старт �
 | Player Control / Barista Movement | двунаправленно | Guest AI отвечает на запрос допустимости тапа по гостю (да / нет) и на «выполнить» в Holding (Rule 5); «выполнить» из кадра N обрабатывается шагом (1) тика этого же кадра (Rule 8); точка взаимодействия — слот гостя (Rule 4). Движение баристы идёт от игрового времени этой системы (пауза и кламп шага, Rule 11) — сигнал Platform напрямую Player Control не слушает. `match_started` (Rule 13) — бариста Idle. При уходе гостя эта система шлёт Player Control сигнал «цель исчезла» (Rule 6 → Leaving), если бариста шёл к нему |
 | Currency: Coins & Score | Guest AI → Currency | На каждое событие Served: `(recipe_id, remaining_fraction)` — Currency считает монеты (`coins_earned = recipe_price`) и очки (`score_earned`). Контракт подтверждён Currency: Coins & Score (Core Rule 1, Formula 1/2) без изменений 2026-09-28. `match_ended` (Rule 9) — заморозка `match_score`; `match_started` (Rule 13) — сброс `match_score` в Idle |
 | Till & Day Cycle | Guest AI → Till | Только `match_started` (Rule 13) — граница «между партиями», на которой Till проверяет пересечение `daily_reset_time_utc`. `match_ended` Till не получает (исключена 2026-09-29) |
-| Difficulty Curve & Session Pacing | двунаправленно | Эта система выставляет три параметра как точки расширения: `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)`. Их реализует Difficulty Curve (Formula 2–4 там, ease-in по общему `difficulty_progress(t)`, 180 с); значения при t = 0 совпадают с baseline этой GDD (7 / 50 / 0; поток снижен 8 → 7 `/balance-check` 2026-09-29, Difficulty Curve OQ #7) |
+| Difficulty Curve & Session Pacing | двунаправленно | Эта система выставляет три параметра как точки расширения: `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)`. Их реализует Difficulty Curve (Formula 2–4 там, ease-in по общему `difficulty_progress(t)`, 180 с); значения при t = 0 совпадают с baseline этой GDD (15 / 50 / 0; поток: 8 → 7 `/balance-check` 2026-09-29, Difficulty Curve OQ #7; 7 → 15 плейтест 2026-10-01, Difficulty Curve OQ #8) |
 | HUD & Feedback UI | двунаправленно | Guest AI → HUD: на каждого активного гостя — `recipe_id` (жетон заказа), `remaining_fraction` (кольцо терпения), состояние (Approaching/Waiting/Leaving/Served); жетон и кольцо показываются уже в Approaching (Rule 4). На партию: `guests_lost`, `match_ended`, `match_started`. HUD → Guest AI: `request_new_match` по тапу «Играть снова» (Rule 13) |
 | Co-op / Multiplayer *(Full Vision)* | — | Не в MVP; модель "один бариста — общая очередь" потребует пересмотра при добавлении второго игрока |
 
@@ -212,7 +222,8 @@ Approaching → Waiting, терпение и спавн стоят. Старт �
 
 *С systems-designer (2026-09-28). Решения пользователя: отложенный спавн при
 полной очереди; `onboarding_factor` = 0.5, `medium_share_of_remaining` =
-0.5.*
+0.5. Плейтест владельца 2026-10-01: `onboarding_factor` → 1.0,
+`onboarding_duration` → 15 с (OQ #12).*
 
 Три входа — `guests_per_minute(t)`, `patience_max(t)`,
 `complex_order_share(t)` — принадлежат Difficulty Curve & Session Pacing.
@@ -237,27 +248,32 @@ The `spawn_interval` formula is defined as:
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
 | `t` | float, с | ≥ 0 | calculated | Время с начала партии (без пауз) |
-| `guests_per_minute(t)` | float, гостей/мин | > 0; baseline 7 | Difficulty Curve Formula 2 (внешняя); baseline = её `guests_per_minute_start` (game-concept числа не задаёт) | Целевой поток гостей |
-| `onboarding_factor` | float | (0, 1]; 0.5 | data file | Во сколько раз реже приходят гости в окне онбординга |
-| `onboarding_duration` | float, с | 30.0 | data file (формализует «~30 с» из game-concept) | Длина окна онбординга (Rule 10) |
+| `guests_per_minute(t)` | float, гостей/мин | > 0; baseline 15 | Difficulty Curve Formula 2 (внешняя); baseline = её `guests_per_minute_start` (game-concept числа не задаёт) | Целевой поток гостей |
+| `onboarding_factor` | float | (0, 1]; 1.0 | data file (плейтест 2026-10-01; было 0.5) | Во сколько раз реже приходят гости в окне онбординга; 1.0 — не реже |
+| `onboarding_duration` | float, с | 15.0 | data file (формализует «~15 с» из game-concept, Flow State Design; было 30 до плейтеста 2026-10-01) | Длина окна онбординга (Rule 10) |
 | `effective_rate(t)` | float, гостей/мин | > 0 | calculated | Фактический темп спавна |
 | `spawn_interval(t)` | float, с | > 0 | calculated | Интервал между спавнами |
 
-**Output Range:** 17.14 с в онбординге, 8.57 с сразу после него (baseline);
-при 18 гостей/мин (конец кривой Difficulty Curve) — 3.33 с. Сверху не
+**Output Range:** 4.0 с и в онбординге, и сразу после него (baseline,
+`onboarding_factor` = 1.0); при 18 гостей/мин (конец кривой Difficulty Curve) — 3.33 с. Сверху не
 ограничено формулой; `guests_per_minute` ≤ 0 заменяется baseline при
 чтении (Rule 12), поэтому деления на ноль нет.
-**Граница t = 30 с — ступенька, а не плавный рост**: поток удваивается
-мгновенно. Это сделано намеренно: игрок видит конец онбординга по
-ускорению очереди. Если Difficulty Curve захочет плавный рост, она вправе
-его ввести.
+**Граница t = 15 с — ступенька по сложности заказов, а не по потоку**:
+при `onboarding_factor` = 1.0 поток на границе не меняется, а заказы
+перестают быть только `cold_tea` (Formula 3). Игрок видит конец
+онбординга по появлению чайных заказов. При `onboarding_factor` < 1
+граница снова становится и ступенькой потока (в 1 / factor раз).
+*(До плейтеста 2026-10-01: на 30-й секунде поток удваивался — OQ #3,
+OQ #12.)*
 **Интервал фиксируется в момент спавна** (`t_spawn` — фактическое
 появление, в том числе после отложенного спавна, Rule 2) и не
 пересчитывается. Первый гость — при t = 0. Поэтому ускорение после
-онбординга начинается со спавна, который первым случится при t ≥ 30:
-гость, появившийся в t = 20, получит следующего в t ≈ 37.14.
-**Example:** t = 10 с → `7 × 0.5 = 3.5` гостя/мин → `spawn_interval` = 17.14
-с. t = 45 с (baseline) → `7 × 1.0` → 8.57 с.
+онбординга (если `onboarding_factor` < 1) начинается со спавна, который
+первым случится при t ≥ 15: при factor 0.5 гость, появившийся в t = 10,
+получит следующего в t = 18.0.
+**Example:** t = 10 с → `15 × 1.0` = 15 гостей/мин → `spawn_interval` =
+4.0 с. t = 45 с (baseline) → `15 × 1.0` → 4.0 с. С factor 0.5 при t = 10 —
+`15 × 0.5` = 7.5 гостей/мин → 8.0 с.
 
 ### Formula 2 — `remaining_fraction`
 
@@ -359,11 +375,17 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 | 1 | 11.0 с | 50 с | 39 с (78%) |
 
 Один заказ на старте выполним с запасом ×4.5 при любом поведении игрока.
-**Пропускная способность — узкое место**, а не терпение: сразу после
-онбординга `spawn_interval` ≈ 8.57 с (baseline 7 гостей/мин), а средний `time_to_complete` при
-`p_simple = p_medium = 0.5` ≈ `0.5 × 6 + 0.5 × 9.5` = 7.75 с — запас ~10%.
-До `/balance-check` 2026-09-29 baseline был 8 (7.5 с) и бариста уже на
-30-й секунде не успевал (+3–7%); поток снижен в Difficulty Curve (её OQ #7).
+**Пропускная способность — узкое место**, а не терпение: с t = 0
+`spawn_interval` = 4.0 с (baseline 15 гостей/мин). В онбординге средний
+заказ `cold_tea` ≈ 6 с (избыток спроса +50%), сразу после онбординга
+при `p_simple = p_medium = 0.5` ≈ `0.5 × 6 + 0.5 × 9.5` = 7.75 с (+94%).
+**Это осознанное решение плейтеста 2026-10-01** (OQ #12), а не ошибка
+баланса: по ощущению владельца старт с запасом был «пустым, как для детей».
+Модель η = 0.5 (`order-recipe-system.md`), по-видимому, завышает
+`time_to_complete` для игрока, освоившего тап-управление; очередь из 4
+слотов и терпение 50 с держат давление. Калибровка модели по плейтесту —
+Difficulty Curve OQ #8. *(История: baseline 8 → 7 `/balance-check`
+2026-09-29 ради запаса −5% на t = 30; 7 → 15 плейтестом 2026-10-01.)*
 Дальнейший рост нагрузки — Difficulty Curve OQ #1.
 
 ## Edge Cases
@@ -454,7 +476,7 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
   продолжают с той же точки, время паузы не засчитывается. Эта система
   первой в проекте фиксирует данное правило — Player Control лишь
   выполняет паузу, но не определяет её.
-- **Если конец онбординга (30 с) наступает в момент, когда гость уже
+- **Если конец онбординга (15 с) наступает в момент, когда гость уже
   заспавнен внутри окна**: у уже существующих гостей `recipe_id` и
   `patience_max` не пересчитываются задним числом — правило Rule 10
   применяется только к вновь создаваемым гостям после порога.
@@ -468,7 +490,7 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
   добавлен 2026-09-29 batch-fix.)*
 - **Если функция Difficulty Curve вернула недопустимое значение**:
   `complex_order_share` зажимается в [0, 1]; `guests_per_minute` ≤ 0 или
-  `patience_max` ≤ 0 заменяются baseline (7 / 50). Проверка — при каждом
+  `patience_max` ≤ 0 заменяются baseline (15 / 50). Проверка — при каждом
   чтении на спавне, запись в лог — один раз за партию (Rule 12).
 
 ## Dependencies
@@ -480,8 +502,8 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 | Kitchen & Station Layout | Hard | Точка появления гостей + ровно 4 точки ожидания в очереди у прилавка со стабильными ID и точка выхода (NavMesh-координаты) |
 | Order & Recipe System | Hard | `recipes_by_tier(tier)` — список `recipe_id` по уровню сложности, для назначения заказа гостю (Formula 3) |
 | Player Control / Barista Movement | Hard | Контракт допустимости тапа по гостю (да/нет по Rule 4/8) и «выполнить» в Holding (доставка чашки); в обратную сторону — сигнал «цель исчезла», когда гость уходит, пока бариста идёт к нему |
-| Platform Integration (Telegram Mini App) | Hard | Состояние `Ready` — вместе с загрузкой сцены кухни триггер старта первой партии (Rule 13; без него первая партия не стартует). Сигнал ухода приложения в фон — триггер паузы (Rule 11; без него партия просто не встаёт на паузу при сворачивании). *(Soft → Hard 2026-09-29 batch-fix, N1)* |
-| HUD & Feedback UI | Hard | `request_new_match` по тапу «Играть снова» — единственный триггер каждой партии после первой (Rule 13). *(Добавлено 2026-09-29 batch-fix, N4)* |
+| Platform Integration (Telegram Mini App) | Hard | Состояние `Ready` — вместе с загрузкой сцены кухни условие, при котором принимается запрос первой партии (Rule 13; без него первая партия не стартует; сам старт — по «Начать смену», с 2026-10-01). Сигнал ухода приложения в фон — триггер паузы (Rule 11; без него партия просто не встаёт на паузу при сворачивании). *(Soft → Hard 2026-09-29 batch-fix, N1)* |
+| HUD & Feedback UI | Hard | `request_new_match` — единственный триггер каждой партии: первой — по «Начать смену» на стартовом экране, следующих — по «Играть снова» (Rule 13). *(Добавлено 2026-09-29 batch-fix, N4; первая партия — 2026-10-01, решение владельца 2026-09-30)* |
 | Brewing & Crafting Mechanic | Hard | Владеет чашкой в руках: `held_cup.steps` для проверки допустимости через `matches()` (Rule 5); `consume_held_cup()`, который эта система вызывает при подаче |
 
 **Downstream (зависят от этой системы):**
@@ -525,7 +547,9 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
   кольцо с Approaching, `match_started`, игровое время) и как Downstream
   (`request_new_match`) — сходится (пропагировано 2026-09-29).
 - Platform Integration перечисляет эту систему в Downstream с `Ready` как
-  триггером первой партии (2026-09-29 batch-fix, N1) — сходится.
+  триггером первой партии (2026-09-29 batch-fix, N1) — **расходится с
+  2026-10-01**: `Ready` теперь условие, а триггер — «Начать смену» (Rule
+  13); формулировку Platform нужно поправить.
 - **Требуют отражения новых контрактов 2026-09-29** (Rule 11, 13):
   Currency (`match_started` как старт следующей партии в States), Brewing
   (Edge Case «Начало новой партии» — источник `match_started`; `t_brew`
@@ -540,8 +564,8 @@ patience_urgent_threshold < patience_warn_threshold < 1`.
 
 | Константа | Baseline | Безопасный диапазон | На что влияет |
 |---|---|---|---|
-| `onboarding_factor` | 0.5 | (0, 1] | Во сколько раз реже приходят гости в первые `onboarding_duration` секунд (Formula 1). Меньше — мягче старт, спавн реже |
-| `onboarding_duration` | 30.0 с | ≥ 0 | Длина окна онбординга: до этого момента только `cold_tea` и разреженный спавн (Rule 10) |
+| `onboarding_factor` | 1.0 | (0, 1] | Во сколько раз реже приходят гости в первые `onboarding_duration` секунд (Formula 1). Меньше — мягче старт, спавн реже. 1.0 — плейтест 2026-10-01: замедление старта утомляет повторных игроков |
+| `onboarding_duration` | 15.0 с | ≥ 0 | Длина окна онбординга: до этого момента только `cold_tea` (и разреженный спавн, если `onboarding_factor` < 1) (Rule 10). 15 с — плейтест 2026-10-01 |
 | `medium_share_of_remaining` | 0.5 | [0, 1] | Доля вероятности среднего уровня среди «не сложных» заказов (Formula 3) — сдвигает баланс simple/medium без изменения `complex_order_share` |
 | `patience_warn_threshold` | 0.60 | (`patience_urgent_threshold`, 1) | Порог перехода кольца терпения calm → warn (Formula 4); раньше — игрок дольше видит тревогу |
 | `patience_urgent_threshold` | 0.25 | (0, `patience_warn_threshold`) | Порог перехода warn → urgent (Formula 4); ниже — короче окно «паники» перед уходом |
@@ -681,7 +705,7 @@ Rule 11) — тоже не баланс-ручка, а техническая з
 | `matches(held_cup.steps)` и `consume_held_cup()` при подаче | `design/gdd/brewing-crafting-mechanic.md` | Core Rule 5, Interactions, AC-I1 | Rule dependency |
 | AC 44 закрывает их AC 40(b) | `design/gdd/player-control-barista-movement.md` | AC 40(b) (Blocked: Guest AI) | Test dependency |
 | Формула очков `price × 10 × (1 + remaining_fraction)` (пример уже приведён там) | `design/gdd/order-recipe-system.md` | Formula 1, Example | Data dependency (формально владеет `design/gdd/currency-coins-score.md`, Formula 1 — `score_earned`) |
-| Поток гостей 7→18/мин, терпение 50→25с, доля сложных 0→40% за 3 мин | `design/gdd/difficulty-curve-session-pacing.md` (Formula 2–4; числа — решение той GDD, не game-concept) | Player Experience Analysis, MVP Definition | Rule dependency (baseline этой GDD = значения при t=0) |
+| Поток гостей 15→18/мин, терпение 50→25с, доля сложных 0→40% за 3 мин | `design/gdd/difficulty-curve-session-pacing.md` (Formula 2–4; числа — решение той GDD, не game-concept) | Player Experience Analysis, MVP Definition | Rule dependency (baseline этой GDD = значения при t=0) |
 | 4-направленная анимация гостя, `AnimatedSprite3D`, состояния (ожидание/злость/уход) | `design/gdd/game-concept.md` | Visual Identity Anchor | Rule dependency |
 
 ## Acceptance Criteria
@@ -696,7 +720,7 @@ Rule 11) — тоже не баланс-ручка, а техническая з
 для статистики — фиксированный seed); `FakeSlotProvider` (4 слота со
 стабильными ID, точка появления, точка выхода); `FakeNavigator` (прибытие
 через заданное время или по команде); `FakeRecipeCatalog`;
-`FakeDifficulty` (по умолчанию baseline 7 / 50 / 0); `seat_guests(...)`;
+`FakeDifficulty` (по умолчанию baseline 15 / 50 / 0); `seat_guests(...)`;
 шпионы на Served, Leaving, `match_ended`, «цель исчезла» и вызовы
 `consume_held_cup()` (Brewing). Если не сказано иное, `delta` = 0.25 с, допуск 1e-6.
 Logic-тесты лежат в `tests/unit/guest_ai/guest_ai_[feature]_test.gd`,
@@ -706,10 +730,10 @@ Integration — в `tests/integration/guest_ai/`.
 
 1. **[Logic]** **GIVEN** отгружаемые данные, **WHEN** выполняется загрузка,
    **THEN** `guest_slot_count` = 4, `max_guests_lost` = 3,
-   `onboarding_factor` = 0.5, `onboarding_duration` = 30.0,
+   `onboarding_factor` = 1.0, `onboarding_duration` = 15.0,
    `medium_share_of_remaining` = 0.5, `patience_warn_threshold` = 0.60,
    `patience_urgent_threshold` = 0.25, `guest_walk_speed` = 3.0,
-   `max_step_delta` = 0.25; baseline 7
+   `max_step_delta` = 0.25; baseline 15
    гостей/мин, `patience_max` = 50, `complex_order_share` = 0.
 2. **[Logic]** **GIVEN** пары порогов (warn, urgent) = (0.25, 0.60), (0.40,
    0.40), (1.0, 0.25), (0.60, 0.0), **WHEN** каждая загружается, **THEN**
@@ -722,44 +746,45 @@ Integration — в `tests/integration/guest_ai/`.
    либо `max_step_delta` = 0, **THEN** тоже ошибка загрузки, с именем
    константы.
 4. **[Logic]** **GIVEN** `FakeDifficulty.complex_order_share` = 1.3, **WHEN**
-   при t ≥ 30 появляются 20 гостей, **THEN** все 20 получают заказ сложного
+   при t ≥ 15 появляются 20 гостей, **THEN** все 20 получают заказ сложного
    уровня, а в логе ровно одна ошибка. **AND GIVEN** −0.2, **THEN** сложных
    заказов 0. **AND GIVEN** `guests_per_minute` = 0 или `patience_max` = −5,
-   **THEN** используются 7 / 50, ошибка в логе одна за партию.
+   **THEN** используются 15 / 50, ошибка в логе одна за партию.
 
 ### Спавн и интервал (Rule 1, Formula 1)
 
 5. **[Logic]** **GIVEN** baseline, **WHEN** считается `spawn_interval(t)`
-   при t = 0 / 10 / 29.75 / 30.0 / 45, **THEN** 17.142857 / 17.142857 / 17.142857 / 8.571429 /
-   8.571429 (граница 30.0 исключающая). **AND GIVEN** 18 гостей/мин, t = 60,
-   **THEN** 3.333333.
+   при t = 0 / 10 / 14.75 / 15.0 / 45, **THEN** 4.0 на всех точках
+   (`onboarding_factor` = 1.0 — ступеньки нет). **AND GIVEN**
+   `onboarding_factor` = 0.5, **THEN** 8.0 / 8.0 / 8.0 / 4.0 / 4.0 (граница
+   15.0 исключающая). **AND GIVEN** 18 гостей/мин, t = 60, **THEN** 3.333333.
 6. **[Logic]** **GIVEN** новая партия, **WHEN** выполняется первый шаг,
    **THEN** при t = 0 появляется гость с `cold_tea`, `patience_max_g` = 50,
    `remaining_fraction` = 1.0, в состоянии Approaching. Через шаг 0.25 с
-   `remaining_fraction` = 0.995. Следующий гость появляется в первом шаге с t ≥ 17.142857, т.е. при
-   t = 17.25 (при t = 17.0 его ещё нет).
-7. **[Logic]** **GIVEN** t ≥ 30, свободные слоты есть, гость появился в
+   `remaining_fraction` = 0.995. Следующий гость появляется в первом шаге с t ≥ 4.0, т.е. при
+   t = 4.0 (при t = 3.75 его ещё нет).
+7. **[Logic]** **GIVEN** t ≥ 15, свободные слоты есть, гость появился в
    момент T, **WHEN** идут шаги без подач, **THEN** следующие гости
-   (T на сетке шагов) появляются в T+8.75 (первый шаг ≥ T+8.571429; при
-   T+8.5 нового гостя нет) и в T+17.5 (интервал отсчитывается от
-   фактического `t_spawn` = T+8.75, Rule 1).
-8. **[Logic]** **GIVEN** гость появился в t = 20 (онбординг), **WHEN** шаги
-   идут через t = 30, **THEN** следующий гость появляется в t = 37.25
-   (интервал 17.142857 зафиксирован при спавне в онбординге), а за ним —
-   в t = 46.0 (интервал 8.571429 от `t_spawn` = 37.25).
+   (T на сетке шагов) появляются в T+4.0 (первый шаг ≥ T+4.0; при
+   T+3.75 нового гостя нет) и в T+8.0 (интервал отсчитывается от
+   фактического `t_spawn` = T+4.0, Rule 1).
+8. **[Logic]** **GIVEN** `onboarding_factor` = 0.5, гость появился в t = 10
+   (онбординг), **WHEN** шаги идут через t = 15, **THEN** следующий гость
+   появляется в t = 18.0 (интервал 8.0 зафиксирован при спавне в
+   онбординге), а за ним — в t = 22.0 (интервал 4.0 от `t_spawn` = 18.0).
 
 ### Отложенный спавн и слоты (Rule 2, Rule 3, Rule 7, Rule 8)
 
-9. **[Logic]** **GIVEN** t ≥ 30, 4 слота заняты, интервал истёк в T,
+9. **[Logic]** **GIVEN** t ≥ 15, 4 слота заняты, интервал истёк в T,
    **WHEN** до T+6.0 слоты не освобождаются, **THEN** новых гостей нет и
    второй отложенный спавн не возникает. **AND WHEN** в T+6.0 одному гостю
    подают заказ, **THEN** в этом же шаге появляется ровно один гость с
-   `remaining_fraction` = 1.0, а следующий — в первом шаге ≥ T+14.571429
-   (T+14.75).
+   `remaining_fraction` = 1.0, а следующий — в первом шаге ≥ T+10.0
+   (T+10.0).
 10. **[Logic]** **GIVEN** 4 слота заняты в течение 60 с после истечения
     интервала, **WHEN** в одном шаге освобождаются 3 слота, **THEN** в этом
     шаге появляется ровно 1 гость, следующий — в первом шаге, где прошло
-    ≥ 8.571429 с (через 8.75 с).
+    ≥ 4.0 с (через 4.0 с).
 11. **[Logic]** **GIVEN** 4 слота заняты, **WHEN** в одном шаге у гостя
     кончается терпение и истекает интервал спавна, **THEN** новый гость
     появляется в этом же шаге в освободившемся слоте.
@@ -845,15 +870,15 @@ Integration — в `tests/integration/guest_ai/`.
 ### Онбординг (Rule 10, Formula 3)
 
 29. **[Logic]** **GIVEN** `FakeRng` всегда даёт r = 0.99, **WHEN** гости
-    появляются при t_spawn = 0 / 15 / 29.75, **THEN** каждый получает
+    появляются при t_spawn = 0 / 7.5 / 14.75, **THEN** каждый получает
     `cold_tea`.
-30. **[Logic]** **GIVEN** гость появился в t = 29.75 с `cold_tea`, **WHEN**
-    t доходит до 40.0, **THEN** у него `cold_tea`, `patience_max_g` = 50,
+30. **[Logic]** **GIVEN** гость появился в t = 14.75 с `cold_tea`, **WHEN**
+    t доходит до 25.0, **THEN** у него `cold_tea`, `patience_max_g` = 50,
     `remaining_fraction` = 0.795 — задним числом ничего не пересчитывается.
 31. **[Logic]** **GIVEN** r = 0.99, **WHEN** гость появляется ровно при
-    t_spawn = 30.0, **THEN** заказ среднего уровня. **AND GIVEN** интервал
-    истёк в t = 28 (слоты заняты), а гость появился в t = 32, **THEN**
-    уровень выбирается по t_spawn = 32.
+    t_spawn = 15.0, **THEN** заказ среднего уровня. **AND GIVEN** интервал
+    истёк в t = 13 (слоты заняты), а гость появился в t = 17, **THEN**
+    уровень выбирается по t_spawn = 17.
 
 ### Пауза (Rule 11)
 
@@ -861,8 +886,8 @@ Integration — в `tests/integration/guest_ai/`.
     спавна 3.0 с, гость Z в Approaching, **WHEN** 100 с паузы, **THEN** t =
     40, `remaining_fraction` = 0.8, спавнов нет, Z не сдвинулся. **AND WHEN**
     пауза снята, **THEN** спавн через 3.0 с, гость уходит через 40.0 с
-    игрового времени. **AND GIVEN** пауза в t = 25 на 60 с, **THEN** гость,
-    появившийся при t_spawn = 27, получает `cold_tea`.
+    игрового времени. **AND GIVEN** пауза в t = 10 на 60 с, **THEN** гость,
+    появившийся при t_spawn = 12, получает `cold_tea`.
 33. **[Integration]** **GIVEN** реальные Player Control и Platform
     Integration, **WHEN** приходит сигнал ухода в фон, **THEN** Guest AI
     ставит паузу и Player Control перестаёт двигать баристу в том же кадре;
@@ -972,11 +997,16 @@ Integration — в `tests/integration/guest_ai/`.
     Served, событие несёт `remaining_fraction` = 0.0, `guests_lost` не
     меняется, событий Leaving нет (Rule 8, стык в кадре).
 50. **[Logic]** **GIVEN** запуск, Platform Integration ещё не в `Ready`
-    или сцена кухни не загружена, **WHEN** идут шаги, **THEN** гостей нет
-    и `match_started` не отправлен. **AND WHEN** Platform в `Ready` и
-    кухня загружена, **THEN** в этом же шаге
-    `match_started` отправлен ровно один раз, после него — спавн первого
-    гостя при t = 0 (AC 6).
+    или сцена кухни не загружена, **WHEN** идут шаги и приходит
+    `request_new_match`, **THEN** гостей нет, `match_started` не
+    отправлен, в debug-логе одна запись. **AND GIVEN** Platform в `Ready`
+    и кухня загружена, **WHEN** 1000 шагов проходят без запроса, **THEN**
+    гостей нет, `t` = 0, `match_started` не отправлен (автостарта нет);
+    **WHEN** приходит `request_new_match` (нажатие «Начать смену»),
+    **THEN** в этом же шаге `match_started` отправлен ровно один раз,
+    после него — спавн первого гостя при t = 0 (AC 6); второй запрос в
+    том же шаге игнорируется. *(Переписано 2026-10-01 — было: автостарт на
+    `Ready`, решение владельца 2026-09-30.)*
 51. **[Logic]** **GIVEN** партия закончилась (`guests_lost` = 3), один
     гость заморожен в Waiting, один доигрывает анимацию Leaving, **WHEN**
     приходит `request_new_match`, **THEN** в этом шаге: оба гостя удалены,
@@ -1010,8 +1040,8 @@ Integration — в `tests/integration/guest_ai/`.
 | # | Вопрос | Владелец | Когда решить |
 |---|---|---|---|
 | ~~1~~ | ~~Kitchen & Station Layout не фиксирует число точек очереди гостей и не отделяет точку выхода от точки появления~~ **Решено 2026-09-28**: Kitchen уже перечисляет ровно 4 точки очереди со стабильными ID и точку выхода (`guest_slot_count` = 4, реестр) | level-designer / ревью Kitchen | Закрыто |
-| 2 | Пропускная способность почти равна потоку: сразу после онбординга гость приходил каждые 7.5 с, а средний заказ занимает ~7.75 с (Formulas, проверка baseline). **2026-09-29**: baseline снижен до 7 (8.57 с, запас ~10%) — Difficulty Curve OQ #7. Не станет ли игра непроходимой раньше 2-й минуты, когда Difficulty Curve поднимет поток? **Перенесено 2026-09-28** в совместный Open Question #1 `difficulty-curve-session-pacing.md` (ease-in смягчает, к 120 с избыток спроса ~67%) | systems-designer | `/balance-check` с симуляцией очереди |
-| ~~3~~ | ~~На 30-й секунде поток удваивается ступенькой (Formula 1). Оставить ступеньку или сгладить в Difficulty Curve?~~ **Решено 2026-09-28**: ступенька остаётся — Difficulty Curve её не сглаживает (её Core Rule 5, Game Feel) | game-designer | Закрыто |
+| 2 | Пропускная способность почти равна потоку: сразу после онбординга гость приходил каждые 7.5 с, а средний заказ занимает ~7.75 с (Formulas, проверка baseline). **2026-09-29**: baseline снижен до 7 (8.57 с, запас ~10%) — Difficulty Curve OQ #7. Не станет ли игра непроходимой раньше 2-й минуты, когда Difficulty Curve поднимет поток? **Перенесено 2026-09-28** в совместный Open Question #1 `difficulty-curve-session-pacing.md` (ease-in смягчает, к 120 с избыток спроса ~67%). **2026-10-01**: baseline поднят до 15 (4.0 с) плейтестом — дефицит с первой секунды осознанный, OQ #12 | systems-designer | `/balance-check` с симуляцией очереди |
+| ~~3~~ | ~~На 30-й секунде поток удваивается ступенькой (Formula 1). Оставить ступеньку или сгладить в Difficulty Curve?~~ **Решено 2026-09-28**: ступенька остаётся — Difficulty Curve её не сглаживает (её Core Rule 5, Game Feel). *2026-10-01: при `onboarding_factor` = 1.0 ступеньки потока нет, граница 15 с — только смена сложности заказов (OQ #12).* | game-designer | Закрыто |
 | 4 | Нужно ли избегание столкновений (RVO2) между гостями, которые идут одновременно, и между гостями и баристой? Пересекаются ли зона очереди и путь баристы? → становится ADR (navigation layers / avoidance) | ai-programmer | ADR до первой реализации гостей |
 | 5 | Структура данных гостя и переиспользование объектов (пул на 4 слота + уходящие гости) → становится ADR | lead-programmer | ADR до первой реализации гостей |
 | 6 | Пульсация кольца (0.5 Гц и быстрее) и опция reduced motion: нужна ли статичная альтернатива для доступности? | accessibility-specialist | При `/ux-design` HUD (Pre-Production) |
@@ -1020,3 +1050,4 @@ Integration — в `tests/integration/guest_ai/`.
 | 9 | ~~Выбор рецепта внутри уровня — второй бросок из того же потока RNG или отдельного? Влияет на детерминизм тестов → становится ADR~~ **Решено ADR-0004 (2026-09-30):** отдельные потоки `guest_tier` и `guest_recipe`, инъецируемый `Rng`, seed партии логируется в debug | lead-programmer | Закрыто |
 | 10 | Формат стабильного ID слотов гостей (правило ничьей Rule 3) — тот же вопрос открыт в Player Control | level-designer | Вместе с #1 |
 | 11 | `guest_walk_speed` = 3.0 м/с — предварительное значение, в прототипе гостей не было. Проверить плейтестом: сколько терпения съедает путь до слота | game-designer | Первый плейтест с гостями |
+| 12 | **Онбординг изменён плейтестом владельца 2026-10-01**: `onboarding_duration` 30 → 15 с, `onboarding_factor` 0.5 → 1.0, baseline потока 7 → 15 (Difficulty Curve OQ #8). Причина: разреженный старт ощущался пустым («как для детей»), повторным игрокам утомителен. Проверено в `prototypes/tea-rush-vertical-slice/`. Остаётся: проверить на новичках (не теряют ли гостей до освоения управления) | user + game-designer | Плейтест на новых игроках |

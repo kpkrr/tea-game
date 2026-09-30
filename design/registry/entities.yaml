@@ -258,14 +258,14 @@ formulas:
       - guests_per_minute_start
       - guests_per_minute_end
       - difficulty_progress
-    output_range: [7, 18]
+    output_range: [15, 18]
     expression: "start + (end - start) * difficulty_progress(t)"
-    notes: "start 7.0 (was 8.0 — lowered by /balance-check 2026-09-29,
-      Difficulty Curve OQ #7), end 18.0 — author decision (difficulty-curve-
+    notes: "start 15.0 (8.0 -> 7.0 /balance-check 2026-09-29, Difficulty
+      Curve OQ #7; 7.0 -> 15.0 owner playtest 2026-10-01, OQ #8), end 18.0 — author decision (difficulty-curve-
       session-pacing.md Core Rule 1), not sourced from game-concept. Read by
       Guest AI Formula 1 before its onboarding_multiplier."
     added: 2026-09-28
-    revised: "2026-09-29"
+    revised: "2026-10-01"
 
   - name: patience_max
     status: active
@@ -599,11 +599,11 @@ constants:
     referenced_by:
       - design/gdd/guest-ai-patience.md
       - design/gdd/difficulty-curve-session-pacing.md
-    value: 30.0
+    value: 15.0
     unit: s (match time, pauses excluded)
-    notes: "Formalizes ~30 s from game-concept. Only simple-tier recipes and spawn rate x onboarding_factor (0.5) before this. Difficulty Curve & Session Pacing must align its curve start with it."
+    notes: "Formalizes ~15 s from game-concept (Flow State Design; was ~30 s until owner playtest 2026-10-01, Guest AI OQ #12). Only simple-tier recipes and spawn rate x onboarding_factor (1.0 = no slowdown; was 0.5) before this. Difficulty Curve & Session Pacing must align its curve start with it."
     added: 2026-09-28
-    revised: ""
+    revised: "2026-10-01"
 
   - name: patience_warn_threshold
     status: active
@@ -680,12 +680,15 @@ constants:
     notes: "MVP level-0 value; matches the Progression & Upgrades forward-
       decision already in systems-index.md (levels 0-3: 250/350/500/700).
       Calibrated via throughput (revenue_per_match_avg ~75-90 for an
-      average player, matches_to_fill ~3, ~11 min) anchored on Session
+      average player, matches_to_fill ~3, ~11 min; recalculated by queue
+      simulation /balance-check 2026-10-01 for flow 15->18: ~93 coins,
+      ~2.7 matches, ~9.5 min at model speed; ~1.8 matches if the player is
+      20% faster — value kept pending a real measurement) anchored on Session
       Length (~10 min), not the literal '5 matches' game-concept.md also
       states — the two targets are mutually incompatible at the measured
       ~222s match length; see till-day-cycle.md Open Questions."
     added: 2026-09-29
-    revised: ""
+    revised: "2026-10-01"
 
   - name: daily_reset_time_utc
     status: active
