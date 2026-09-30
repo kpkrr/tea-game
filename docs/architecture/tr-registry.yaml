@@ -302,10 +302,10 @@ requirements:
   - id: TR-layout-016
     system: layout
     gdd: design/gdd/kitchen-station-layout.md
-    requirement: "Без шейдерных анимаций и параллакса; запечённый свет; статичное свечение till-anchor"
+    requirement: "Статика окружения — 3D-меши с запечённым в vertex colors светом и AO (unshaded); без шейдерных анимаций окружения и параллакса; единственный реальный свет — DirectionalLight3D для теней динамики (ADR-0002 amendment 2026-10-01); статичное свечение till-anchor"
     domain: "Rendering"
     created: 2026-09-30
-    revised: ""
+    revised: 2026-10-01
     status: active
   - id: TR-layout-017
     system: layout
@@ -1618,6 +1618,70 @@ requirements:
     gdd: design/ux/game-flow.md
     requirement: "Новые ключи SaveStore аддитивны, `schema_version` = 1; `stats.recent` — валидируемая JSON-строка"
     domain: "Persistence"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-001
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Презентация: 3D-окружение из простых мешей, свет и AO запечены в vertex colors (unshaded), опц. LightmapGI для пола/стен; статика ≤ 3 меша, вне теневого прохода"
+    domain: "Rendering"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-002
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Один DirectionalLight3D; тени отбрасывают только динамические объекты через shadow-only прокси-капсулы; Omni/Spot, SSAO/SSR/SDFGI/VoxelGI, volumetric fog, runtime DOF запрещены"
+    domain: "Rendering"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-003
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Спрайты персонажей и предметов — кастомный toon spatial-шейдер (unshaded база × тонировка зоны ≤ 15 %, ramp 2 шага по псевдонормали, rim 1 dp); стандартный lit Sprite3D запрещён"
+    domain: "Rendering"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-004
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Мировые оверлеи (жетоны, кольца, цены, контур цели, кольцо назначения) исключены из тумана и грейдинга: unshaded, disable_fog; смена «день → вечер» — светом и материалами окружения, их hex не меняется"
+    domain: "Rendering"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-005
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Blob-тени под персонажами, чашками и кассой на всех тирах; реальные тени Mid/High поверх"
+    domain: "Rendering"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-006
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Уровни качества Low/Mid/High выбираются статически при загрузке + ручной переключатель; Low — без реальных теней и glow"
+    domain: "Performance"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-007
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Бюджеты «качество важнее мегабайт»: `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, texture memory ≤ 96 МБ (спрайты персонажей без мипов), census ≤ 95, draw calls ≤ 180 вкл. теневой проход, shadow casters ≤ 12"
+    domain: "Performance"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-008
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color материал окружения, fog on/off для выбранного тира; ≤ 0,8 с"
+    domain: "Performance"
     created: 2026-10-01
     revised: ""
     status: active

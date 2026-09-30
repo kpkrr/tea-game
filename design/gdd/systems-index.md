@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-09-27
-> **Last Updated**: 2026-10-01 (добавлена #18 Player Stats — MVP, Meta; экраны вне партии — `design/ux/game-flow.md` как часть HUD & Feedback UI)
+> **Last Updated**: 2026-10-01 (визуальное направление — `design/art/art-bible.md`: 2D-персонажи + 3D-окружение + свет, 4 архетипа гостей в MVP; добавлена #18 Player Stats — MVP, Meta; экраны вне партии — `design/ux/game-flow.md` как часть HUD & Feedback UI)
 > **Source Concept**: design/gdd/game-concept.md
 
 ---

@@ -3,7 +3,7 @@ Last Updated: 2026-10-01
 Engine: Godot 4.7.2
 
 ## Coverage Summary
-- Total requirements: 198 in `tr-registry.yaml` (164 at the 2026-09-30 review + TR-hud-023…029 added the same day + 27 TR-flow on 2026-10-01); matrix rows for TR-hud-023…029 were missing and are added below
+- Total requirements: 206 in `tr-registry.yaml` (+8 TR-art on 2026-10-01, art bible + ADR-0002/0007 amendments); previously 198 (164 at the 2026-09-30 review + TR-hud-023…029 added the same day + 27 TR-flow on 2026-10-01); matrix rows for TR-hud-023…029 were missing and are added below
 - 2026-10-01: TR-flow-001…027 (`design/ux/game-flow.md`) covered by the 2026-10-01 amendments of ADR-0001/0003/0004/0005/0006 — amendments authored autonomously, pending owner review; 26 🟡, 1 routed (TR-flow-006, `tr()` convention)
 - Covered by Accepted ADR: 0
 - Covered by Proposed ADR (🟡): 145 (91% of active) — all seven ADRs Accepted 2026-09-30; counts are as of the review
@@ -47,7 +47,7 @@ Engine: Godot 4.7.2
 | TR-layout-013 | Kitchen Layout | Формы станций и столешницы не пересекаются | ADR-0006, ADR-0004 | 🟡 |
 | TR-layout-014 | Kitchen Layout | Минимальная зона тапа 48×48 dp на эталоне 360×640 dp | ADR-0002, ADR-0006 | 🟡 |
 | TR-layout-015 | Kitchen Layout | `playfield_min_fill` = 0,95, `min_tap_target` = 48 dp — данные из реестра | ADR-0004 | 🟡 |
-| TR-layout-016 | Kitchen Layout | Без шейдерных анимаций и параллакса; запечённый свет; статичное свечение till-anchor | ADR-0002 | 🟡 |
+| TR-layout-016 | Kitchen Layout | Статика окружения — 3D-меши с запечённым в vertex colors светом и AO (unshaded); без шейдерных анимаций окружения и параллакса; единственный реальный свет — DirectionalLight3D для теней динамики (ADR-0002 amendment 2026-10-01); статичное свечение till-anchor | ADR-0002 | 🟡 |
 | TR-layout-017 | Kitchen Layout | Для гостей: 1 точка спавна, 4 точки очереди со стабильными ID, 1 выход — все на навигаци… | ADR-0006 | 🟡 |
 | TR-control-001 | Player Control | Выбор тапа: ближайшая точка в `tap_pick_radius` → иначе луч/проверка точки → иначе no-op | ADR-0006 | 🟡 |
 | TR-control-002 | Player Control | Тап вне навигационной области → ближайшая достижимая точка XZ | ADR-0006 | 🟡 |
@@ -212,6 +212,14 @@ Engine: Godot 4.7.2
 | TR-flow-025 | Game Flow | Серия дней: `day_index` по `daily_reset_time_utc`, рост на Open→Full, сгоревшая серия по… | ADR-0005 | 🟡 |
 | TR-flow-026 | Game Flow | Reduced motion: все переходы потока мгновенные | ADR-0001 | 🟡 |
 | TR-flow-027 | Game Flow | Новые ключи SaveStore аддитивны, `schema_version` = 1; `stats.recent` — валидируемая JSO… | ADR-0005 | 🟡 |
+| TR-art-001 | Art Direction | Презентация: 3D-окружение из простых мешей, свет и AO запечены в vertex colors (unshaded… | ADR-0002 (поправка 2026-10-01) | 🟡 |
+| TR-art-002 | Art Direction | Один DirectionalLight3D; тени отбрасывают только динамические объекты через shadow-only … | ADR-0002, ADR-0007 (поправка 2026-10-01) | 🟡 |
+| TR-art-003 | Art Direction | Спрайты персонажей и предметов — кастомный toon spatial-шейдер (unshaded база × тонировк… | ADR-0002 (поправка 2026-10-01) | 🟡 |
+| TR-art-004 | Art Direction | Мировые оверлеи (жетоны, кольца, цены, контур цели, кольцо назначения) исключены из тума… | ADR-0002 (поправка 2026-10-01) | 🟡 |
+| TR-art-005 | Art Direction | Blob-тени под персонажами, чашками и кассой на всех тирах; реальные тени Mid/High поверх… | ADR-0002 (поправка 2026-10-01) | 🟡 |
+| TR-art-006 | Art Direction | Уровни качества Low/Mid/High выбираются статически при загрузке + ручной переключатель; … | ADR-0007 (поправка 2026-10-01) | 🟡 |
+| TR-art-007 | Art Direction | Бюджеты «качество важнее мегабайт»: `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, texture memory … | ADR-0007 (поправка 2026-10-01) | 🟡 |
+| TR-art-008 | Art Direction | Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color м… | ADR-0007 (поправка 2026-10-01) | 🟡 |
 
 ## Known Gaps
 None. Partial items and UX-routed items: see `architecture-review-2026-09-30.md`.

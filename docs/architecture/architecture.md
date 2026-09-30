@@ -3,7 +3,7 @@
 ## Document Status
 
 - Version: 1.0
-- Last Updated: 2026-10-01 (game-flow: модули GameFlow, PlayerStats, Haptics; поправки ADR-0001/0003/0004/0005/0006 от 2026-10-01 — автономно, ждут ревью владельца)
+- Last Updated: 2026-10-01 (art bible: 3D-окружение + toon-спрайты + 1 направленный свет, бюджеты «качество важнее мегабайт» — поправки ADR-0002/0007, TR-art-001…008; game-flow: модули GameFlow, PlayerStats, Haptics; поправки ADR-0001/0003/0004/0005/0006 от 2026-10-01 — автономно, ждут ревью владельца)
 - Engine: Godot 4.7.2 (GDScript, Compatibility renderer / WebGL2, web export)
 - Platform scope: **только обычный web** (браузер ПК и телефона). Telegram Mini App
   отложен решением 2026-09-30 — в MVP не детектится и не реализуется
@@ -330,7 +330,7 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 
 | # | `/architecture-decision` | Решает |
 |---|---|---|
-| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено; музыка 2,7 МБ вне `.pck`, догружается после `ready_reached` — поправка 2026-09-30), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. |
+| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено; музыка 2,7 МБ вне `.pck`, догружается после `ready_reached` — поправка 2026-09-30), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. **Поправка 2026-10-01 (art bible, «качество важнее мегабайт»):** `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, текстуры ≤ 96 МБ, census ≤ 95, draw calls ≤ 180 с теневым проходом, 1 направленный свет, уровни качества Low/Mid/High, TTI ≤ 15 с на 25 Мбит/с. |
 
 ### Can defer to implementation
 
@@ -379,6 +379,8 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | AQ-07 | Хватает ли transient user activation для `navigator.share` / `window.open` / `prompt()` из обработчика кнопки Godot (ввод обрабатывается в следующем кадре), особенно в iOS Safari? Запасной вариант — прозрачная HTML-кнопка над канвасом. | High | ADR-0001 поправка 2026-10-01, проверка W1 |
 | AQ-08 | Точные ключи PWA-пресета и `JavaScriptBridge.pwa_needs_update()/pwa_update()` в 4.7.2; кэширует ли сгенерированный service worker музыку рядом с `index.html`. | Medium | ADR-0001 поправка 2026-10-01, W2/W3 |
 | AQ-09 | Адрес игры (`FlowConfig.game_url`) и `feedback_url` — решение владельца; до него Share и Send feedback скрыты. | Medium | владелец |
+| AQ-10 | Уровни качества Low/Mid/High (ADR-0007 поправка 2026-10-01): как детектировать тир на web (`RenderingServer.get_video_adapter_name()` информативен ли в WebGL2?), где живёт переключатель (Settings, ключ сохранения), нужен ли отдельный ADR «Quality Tiers» или хватит поправки ADR-0007. | Medium | ADR-0007 поправка / spike S1 |
+| AQ-11 | Spike S1–S4 (ADR-0007 поправка 2026-10-01): стоимость теней + toon-шейдера на RD и среднем устройстве, LightmapGI/vertex AO на WebGL2 и порядок опаковых мешей и прозрачных спрайтов, мерцание спрайтов без мипов, исключение оверлеев из тонмаппинга в Compatibility. До производства арта. | High | ADR-0002/0007 поправки 2026-10-01 |
 
 ---
 
@@ -628,3 +630,15 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | 025 | Серия дней: `day_index` по `daily_reset_time_utc`, рост на Open→Full, сгоревшая серия показывается 0 (M14) | Persistence |
 | 026 | Reduced motion: все переходы потока мгновенные | UI |
 | 027 | Новые ключи SaveStore аддитивны, `schema_version` = 1; `stats.recent` — валидируемая JSON-строка | Persistence |
+
+### Art Direction (TR-art) — `design/art/art-bible.md`, 2026-10-01
+| ID | Требование | Домен |
+|---|---|---|
+| 001 | Презентация: 3D-окружение из простых мешей, свет и AO запечены в vertex colors (unshaded), опц. LightmapGI для пола/стен; статика ≤ 3 меша, вне теневого прохода (ADR-0002) | Rendering |
+| 002 | Один DirectionalLight3D; тени отбрасывают только динамические объекты через shadow-only прокси-капсулы; Omni/Spot, SSAO/SSR/SDFGI/VoxelGI, volumetric fog, runtime DOF запрещены (ADR-0002, ADR-0007) | Rendering |
+| 003 | Спрайты персонажей и предметов — кастомный toon spatial-шейдер (unshaded база × тонировка зоны ≤ 15 %, ramp 2 шага по псевдонормали, rim 1 dp); стандартный lit Sprite3D запрещён (ADR-0002) | Rendering |
+| 004 | Мировые оверлеи (жетоны, кольца, цены, контур цели, кольцо назначения) исключены из тумана и грейдинга: unshaded, disable_fog; смена «день → вечер» — светом и материалами окружения, их hex не меняется (ADR-0002) | Rendering |
+| 005 | Blob-тени под персонажами, чашками и кассой на всех тирах; реальные тени Mid/High поверх (ADR-0002) | Rendering |
+| 006 | Уровни качества Low/Mid/High выбираются статически при загрузке + ручной переключатель; Low — без реальных теней и glow (ADR-0007) | Performance |
+| 007 | Бюджеты «качество важнее мегабайт»: `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, texture memory ≤ 96 МБ (спрайты персонажей без мипов), census ≤ 95, draw calls ≤ 180 вкл. теневой проход, shadow casters ≤ 12 (ADR-0007) | Performance |
+| 008 | Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color материал окружения, fog on/off для выбранного тира; ≤ 0,8 с (ADR-0007) | Performance |
