@@ -102,7 +102,7 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 | **DifficultyCurve** | Feature | ничего (без состояния) | `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` | конфиг | — |
 | **Currency** | Feature | `match_score`, `best_score`, `is_new_record`, `best_score_at_match_start` | `coins_earned(n)`, `score_earned(n)`, `record_passed()` (раз за партию, при рекорде на старте > 0; поправка 2026-10-01), геттеры | `served`, `match_started`, `match_ended`, SaveStore | — |
 | **Till** | Feature | `till_amount`, `Open/Full`, `full_since_utc` | `coins_added(n)`, `day_filled()` (Open→Full, поправка 2026-10-01), `day_state`, `till_fill_ratio` | `coins_earned`, `match_started`, `UtcClock`, SaveStore | — |
-| **AudioDirector** | Presentation | шины Master → Music, SFX; mute (шина Master); low-pass на шине Music (итоги, нарастание по `ui_dt`); музыкальный плеер; загрузка трека после `ready_reached`; ключи `settings.muted`, `settings.music_on`, `settings.sfx_on` (поправки ADR-0001/0005); слой «сердцебиение» на последнем страйке (поправка 2026-10-01) | `is_muted()`, `set_music_on()`, `set_sfx_on()` | `set_muted()` от HUD, `MatchLifecycle.paused_changed`/`match_started`/`match_ended`, `GameClock.ui_dt`, `cfg.audio`, первый жест игрока, `SaveScope` `settings`, URL от `PlatformBridge.asset_url()` через `_compose()` | `AudioServer.set_bus_mute`, `AudioEffectLowPassFilter`, `AudioStreamPlayer` (SFX: Sample; музыка: Stream), `AudioStreamOggVorbis.load_from_buffer`, `HTTPRequest` |
+| **AudioDirector** | Presentation | шины Master ← Music, Master ← SFX ← {Voice, UI, Stinger, Amb}; mute-слои (Master / Music / SFX); low-pass на шине Music (последний страйк 2500 Гц, итоги 800 Гц, по `ui_dt`); адаптивная музыка — 4 stems в одном `AudioStreamSynchronized` (слои по `difficulty_progress`, квантование по такту) + трек меню; дакинг скриптом под стингеры; пул SFX ≤ 16 с классами P0–P4, лимитер голосов; награды монеты/очки раздельно; загрузка музыки после `ready_reached` (меню → stems) *(поправка ADR-0001/0007 audio 2026-10-01, `design/gdd/audio-juice-feedback.md`)*; ключи `settings.muted`, `settings.music_on`, `settings.sfx_on` (поправки ADR-0001/0005); слой «сердцебиение» на последнем страйке (поправка 2026-10-01) | `is_muted()`, `set_music_on()`, `set_sfx_on()` | `set_muted()` от HUD, `MatchLifecycle.paused_changed`/`match_started`/`match_ended`, `GameClock.ui_dt`, `cfg.audio`, первый жест игрока, `SaveScope` `settings`, URL от `PlatformBridge.asset_url()` через `_compose()` | `AudioServer.set_bus_mute`, `AudioEffectLowPassFilter`, `AudioStreamPlayer` (SFX: Sample; музыка: Stream), `AudioStreamOggVorbis.load_from_buffer`, `HTTPRequest` |
 | **HUD** | Presentation | ничего игрового (правило «без кэша») | `request_new_match`, `request_pause`/`request_resume`, `set_muted` | всё перечисленное выше, только чтение; поправка 2026-10-01: `record_passed`, `day_filled`, `guests_lost` (плашка «касса полна», NEW BEST!, виньетка последнего страйка — не блокируют тапы, ADR-0006) | `Control`, `Sprite3D`/`Label3D`, `Tween` |
 | **GameFlow** *(поправка 2026-10-01, `design/ux/game-flow.md`)* | Presentation | экраны вне партии и навигация: Main Menu, How to Play, Records, Settings, About, подтверждение «End shift?», итоги (M1), оверлей «Rotate your phone», подсказка установки; ключи `tutorial.seen`, `ui.install_hint_shown`, `challenge.target`; строки только английские через `tr()` | `request_new_match`, `request_quit_match`, `request_resume`; сеттеры настроек AudioDirector/Haptics; команды PlatformBridge через `_compose()` (share, install, open_external) | `ready_reached`, `match_ended(reason)`, Currency/Till/PlayerStats геттеры, `FlowConfig`, `SaveScope` `tutorial`/`ui`/`challenge`, `PlatformBridge` (через инъекцию из `_compose()`) | `Control`, `Tween` (только вне партии, ADR-0003 поправка), `SubViewport` → `Image.save_png_to_buffer` (карточка шаринга) |
 | **PlayerStats** *(поправка 2026-10-01)* | Feature (Meta) | счётчики смен и чашек, `recent` (≤ 5), серия дней (`streak`, `best_streak`, `streak_last_day`), `days_filled` | геттеры для Records, меню и итогов; `streak_grew_this_match` для строки на итогах | `served`, `match_ended(*)`, `Till.day_filled`, `UtcClock`, `TillConfig.daily_reset_time_utc`, `FlowConfig`, `SaveScope` `stats` | — (чистый GDScript, `RefCounted`) |
@@ -177,6 +177,7 @@ GameFlow «End shift» ─request_quit_match()─► MatchLifecycle (шаг 0): 
 PlatformBridge.orientation_blocked_changed(true) ─► MatchLifecycle.request_pause() (обратный поворот паузу не снимает)  (поправка 2026-10-01)
 HUD пауза / «Продолжить» ─request_pause()/request_resume()─► MatchLifecycle: пауза = hidden ИЛИ user_paused ─► GameClock.pause()/resume(); paused_changed ─► AudioDirector (музыка)  (поправка ADR-0003, 2026-09-30)
 match_ended ─► AudioDirector: low-pass на шине Music (нарастание по ui_dt); match_started ─► фильтр снят, трек с начала  (поправка ADR-0001/0003, 2026-09-30)
+guests_lost_changed (последний страйк) ─► AudioDirector: S4 гаснет, LP 2500 Гц, сердцебиение; difficulty_progress(t) ─► гейны stems (F1–F2)  (поправка ADR-0001 audio, 2026-10-01)
 ```
 
 Единственный источник паузы — `GameClock`. Анимации HUD, привязанные к игровому
@@ -330,7 +331,7 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 
 | # | `/architecture-decision` | Решает |
 |---|---|---|
-| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено; музыка 2,7 МБ вне `.pck`, догружается после `ready_reached` — поправка 2026-09-30), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. **Поправка 2026-10-01 (art bible, «качество важнее мегабайт»):** `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, текстуры ≤ 96 МБ, census ≤ 95, draw calls ≤ 180 с теневым проходом, 1 направленный свет, уровни качества Low/Mid/High, TTI ≤ 15 с на 25 Мбит/с. |
+| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено; музыка 2,7 МБ вне `.pck`, догружается после `ready_reached` — поправка 2026-09-30), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. **Поправка 2026-10-01 (art bible, «качество важнее мегабайт»):** `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, текстуры ≤ 96 МБ, census ≤ 95, draw calls ≤ 180 с теневым проходом, 1 направленный свет, уровни качества Low/Mid/High, TTI ≤ 15 с на 25 Мбит/с. **Поправка 2026-10-01 (аудио):** `.pck` ≤ 11,0 МБ, загрузка ≤ 21,5 МБ, музыка ≤ 6,0 МБ набором (меню + 4 stems), CPU музыки ≤ 2,5 мс, Sample PCM ≈ 35 МБ, TTI ≤ 16 с на 25 Мбит/с. |
 
 ### Can defer to implementation
 
@@ -642,3 +643,20 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | 006 | Уровни качества Low/Mid/High выбираются статически при загрузке + ручной переключатель; Low — без реальных теней и glow (ADR-0007) | Performance |
 | 007 | Бюджеты «качество важнее мегабайт»: `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, texture memory ≤ 96 МБ (спрайты персонажей без мипов), census ≤ 95, draw calls ≤ 180 вкл. теневой проход, shadow casters ≤ 12 (ADR-0007) | Performance |
 | 008 | Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color материал окружения, fog on/off для выбранного тира; ≤ 0,8 с (ADR-0007) | Performance |
+
+### Audio & Juice (TR-audio) — `design/gdd/audio-juice-feedback.md`, 2026-10-01
+| ID | Требование | Домен |
+|---|---|---|
+| 001 | Музыка партии — 4 stems (120 BPM, F major, 96,0 с) в одном AudioStreamSynchronized, Stream; слои по difficulty_progress (пороги 0/0,03/0,25/1,0, F1) | Audio |
+| 002 | Переход слоя квантуется к такту, нарастание 2 такта; огибающие по `ui_dt`, без Tween (F2) | Audio |
+| 003 | Трек меню (Stream), с начала на каждый заход, fade-in 1 с; меню→партия 0,6 с, партия→меню 0,8 с | Audio |
+| 004 | Последний страйк: S4 уходит, LP 2500 Гц, −3 dB, сердцебиение 1 Гц; `match_ended`: LP 800 Гц, сердцебиение гаснет 0,3 с | Audio |
+| 005 | Шины Master ← Music; Master ← SFX ← {Voice, UI, Stinger, Amb}; mute-слои muted / music_on / sfx_on | Audio |
+| 006 | SFX/голоса/стингеры/фон — Sample (QOA), вариации и pitch в коде | Audio |
+| 007 | Награды раздельно: монеты — аккорд по цене; очки — высота по серии (F3) | Audio |
+| 008 | Лимитер голосов F4 (≤ 2 реплики, зазор 0,25 с, кулдаун гостя 2,5 с, RNG внедряется) | Audio |
+| 009 | Дакинг музыки под стингер скриптом (F5), без sidechain | Audio |
+| 010 | Полифония ≤ 16, классы P0–P4, вытеснение F6 | Audio |
+| 011 | Пауза/скрытая вкладка: `stream_paused` для всего, кроме шины UI на пользовательской паузе | Audio |
+| 012 | Вибрация по карте событий, `haptics.vibration_on`, интервал ≥ 300 мс | Audio |
+| 013 | Бюджеты аудио: музыка ≤ 6,0 МБ набором, `.pck` ≤ 11,0 МБ, CPU музыки ≤ 2,5 мс, Sample PCM ≈ 35 МБ (ADR-0007) | Performance |

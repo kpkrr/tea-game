@@ -424,6 +424,111 @@ formulas:
     added: 2026-09-29
     revised: "2026-09-29"
 
+  - name: audio_stem_target_db
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+      - design/gdd/difficulty-curve-session-pacing.md
+    variables:
+      - difficulty_progress
+      - stem_threshold
+      - last_strike
+      - stem_on_db
+      - stem_off_db
+    output_range: [-80, 0]
+    expression: "(dp >= stem_threshold[i] and not (i == 4 and last_strike)) ? stem_on_db : stem_off_db"
+    notes: "F1. Thresholds 0 / 0.03 / 0.25 / 1.0; dp from difficulty-curve-session-pacing.md F1."
+    added: 2026-10-01
+    revised: ""
+
+  - name: audio_layer_fade_start
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+    variables:
+      - music_pos
+      - bpm
+      - bar_len
+      - stem_fade_bars
+    output_range: [0, 96]
+    expression: "bar_len * ceil(music_pos / bar_len), bar_len = 240 / bpm"
+    notes: "F2. Fade lasts stem_fade_bars (2) bars = 4 s; S4 on last strike quantised to a beat (0.5 s)."
+    added: 2026-10-01
+    revised: ""
+
+  - name: audio_star_pitch_scale
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+      - design/gdd/currency-coins-score.md
+    variables:
+      - t_served
+      - t_prev_served
+      - combo_window_s
+      - streak
+      - star_ladder_st
+    output_range: [1.0, 2.0]
+    expression: "2^(star_ladder_st[min(streak, 5)] / 12); streak += 1 if gap <= combo_window_s else 0"
+    notes: "F3. Ladder 0/2/5/7/9/12 semitones from C5 (F pentatonic); Leaving resets streak. Coins never use it (Pillar 4)."
+    added: 2026-10-01
+    revised: ""
+
+  - name: audio_voice_allowed
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+      - design/gdd/guest-ai-patience.md
+    variables:
+      - n_active
+      - voice_max
+      - prio
+      - voice_min_gap_s
+      - voice_guest_cooldown_s
+      - p_event
+      - n_waiting
+    output_range: [false, true]
+    expression: "(n_active < voice_max or prio(e) > prio_min_active) and gap_ok and cooldown_ok and rng() < p(e); p(order) = clamp(1 - 0.25*(n_waiting-1), 0.25, 1)"
+    notes: "F4. leaving bypasses gap/cooldown; RNG injected (seeded in tests)."
+    added: 2026-10-01
+    revised: ""
+
+  - name: audio_music_duck_db
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+    variables:
+      - tau
+      - L
+      - duck_depth_db
+      - duck_attack_s
+      - duck_release_s
+    output_range: [-6, 0]
+    expression: "tau <= L ? depth * min(tau/attack, 1) : depth * max(1 - (tau-L)/release, 0)"
+    notes: "F5. Script ramp on Music bus volume (Sample SFX bypass mixer, no sidechain); two stingers -> min."
+    added: 2026-10-01
+    revised: ""
+
+  - name: audio_sfx_victim
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+    variables:
+      - class_rank
+      - start_time
+      - sfx_voice_max
+      - cap_class
+    output_range: [none, one voice]
+    expression: "argmin over active voices of class P2..P4 by (class_rank, start_time); evict if class_rank(new) >= class_rank(victim)"
+    notes: "F6. P0/P1 never evicted; eviction fade 20 ms."
+    added: 2026-10-01
+    revised: ""
+
 # Example:
 #
 # formulas:
@@ -456,6 +561,73 @@ formulas:
 # Required fields: name, status, source, referenced_by, value, unit, added
 
 constants:
+  - name: music_bpm
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+    value: 120
+    unit: bpm
+    notes: "Match and menu tracks; bar = 2.0 s."
+    added: 2026-10-01
+    revised: ""
+
+  - name: music_key
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+    value: "F major"
+    unit: key
+    notes: "Melodic SFX use F pentatonic F-G-A-C-D only."
+    added: 2026-10-01
+    revised: ""
+
+  - name: stem_thresholds
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+      - design/gdd/difficulty-curve-session-pacing.md
+    value: [0, 0.03, 0.25, 1.0]
+    unit: difficulty_progress
+    notes: "Entry thresholds of stems S1..S4 (F1)."
+    added: 2026-10-01
+    revised: ""
+
+  - name: combo_window_s
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+    value: 6.0
+    unit: s
+    notes: "Score-pitch streak window (F3)."
+    added: 2026-10-01
+    revised: ""
+
+  - name: voice_max
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+    value: 2
+    unit: voices
+    notes: "Max simultaneous guest/barista vocalisations (F4)."
+    added: 2026-10-01
+    revised: ""
+
+  - name: sfx_voice_max
+    status: active
+    source: design/gdd/audio-juice-feedback.md
+    referenced_by:
+      - design/gdd/audio-juice-feedback.md
+    value: 16
+    unit: voices
+    notes: "Max simultaneous one-shot SFX (Rule 14, F6)."
+    added: 2026-10-01
+    revised: ""
+
   - name: kitchen_slot_count
     status: active
     source: design/gdd/kitchen-station-layout.md

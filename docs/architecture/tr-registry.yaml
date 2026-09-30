@@ -1685,6 +1685,110 @@ requirements:
     created: 2026-10-01
     revised: ""
     status: active
+  - id: TR-audio-001
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Музыка партии — 4 stems (120 BPM, F major, 96,0 с) в одном AudioStreamSynchronized, Stream; слои вступают по difficulty_progress с порогами 0/0,03/0,25/1,0 (F1)"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-002
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Переход слоя квантуется к ближайшему такту и нарастает stem_fade_bars (2) такта; огибающие по ui_dt, без Tween (F2)"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-003
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Отдельный трек меню (Stream), с начала на каждый заход, fade-in 1 с; меню→партия 0,6 с, партия→меню 0,8 с"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-004
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Последний страйк: S4 гаснет, LP на Music 2500 Гц за 0,4 с, −3 dB, сердцебиение 1 Гц на SFX; match_ended: LP 800 Гц за 0,3 с, сердцебиение гаснет 0,3 с"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-005
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Шины Master ← Music; Master ← SFX ← {Voice, UI, Stinger, Amb}; mute: muted → Master, music_on → Music, sfx_on → SFX"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-006
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "SFX/голоса/стингеры/фон — Sample (QOA), вариации и pitch выбираются в коде (без Randomizer/Polyphonic)"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-007
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Награды разделены: монеты — аккорд только по цене (2 → F, 5 → F+A, 7 → F–A–C); очки — стеклянный тембр, высота по серии combo_window_s 6,0 (F3)"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-008
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Лимитер голосов F4: ≤ 2 реплики, зазор 0,25 с, кулдаун гостя 2,5 с, p(order) падает с очередью; leaving проходит всегда; RNG внедряется"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-009
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Дакинг музыки под стингер — скриптом по громкости шины Music (−6 dB, атака 0,05, спад 0,4 с, F5); sidechain не используется"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-010
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Полифония ≤ 16 одноразовых звуков, классы P0–P4 с потолками; вытеснение F6 (P0/P1 не вытесняются, старший P4 первым, fade 20 мс)"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-011
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Пауза/скрытая вкладка: stream_paused для музыки, фона, сердцебиения и звуков в полёте в синхронном колбэке; на пользовательской паузе шина UI работает"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-012
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Вибрация по карте событий audio GDD §C: haptics.vibration_on + navigator.vibrate, интервал ≥ 300 мс, слияние событий кадра"
+    domain: "Audio"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-audio-013
+    system: audio
+    gdd: design/gdd/audio-juice-feedback.md
+    requirement: "Бюджеты: музыка ≤ 6,0 МБ набором файлов после загрузки; .pck ≤ 11,0 МБ; CPU музыки ≤ 2,5 мс/кадр; Sample PCM ≈ 35 МБ / ≤ 90 с суммарно"
+    domain: "Performance"
+    created: 2026-10-01
+    revised: ""
+    status: active
 
 # --- EXAMPLE ENTRIES (remove when first real entries are added) ---
 #

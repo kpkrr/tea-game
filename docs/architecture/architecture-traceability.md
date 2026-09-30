@@ -3,7 +3,7 @@ Last Updated: 2026-10-01
 Engine: Godot 4.7.2
 
 ## Coverage Summary
-- Total requirements: 206 in `tr-registry.yaml` (+8 TR-art on 2026-10-01, art bible + ADR-0002/0007 amendments); previously 198 (164 at the 2026-09-30 review + TR-hud-023…029 added the same day + 27 TR-flow on 2026-10-01); matrix rows for TR-hud-023…029 were missing and are added below
+- Total requirements: 219 in `tr-registry.yaml` (+13 TR-audio on 2026-10-01, audio GDD + ADR-0001/0007 audio amendments); before that 206 (+8 TR-art on 2026-10-01, art bible + ADR-0002/0007 amendments); previously 198 (164 at the 2026-09-30 review + TR-hud-023…029 added the same day + 27 TR-flow on 2026-10-01); matrix rows for TR-hud-023…029 were missing and are added below
 - 2026-10-01: TR-flow-001…027 (`design/ux/game-flow.md`) covered by the 2026-10-01 amendments of ADR-0001/0003/0004/0005/0006 — amendments authored autonomously, pending owner review; 26 🟡, 1 routed (TR-flow-006, `tr()` convention)
 - Covered by Accepted ADR: 0
 - Covered by Proposed ADR (🟡): 145 (91% of active) — all seven ADRs Accepted 2026-09-30; counts are as of the review
@@ -220,6 +220,19 @@ Engine: Godot 4.7.2
 | TR-art-006 | Art Direction | Уровни качества Low/Mid/High выбираются статически при загрузке + ручной переключатель; … | ADR-0007 (поправка 2026-10-01) | 🟡 |
 | TR-art-007 | Art Direction | Бюджеты «качество важнее мегабайт»: `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, texture memory … | ADR-0007 (поправка 2026-10-01) | 🟡 |
 | TR-art-008 | Art Direction | Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color м… | ADR-0007 (поправка 2026-10-01) | 🟡 |
+| TR-audio-001 | Audio & Juice | Музыка партии — 4 stems (120 BPM, F major, 96,0 с) в одном AudioStreamSynchronized, Stre… | ADR-0001, ADR-0007 (поправка 2026-10-01) | 🟡 |
+| TR-audio-002 | Audio & Juice | Переход слоя квантуется к ближайшему такту и нарастает stem_fade_bars (2) такта; огибающ… | ADR-0001, ADR-0003 (поправка 2026-10-01) | 🟡 |
+| TR-audio-003 | Audio & Juice | Отдельный трек меню (Stream), с начала на каждый заход, fade-in 1 с; меню→партия 0,6 с, … | ADR-0001 (поправка 2026-10-01) | 🟡 |
+| TR-audio-004 | Audio & Juice | Последний страйк: S4 гаснет, LP на Music 2500 Гц за 0,4 с, −3 dB, сердцебиение 1 Гц на S… | ADR-0001, ADR-0003 (поправка 2026-10-01) | 🟡 |
+| TR-audio-005 | Audio & Juice | Шины Master ← Music; Master ← SFX ← {Voice, UI, Stinger, Amb}; mute: muted → Master, mus… | ADR-0001, ADR-0005 (поправка 2026-10-01) | 🟡 |
+| TR-audio-006 | Audio & Juice | SFX/голоса/стингеры/фон — Sample (QOA), вариации и pitch выбираются в коде (без Randomiz… | ADR-0001 (поправка 2026-10-01) | 🟡 |
+| TR-audio-007 | Audio & Juice | Награды разделены: монеты — аккорд только по цене (2 → F, 5 → F+A, 7 → F–A–C); очки — ст… | — (GDD-only) | 🟡 |
+| TR-audio-008 | Audio & Juice | Лимитер голосов F4: ≤ 2 реплики, зазор 0,25 с, кулдаун гостя 2,5 с, p(order) падает с оч… | ADR-0003 (поправка 2026-10-01) | 🟡 |
+| TR-audio-009 | Audio & Juice | Дакинг музыки под стингер — скриптом по громкости шины Music (−6 dB, атака 0,05, спад 0,… | ADR-0001 (поправка 2026-10-01) | 🟡 |
+| TR-audio-010 | Audio & Juice | Полифония ≤ 16 одноразовых звуков, классы P0–P4 с потолками; вытеснение F6 (P0/P1 не выт… | ADR-0007 (поправка 2026-10-01) | 🟡 |
+| TR-audio-011 | Audio & Juice | Пауза/скрытая вкладка: stream_paused для музыки, фона, сердцебиения и звуков в полёте в … | ADR-0003 (поправка 2026-10-01) | 🟡 |
+| TR-audio-012 | Audio & Juice | Вибрация по карте событий audio GDD §C: haptics.vibration_on + navigator.vibrate, интерв… | ADR-0001, ADR-0005 (поправка 2026-10-01) | 🟡 |
+| TR-audio-013 | Audio & Juice | Бюджеты: музыка ≤ 6,0 МБ набором файлов после загрузки; .pck ≤ 11,0 МБ; CPU музыки ≤ 2,5… | ADR-0007 (поправка 2026-10-01) | 🟡 |
 
 ## Known Gaps
 None. Partial items and UX-routed items: see `architecture-review-2026-09-30.md`.
