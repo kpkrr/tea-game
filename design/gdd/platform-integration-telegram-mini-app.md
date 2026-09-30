@@ -3,7 +3,7 @@
 > **Status**: Approved
 > **Creative Director Review (CD-GDD-ALIGN)**: skipped — Lean mode
 > **Author**: user + agents
-> **Last Updated**: 2026-09-28
+> **Last Updated**: 2026-10-01 (синхронизация с `design/ux/game-flow.md`: веб-возможности MVP — Rule 8–14, AC 13–20; Telegram по-прежнему отложен)
 > **Last Verified**: 2026-09-28
 > **Implements Pillar**: инфраструктурная система — не обслуживает Pillar напрямую (см. Target Player Profile и MVP Definition в game-concept.md)
 
@@ -87,6 +87,49 @@ Telegram Mini App (Telegram WebView + Telegram SDK) как один из спо�
    9:20–1:1, шире — леттербокс» (Kitchen & Station Layout AC#6/#10) должен
    выполняться независимо от будущих смен дефолтов движка.
 
+### Веб-возможности MVP *(2026-10-01, `design/ux/game-flow.md` M3/M7–M10/M13; Telegram по-прежнему отложен)*
+
+Все возможности ниже — **детект + тихий фолбэк**: отсутствие API в браузере
+никогда не даёт ошибку и не блокирует игру; UI просто не показывает
+соответствующий элемент. Доступ из Godot — через `PlatformBridge`
+(ADR-0001; конкретные методы — его amendment).
+
+8. **PWA (установка на домашний экран, M7).** Встроенная опция Godot
+   web-экспорта *Progressive Web App*: манифест, иконки 144/180/512,
+   `display: standalone`, `orientation: portrait`, цвет темы из палитры,
+   офлайн-кэш с правилом «новая версия сборки подхватывается при
+   следующем запуске». Платформа сообщает: `is_standalone()`
+   (`display-mode: standalone`), `can_prompt_install()` (перехвачен
+   `beforeinstallprompt`, Android/Chrome), `prompt_install()` (вызывается
+   только из обработчика нажатия), `is_ios_safari()` (для плашки с
+   инструкцией «Share → Add to Home Screen»).
+9. **Web Share с файлом (M8).** `can_share_files()` →
+   `navigator.canShare({files})`. `share(png_bytes, text, url)` вызывается
+   **синхронно в обработчике нажатия** (требование user activation
+   браузера), поэтому PNG карточки передаётся в JS заранее
+   (`prepare_share_image(png_bytes)` на `match_ended`). Фолбэки:
+   нет файлов → скачать PNG + скопировать текст (`copy_text`); нет и
+   этого → только `copy_text`. Отмена системного меню — не ошибка.
+10. **Wake Lock (M9).** `request_wake_lock()` / `release_wake_lock()`
+    (`navigator.wakeLock`); повторный запрос после возврата вкладки делает
+    вызывающий (UI по состоянию партии). Нет API — no-op.
+11. **Ориентация и тип ввода (M3).** `is_coarse_pointer()`
+    (`matchMedia('(pointer: coarse)')`) и сигнал смены ориентации (уже
+    есть через resize). Слой «Rotate your phone» — при `coarse` и
+    соотношении шире 1:1; на `fine` (ПК) — прежнее поведение: леттербокс
+    с фоном (AC 9).
+12. **URL-параметр вызова (M13).** При загрузке платформа читает
+    `?beat=N` из `location.search`, отдаёт его как
+    `get_launch_param("beat")` (строка или пусто) и сразу убирает
+    параметр из адреса (`history.replaceState`), чтобы перезагрузка не
+    повторяла вызов. Валидацию (целое 1…1 000 000) делает потребитель.
+13. **Внешняя ссылка (M10).** `open_url(url)` — новая вкладка
+    (`window.open(url, '_blank', 'noopener')`), только из обработчика
+    нажатия. Адрес — из конфига (`feedback_url`), не хардкод.
+14. **Вибрация.** `can_vibrate()` (`'vibrate' in navigator`; iOS Safari —
+    нет) и `vibrate(ms)`. При `false` строка Vibration в Settings не
+    показывается; события и длительности вибрации — Audio & Juice.
+
 ### States and Transitions
 
 | Состояние | Вход | Выход |
@@ -107,7 +150,8 @@ Downstream:
 |---|---|---|
 | Kitchen & Station Layout | Hard | Safe-area rect + допустимый диапазон соотношения сторон (9:20–1:1) — кухня масштабируется и центрируется внутри, пересчёт при каждом изменении safe area |
 | HUD & Feedback UI | Hard | Тот же safe-area rect — HUD занимает свободные полосы |
-| Guest AI & Patience | Hard | `Ready` — условие старта первой партии (вместе с загрузкой сцены кухни); триггер — нажатие «Начать смену» (её Rule 13, решение владельца 2026-09-30, синхр. 2026-10-01); сигнал смены видимости (уход в фон / возврат) — пауза игрового времени (её Rule 11) *(`Ready` добавлен 2026-09-29 batch-fix, N1)* |
+| UI вне партии (`design/ux/game-flow.md`) | Hard | Rule 8–14: PWA-статус и установка, шаринг, wake lock, `pointer: coarse`, `?beat=`, `open_url`, вибрация *(2026-10-01)* |
+| Guest AI & Patience | Hard | `Ready` — условие старта первой партии (вместе с загрузкой сцены кухни); триггер — нажатие **Play** в главном меню (было «Начать смену») (её Rule 13, решение владельца 2026-09-30, синхр. 2026-10-01); сигнал смены видимости (уход в фон / возврат) — пауза игрового времени (её Rule 11) *(`Ready` добавлен 2026-09-29 batch-fix, N1)* |
 | Monetization / IAP Integration *(не спроектирована, Alpha)* | Soft | Флаг контекста (Telegram / Standalone); платёжный метод пока не определён и не Stars |
 | Backend & Persistence *(не спроектирована, Vertical Slice)* | Soft | В Telegram-контексте доступен Telegram user ID (`initData`) для идентификации игрока; в Standalone Web понадобится другой механизм — открытый вопрос, не решается здесь |
 
@@ -216,7 +260,7 @@ Downstream:
 | HUD & Feedback UI | Hard | Тот же safe-area rect |
 | Monetization / IAP Integration *(не спроектирована, Alpha)* | Soft | Флаг контекста (Telegram / Standalone); платёжный метод не определён |
 | Backend & Persistence *(не спроектирована, Vertical Slice)* | Soft | Telegram user ID в Telegram-контексте, опционален |
-| Guest AI & Patience | Hard | `Ready` — условие старта первой партии (вместе с загрузкой сцены кухни); триггер — нажатие «Начать смену» (её Rule 13, решение владельца 2026-09-30, синхр. 2026-10-01; добавлено 2026-09-29 batch-fix, N1); сигнал смены видимости (уход в фон / возврат) — Guest AI ставит партию на паузу (добавлено 2026-09-28 при проектировании `guest-ai-patience.md`) |
+| Guest AI & Patience | Hard | `Ready` — условие старта первой партии (вместе с загрузкой сцены кухни); триггер — нажатие **Play** / Start shift в главном меню (было «Начать смену») (её Rule 13, решение владельца 2026-09-30, синхр. 2026-10-01; добавлено 2026-09-29 batch-fix, N1); сигнал смены видимости (уход в фон / возврат) — Guest AI ставит партию на паузу (добавлено 2026-09-28 при проектировании `guest-ai-patience.md`) |
 
 **Двунаправленная проверка**: `kitchen-station-layout.md` уже полагалось
 на safe-area/viewport-контракт этой системы (AC#6, AC#10), но его секция
@@ -252,8 +296,9 @@ Dependencies заявляла «Upstream: нет» — исправлено в �
 
 ## UI Requirements
 
-- Экран загрузки: прогресс-бар/спиннер, без интерактивных элементов.
-- Fallback-экран: текстовое сообщение «Обновите браузер», без
+- Экран загрузки: логотип, прогресс-бар и одна случайная подсказка из списка
+  (`design/ux/game-flow.md` M5), без интерактивных элементов; текст — английский.
+- Fallback-экран: текстовое сообщение «Please update your browser» (весь текст игры — английский, game-flow F3), без
   интерактивных элементов.
 - Постоянного on-screen UI в состоянии Ready у этой системы нет — HUD
   принадлежит HUD & Feedback UI.
@@ -341,6 +386,15 @@ Formulas (добавлена при ревью 2026-09-28); остальные �
 12. *(Отложено 2026-09-30.)* **GIVEN** Telegram SDK инициализирован, **WHEN** `initData` или user
     ID недоступны, **THEN** safe area и тема продолжают работать, запуск
     не блокируется, а `user_id` отдаётся как отсутствующий, без ошибки.
+
+13. **GIVEN** сборка с включённой PWA-опцией, **WHEN** страница открыта в Chrome Android, **THEN** манифест валиден (`display: standalone`, `orientation: portrait`, иконки 144/180/512), `can_prompt_install()` становится `true` после `beforeinstallprompt`; в установленном приложении `is_standalone() = true`.
+14. **GIVEN** выложена новая версия сборки, **WHEN** установленное приложение запускается второй раз после выкладки, **THEN** загружена новая версия (офлайн-кэш не держит старую бесконечно).
+15. **GIVEN** PNG передан через `prepare_share_image`, **WHEN** игрок нажимает Share на Android/iOS, **THEN** открывается системное меню «Поделиться» с файлом; **AND GIVEN** ПК-браузер без `canShare({files})`, **THEN** PNG скачан и текст в буфере обмена.
+16. **GIVEN** `request_wake_lock()` во время партии на телефоне, **WHEN** проходит системный тайм-аут экрана, **THEN** экран не гаснет; в браузере без Wake Lock вызов ничего не делает и не пишет ошибку.
+17. **GIVEN** телефон (`pointer: coarse`) повёрнут в ландшафт, **WHEN** вьюпорт шире 1:1, **THEN** сигнал ориентации приходит в том же кадре, что resize; **AND GIVEN** ПК (`pointer: fine`) с широким окном, **THEN** слоя поворота нет, кухня леттербоксится (AC 9).
+18. **GIVEN** страница открыта по `…/?beat=4250`, **WHEN** загрузка завершена, **THEN** `get_launch_param("beat") = "4250"`, а адресная строка — без параметра; перезагрузка возвращает пустое значение.
+19. **GIVEN** `open_url("https://example.org")` вызван в обработчике нажатия, **WHEN** выполняется, **THEN** адрес открыт в новой вкладке, игра на месте (уход вкладки в фон → обычная пауза видимости).
+20. **GIVEN** iOS Safari, **WHEN** запрашивается `can_vibrate()`, **THEN** `false`, а `vibrate(30)` — no-op без ошибки; на Android Chrome — `true`.
 
 ## Open Questions
 

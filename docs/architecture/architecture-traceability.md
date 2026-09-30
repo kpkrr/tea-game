@@ -1,9 +1,10 @@
 # Architecture Traceability Index
-Last Updated: 2026-09-30
+Last Updated: 2026-10-01
 Engine: Godot 4.7.2
 
 ## Coverage Summary
-- Total requirements: 164 (active 159, deferred 5)
+- Total requirements: 198 in `tr-registry.yaml` (164 at the 2026-09-30 review + TR-hud-023…029 added the same day + 27 TR-flow on 2026-10-01); matrix rows for TR-hud-023…029 were missing and are added below
+- 2026-10-01: TR-flow-001…027 (`design/ux/game-flow.md`) covered by the 2026-10-01 amendments of ADR-0001/0003/0004/0005/0006 — amendments authored autonomously, pending owner review; 26 🟡, 1 routed (TR-flow-006, `tr()` convention)
 - Covered by Accepted ADR: 0
 - Covered by Proposed ADR (🟡): 145 (91% of active) — all seven ADRs Accepted 2026-09-30; counts are as of the review
 - Partial: 11
@@ -177,6 +178,40 @@ Engine: Godot 4.7.2
 | TR-hud-020 | HUD | Чужие константы только читаются | ADR-0004 | 🟡 |
 | TR-hud-021 | HUD | Контур цели и кольцо на полу меняются в том же кадре, что и цель Player Control | ADR-0003 | 🟡 |
 | TR-hud-022 | HUD | Опция reduced-motion для пульса колец (решается в `/ux-design`) | — (/ux-design) | ➡️ UX-спека |
+| TR-hud-023 | HUD | Кнопка паузы: пауза = hidden ИЛИ пауза игрока; только в Active; возврат вкладки не снимает | ADR-0003, ADR-0006 | 🟡 |
+| TR-hud-024 | HUD | Кнопка звука: mute = шина Master; `settings.muted` в SaveStore | ADR-0001, ADR-0005 | 🟡 |
+| TR-hud-025 | HUD | ~~Один зацикленный трек~~ — заменено TR-hud-027 | — | ↪ superseded |
+| TR-hud-026 | HUD | ~~Бюджет музыки ≤ 1,0 МБ в `.pck`~~ — заменено TR-hud-028 | — | ↪ superseded |
+| TR-hud-027 | HUD | Музыка: старт после жеста и загрузки; пауза с позиции; low-pass на итогах; «Играть снова» — с начала | ADR-0001, ADR-0003, ADR-0004 | 🟡 |
+| TR-hud-028 | HUD | Бюджет музыки: ≤ 2,7 МБ вне `.pck`, Stream | ADR-0007 | 🟡 |
+| TR-hud-029 | HUD | HUD — всегда верхняя строка; Mode A / Mode C (резерв 56 dp на аспектах ≈ 0,8–1,0) | ADR-0002, ADR-0004 | 🟡 |
+| TR-flow-001 | Game Flow | Главное меню (Play / Records / Settings / How to Play) вместо стартового экрана E18; `re… | ADR-0001, ADR-0003 | 🟡 |
+| TR-flow-002 | Game Flow | Из меню до партии — 1 тап, если `tutorial.seen` | ADR-0003 | 🟡 |
+| TR-flow-003 | Game Flow | How to Play: 3 карточки автоматически перед первой сменой, дальше из меню; `tutorial.see… | ADR-0005 | 🟡 |
+| TR-flow-004 | Game Flow | Settings: Music / Sound effects / Vibration, применяются сразу, сохраняются; доступны из… | ADR-0001, ADR-0003, ADR-0005 | 🟡 |
+| TR-flow-005 | Game Flow | Строки Vibration нет, если `navigator.vibrate` не поддерживается | ADR-0001 | 🟡 |
+| TR-flow-006 | Game Flow | Весь текст игры — только английский, строки через `tr()`-ключи; выбора языка нет (F3) | — | ➡️ UX-спека / конвенция кода (`tr()`), ADR не нужен |
+| TR-flow-007 | Game Flow | Records: рекорд, до 5 последних смен, счётчики, серия; пустое состояние (F5) | ADR-0005 | 🟡 |
+| TR-flow-008 | Game Flow | Пауза: Resume / Settings / Main Menu; Main Menu → подтверждение; выход = `match_ended(qu… | ADR-0003 | 🟡 |
+| TR-flow-009 | Game Flow | Строка статуса в меню: Till A / C и Best; при Full — время до нового дня | ADR-0005 | 🟡 |
+| TR-flow-010 | Game Flow | Кнопки меню срабатывают по release; Escape = назад; кнопка «назад» браузера не перехваты… | ADR-0006 | 🟡 |
+| TR-flow-011 | Game Flow | Меню показывает «Progress can't be saved», если `SaveStore.persistent = false` | ADR-0005 | 🟡 |
+| TR-flow-012 | Game Flow | Итоги (M1): порядок строк, накрутка счёта ≤ 0,8 с с пропуском по тапу, «N to beat», Play… | ADR-0003, ADR-0004, ADR-0006 | 🟡 |
+| TR-flow-013 | Game Flow | Плашка «Till full!» (M2): 2 с, звон, вибрация, не останавливает партию и не ловит тапы (… | ADR-0003, ADR-0004, ADR-0006 | 🟡 |
+| TR-flow-014 | Game Flow | Тач-устройство в ландшафте → оверлей «Rotate your phone» + пользовательская пауза; обрат… | ADR-0001, ADR-0003 | 🟡 |
+| TR-flow-015 | Game Flow | Адресная строка не обрабатывается; «кухня ≥ 95 %» — от видимого вьюпорта (F7) | ADR-0002 | 🟡 |
+| TR-flow-016 | Game Flow | Экран загрузки: логотип, прогресс, одна случайная подсказка (в HTML-оболочке) | ADR-0001 | 🟡 |
+| TR-flow-017 | Game Flow | About: версия сборки, авторы, лицензии (включая Godot MIT) | ADR-0004 | 🟡 |
+| TR-flow-018 | Game Flow | PWA: установка, строка Install app, одноразовая подсказка после 3-й смены, инструкция на… | ADR-0001 | 🟡 |
+| TR-flow-019 | Game Flow | Шаринг: PNG-карточка 1080×1350, рендер на `match_ended`, Web Share с файлом; фолбэк — ск… | ADR-0001, ADR-0004 | 🟡 |
+| TR-flow-020 | Game Flow | Wake lock только во время идущей партии | ADR-0001, ADR-0003 | 🟡 |
+| TR-flow-021 | Game Flow | Send feedback открывает `feedback_url` в новой вкладке; пустой конфиг — строки нет (M10) | ADR-0001, ADR-0004 | 🟡 |
+| TR-flow-022 | Game Flow | NEW BEST! в партии: один раз, только при рекорде на старте > 0, по `Currency.record_pass… | ADR-0003 | 🟡 |
+| TR-flow-023 | Game Flow | Последний страйк: виньетка + сердцебиение при `guests_lost == max − 1`, замирают на пауз… | ADR-0003, ADR-0004, ADR-0006 | 🟡 |
+| TR-flow-024 | Game Flow | Вызов `?beat=N`: валидация, сохранение, удаление параметра из адреса, строка в меню, ито… | ADR-0001, ADR-0005 | 🟡 |
+| TR-flow-025 | Game Flow | Серия дней: `day_index` по `daily_reset_time_utc`, рост на Open→Full, сгоревшая серия по… | ADR-0005 | 🟡 |
+| TR-flow-026 | Game Flow | Reduced motion: все переходы потока мгновенные | ADR-0001 | 🟡 |
+| TR-flow-027 | Game Flow | Новые ключи SaveStore аддитивны, `schema_version` = 1; `stats.recent` — валидируемая JSO… | ADR-0005 | 🟡 |
 
 ## Known Gaps
 None. Partial items and UX-routed items: see `architecture-review-2026-09-30.md`.

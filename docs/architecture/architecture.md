@@ -3,7 +3,7 @@
 ## Document Status
 
 - Version: 1.0
-- Last Updated: 2026-09-30
+- Last Updated: 2026-10-01 (game-flow: модули GameFlow, PlayerStats, Haptics; поправки ADR-0001/0003/0004/0005/0006 от 2026-10-01 — автономно, ждут ревью владельца)
 - Engine: Godot 4.7.2 (GDScript, Compatibility renderer / WebGL2, web export)
 - Platform scope: **только обычный web** (браузер ПК и телефона). Telegram Mini App
   отложен решением 2026-09-30 — в MVP не детектится и не реализуется
@@ -11,7 +11,7 @@
 - GDDs Covered: platform-integration-telegram-mini-app, kitchen-station-layout,
   order-recipe-system, player-control-barista-movement, brewing-crafting-mechanic,
   guest-ai-patience, difficulty-curve-session-pacing, currency-coins-score,
-  till-day-cycle, hud-feedback-ui (10/10 MVP)
+  till-day-cycle, hud-feedback-ui (10/10 MVP); UX-спек потока экранов `design/ux/game-flow.md` (TR-flow)
 - ADRs Referenced: ADR-0001 (Web build & platform shell, Accepted), ADR-0002 (Viewport, camera fit & 2.5D presentation, Accepted), ADR-0003 (Match simulation: clock, tick order, pause & events, Accepted), ADR-0004 (Data config & load-time validation, Accepted), ADR-0005 (Local persistence — SaveStore, Accepted), ADR-0006 (Navigation & tap picking, Accepted), ADR-0007 (Performance & load budgets, Accepted)
 - Technical Director Sign-Off: 2026-09-30 — APPROVED WITH CONDITIONS (код не
   начинать, пока ADR-0001…0005 не Accepted; ADR-0001 начинается с модуля
@@ -85,7 +85,7 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 
 | Модуль | Слой | Владеет | Отдаёт наружу | Потребляет | Engine API |
 |---|---|---|---|---|---|
-| **PlatformBridge** (autoload) | Foundation | safe-area rect (= вьюпорт браузера в px окна, `DisplayServer.window_get_size()`), видимость (`is_visible()`), состояние `Loading/Ready/Failed` | `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached` | браузер: resize/orientationchange, Page Visibility API | ⚠️ `JavaScriptBridge` (только visibility), `get_viewport().size_changed` |
+| **PlatformBridge** (autoload) | Foundation | safe-area rect (= вьюпорт браузера в px окна, `DisplayServer.window_get_size()`), видимость (`is_visible()`), состояние `Loading/Ready/Failed` | `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached`; поправка 2026-10-01: `orientation_blocked_changed`, `install_availability_changed`, `share_finished`, PWA/share/wake lock/launch param/`open_external`/vibrate (ADR-0001) | браузер: resize/orientationchange, Page Visibility API, `pointer: coarse`, `beforeinstallprompt`, Web Share, Wake Lock, `location.search` | ⚠️ `JavaScriptBridge` (visibility + хелпер оболочки `teaRushPlatform`), `get_viewport().size_changed`, PWA-опции экспорта (⚠️ проверить в 4.7.2) |
 | **ViewFit** | Foundation | `safe_aspect`, playfield rect, letterbox, размер и смещение ortho-камеры, `kitchen_rect` (ADR-0002; 1 единица канваса = 1 dp; поправка 2026-09-30: HUD — всегда верхняя строка; если верхняя полоса < `hud_min_strip_dp` = 56 dp (аспекты ≈ 0,8–1,0), она резервируется, кухня < 95 % поля — исключение; боковые полосы — только letterbox) | `playfield_changed(playfield, kitchen_rect)` | `PlatformBridge.safe_area_changed`, габариты кухни | ⚠️ stretch mode, `Camera3D` (ortho `size`) |
 | **GameClock** | Foundation | игровое время `t`, флаги `hidden` и `frozen`, clamp `max_step_delta` (ADR-0003) | `t`, `sim_dt`, `ui_dt`, `running_changed(running)` | команды pause/resume/freeze/reset от MatchLifecycle | — (чистый GDScript) |
 | **MatchDirector** | Foundation | порядок тика, корень композиции матча (DI) | — | все модули матча | `_process` с `process_priority = -100` (ADR-0003; не `_physics_process`) |
@@ -97,13 +97,16 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 | **BaristaController** | Core | состояние `Idle/Walking/Holding`, путь, текущая цель | `state`, `target`, `offer_action()` | `tapped`, Pathing, валидность от Brewing/Guest | `AnimatedSprite3D` |
 | **Pathing** | Core | приватная карта навигации + регион, `agent_radius` (одно значение, из `ControlConfig`), готовность карты (ADR-0006) | `Navigator.path(from, to) -> PathResult`, `shortest_to(from, points)`, `poll_ready()`, `verify(kitchen)`, `dispose()` | footprints KitchenLayout, `ControlConfig.agent_radius` | `NavigationServer3D` (карта/регион/`map_get_path`, `bake_from_source_geometry_data`); запасной вариант — `GridNavigator` (`AStarGrid2D`) за тем же интерфейсом |
 | **Brewing** | Feature | `held_cup`, 2 чайника (`EMPTY/BREWING/READY`), 7 слотов | ответы `EXECUTE/WAIT/REFUSE`, `consume_held_cup()`, состояния для HUD | RecipeBook, `step(dt)` от MatchDirector, `match_started` | — |
-| **MatchLifecycle** (Guest AI) | Feature | `match_started`/`match_ended`, `guests_lost`, политика паузы | `match_started`, `match_ended`, команды GameClock | `ready_reached`, `visibility_changed`, `request_new_match` | — |
+| **MatchLifecycle** (Guest AI) | Feature | `match_started`/`match_ended`, `guests_lost`, политика паузы; состояния `BOOTING/IDLE/RUNNING/ENDED` (IDLE — меню, поправка 2026-10-01) | `match_started`, `match_ended(reason)` (`guests_lost` \| `quit`), `paused_changed`, команды GameClock | `ready_reached` (→ IDLE, без автостарта), `visibility_changed`, `orientation_blocked_changed`, `request_new_match`, `request_quit_match`, `request_pause`/`request_resume` | — |
 | **GuestSim** (Guest AI) | Feature | гости (4 слота), терпение, спавн, RNG выбора рецепта | `served(recipe_id, remaining_fraction)`, `target_vanished`, данные гостей для HUD | DifficultyCurve, RecipeBook, Brewing, Pathing (`Navigator`) | `AnimatedSprite3D` (без `NavigationAgent3D`, ADR-0006) |
 | **DifficultyCurve** | Feature | ничего (без состояния) | `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` | конфиг | — |
-| **Currency** | Feature | `match_score`, `best_score`, `is_new_record` | `coins_earned(n)`, `score_earned(n)`, геттеры | `served`, `match_started`, `match_ended`, SaveStore | — |
-| **Till** | Feature | `till_amount`, `Open/Full`, `full_since_utc` | `coins_added(n)`, `day_state`, `till_fill_ratio` | `coins_earned`, `match_started`, `UtcClock`, SaveStore | — |
-| **AudioDirector** | Presentation | шины Master → Music, SFX; mute (шина Master); low-pass на шине Music (итоги, нарастание по `ui_dt`); музыкальный плеер; загрузка трека после `ready_reached`; ключ `settings.muted` (поправка ADR-0001, 2026-09-30) | `is_muted()` | `set_muted()` от HUD, `MatchLifecycle.paused_changed`/`match_started`/`match_ended`, `GameClock.ui_dt`, `cfg.audio`, первый жест игрока, `SaveScope` `settings`, URL от `PlatformBridge.asset_url()` через `_compose()` | `AudioServer.set_bus_mute`, `AudioEffectLowPassFilter`, `AudioStreamPlayer` (SFX: Sample; музыка: Stream), `AudioStreamOggVorbis.load_from_buffer`, `HTTPRequest` |
-| **HUD** | Presentation | ничего игрового (правило «без кэша») | `request_new_match` | всё перечисленное выше, только чтение | `Control`, `Sprite3D`/`Label3D`, `Tween` |
+| **Currency** | Feature | `match_score`, `best_score`, `is_new_record`, `best_score_at_match_start` | `coins_earned(n)`, `score_earned(n)`, `record_passed()` (раз за партию, при рекорде на старте > 0; поправка 2026-10-01), геттеры | `served`, `match_started`, `match_ended`, SaveStore | — |
+| **Till** | Feature | `till_amount`, `Open/Full`, `full_since_utc` | `coins_added(n)`, `day_filled()` (Open→Full, поправка 2026-10-01), `day_state`, `till_fill_ratio` | `coins_earned`, `match_started`, `UtcClock`, SaveStore | — |
+| **AudioDirector** | Presentation | шины Master → Music, SFX; mute (шина Master); low-pass на шине Music (итоги, нарастание по `ui_dt`); музыкальный плеер; загрузка трека после `ready_reached`; ключи `settings.muted`, `settings.music_on`, `settings.sfx_on` (поправки ADR-0001/0005); слой «сердцебиение» на последнем страйке (поправка 2026-10-01) | `is_muted()`, `set_music_on()`, `set_sfx_on()` | `set_muted()` от HUD, `MatchLifecycle.paused_changed`/`match_started`/`match_ended`, `GameClock.ui_dt`, `cfg.audio`, первый жест игрока, `SaveScope` `settings`, URL от `PlatformBridge.asset_url()` через `_compose()` | `AudioServer.set_bus_mute`, `AudioEffectLowPassFilter`, `AudioStreamPlayer` (SFX: Sample; музыка: Stream), `AudioStreamOggVorbis.load_from_buffer`, `HTTPRequest` |
+| **HUD** | Presentation | ничего игрового (правило «без кэша») | `request_new_match`, `request_pause`/`request_resume`, `set_muted` | всё перечисленное выше, только чтение; поправка 2026-10-01: `record_passed`, `day_filled`, `guests_lost` (плашка «касса полна», NEW BEST!, виньетка последнего страйка — не блокируют тапы, ADR-0006) | `Control`, `Sprite3D`/`Label3D`, `Tween` |
+| **GameFlow** *(поправка 2026-10-01, `design/ux/game-flow.md`)* | Presentation | экраны вне партии и навигация: Main Menu, How to Play, Records, Settings, About, подтверждение «End shift?», итоги (M1), оверлей «Rotate your phone», подсказка установки; ключи `tutorial.seen`, `ui.install_hint_shown`, `challenge.target`; строки только английские через `tr()` | `request_new_match`, `request_quit_match`, `request_resume`; сеттеры настроек AudioDirector/Haptics; команды PlatformBridge через `_compose()` (share, install, open_external) | `ready_reached`, `match_ended(reason)`, Currency/Till/PlayerStats геттеры, `FlowConfig`, `SaveScope` `tutorial`/`ui`/`challenge`, `PlatformBridge` (через инъекцию из `_compose()`) | `Control`, `Tween` (только вне партии, ADR-0003 поправка), `SubViewport` → `Image.save_png_to_buffer` (карточка шаринга) |
+| **PlayerStats** *(поправка 2026-10-01)* | Feature (Meta) | счётчики смен и чашек, `recent` (≤ 5), серия дней (`streak`, `best_streak`, `streak_last_day`), `days_filled` | геттеры для Records, меню и итогов; `streak_grew_this_match` для строки на итогах | `served`, `match_ended(*)`, `Till.day_filled`, `UtcClock`, `TillConfig.daily_reset_time_utc`, `FlowConfig`, `SaveScope` `stats` | — (чистый GDScript, `RefCounted`) |
+| **Haptics** *(поправка 2026-10-01)* | Presentation | `haptics.vibration_on` | `set_enabled()`, `is_supported()` | `day_filled`, `record_passed`, `SaveScope` `haptics`, `HudConfig` (длительности) | `PlatformBridge.vibrate()` через инъекцию |
 
 ```
             PlatformBridge ──► ViewFit ──► TapPicker ──► BaristaController ──► Pathing
@@ -169,6 +172,9 @@ MatchLifecycle.apply_pending() (шаг 0 тика): GameClock.reset(); emit matc
 GuestSim: guests_lost == 3 ─► MatchLifecycle: GameClock.freeze(); emit match_ended
     → Currency: is_new_record = match_score > best_score; при true сохраняет best_score
 PlatformBridge.visibility_changed(false/true) ─► MatchLifecycle ─► GameClock.pause()/resume() (resume отбрасывает первый кадр)
+PlatformBridge.ready_reached ─► MatchLifecycle: BOOTING → IDLE (без автостарта); GameFlow показывает Main Menu; Play / Start shift ─request_new_match()─►  (поправка 2026-10-01)
+GameFlow «End shift» ─request_quit_match()─► MatchLifecycle (шаг 0): freeze; emit match_ended(&"quit") → IDLE; GameFlow пропускает итоги → меню  (поправка 2026-10-01)
+PlatformBridge.orientation_blocked_changed(true) ─► MatchLifecycle.request_pause() (обратный поворот паузу не снимает)  (поправка 2026-10-01)
 HUD пауза / «Продолжить» ─request_pause()/request_resume()─► MatchLifecycle: пауза = hidden ИЛИ user_paused ─► GameClock.pause()/resume(); paused_changed ─► AudioDirector (музыка)  (поправка ADR-0003, 2026-09-30)
 match_ended ─► AudioDirector: low-pass на шине Music (нарастание по ui_dt); match_started ─► фильтр снят, трек с начала  (поправка ADR-0001/0003, 2026-09-30)
 ```
@@ -185,7 +191,11 @@ match_ended ─► AudioDirector: low-pass на шине Music (нарастан
 |---|---|---|---|
 | `best_score` | Currency | на `match_ended`, только если `is_new_record` | холодный старт |
 | `till_amount`, `day_state`, `full_since_utc` | Till | при каждом изменении (Served, Open↔Full) | холодный старт, `match_started` (проверка сброса) |
-| `settings.language` | UI / настройки | при смене | холодный старт |
+| ~~`settings.language`~~ | — | — | снято 2026-10-01: весь текст игры только на английском (game-flow F3), выбора языка нет |
+| `settings.music_on`, `settings.sfx_on` | AudioDirector | переключатели Settings | холодный старт (ADR-0005, поправка 2026-10-01) |
+| `haptics.vibration_on` | Haptics | переключатель Settings | холодный старт (ADR-0005, поправка 2026-10-01; в UX-спеке назван `settings.vibration_on`) |
+| `tutorial.seen`, `ui.install_hint_shown`, `challenge.target` | GameFlow | конец How to Play / показ подсказки / `?beat=` и выполнение вызова | холодный старт |
+| `stats.*` (`shifts_played`, `cups_served`, `days_filled`, `streak`, `best_streak`, `streak_last_day`, `recent` — JSON-строка) | PlayerStats | `match_ended(*)`, `Till.day_filled` | холодный старт |
 | `settings.muted` (bool, по умолчанию `false`) | AudioDirector | при переключении кнопки звука в HUD | холодный старт, до первого звука (ADR-0005, поправка 2026-09-30) |
 
 `SaveStore` — одна плоская схема с `schema_version` (ADR-0005). На web — `localStorage`
@@ -246,6 +256,14 @@ func request_new_match() -> void    # MatchLifecycle; вызывает HUD (ко
 func request_pause() -> void; func request_resume() -> void   # MatchLifecycle; вызывает HUD (поправка ADR-0003, 2026-09-30)
 signal paused_changed(paused: bool)                                 # MatchLifecycle: hidden ИЛИ user_paused
 func set_muted(muted: bool) -> void                                 # AudioDirector; вызывает HUD (поправка ADR-0001)
+# поправка 2026-10-01 (game-flow)
+signal match_ended(reason: StringName)                              # заменяет match_ended(): &"lost" | &"quit"
+func request_quit_match() -> void                                   # MatchLifecycle; вызывает только GameFlow
+signal record_passed()                                              # Currency, раз за партию
+signal day_filled()                                                 # Till, переход Open → Full
+signal guests_lost_changed(count: int)                              # GuestSim
+func set_music_on(on: bool) -> void; func set_sfx_on(on: bool) -> void   # AudioDirector; вызывает GameFlow (Settings)
+func set_enabled(on: bool) -> void                                  # Haptics; вызывает GameFlow (Settings)
 ```
 
 **Инварианты для вызывающих:**
@@ -254,6 +272,8 @@ func set_muted(muted: bool) -> void                                 # AudioDirec
 - Значения из DifficultyCurve фиксируются в госте при спавне и больше не
   пересчитываются (TR-guest-009, TR-pacing-004).
 - HUD не пишет ни в одну систему, кроме `request_new_match`, `request_pause`/`request_resume` и `AudioDirector.set_muted` (поправки 2026-09-30).
+- GameFlow пишет только `request_new_match`, `request_quit_match`, `request_resume`, сеттеры настроек AudioDirector/Haptics и свои ключи SaveStore (поправка 2026-10-01).
+- PlayerStats читает и Currency, и Till — это мета-слой, граница Pillar 4 (Till ↔ Currency) не нарушается.
 - Till не читает score, Currency не читает состояние кассы (граница Pillar 4).
 
 **Типы движка в интерфейсах:** в сигнатурах выше только `StringName`, `Array[T]`,
@@ -356,6 +376,9 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | AQ-04 | Задержка «касание → движок» в мобильном браузере не измерена (бюджет ≤ 50 мс только внутри движка). | Medium | ADR-0001 spike → ADR-0007 |
 | AQ-05 | Что считается «кадром» для debounce safe area: `_process` или `requestAnimationFrame` (platform OQ5)? | Low | ADR-0001 |
 | AQ-06 | Манипуляция системными часами устройства может досрочно сбросить кассу: принятый риск MVP. | Low | Backend & Persistence (VS) |
+| AQ-07 | Хватает ли transient user activation для `navigator.share` / `window.open` / `prompt()` из обработчика кнопки Godot (ввод обрабатывается в следующем кадре), особенно в iOS Safari? Запасной вариант — прозрачная HTML-кнопка над канвасом. | High | ADR-0001 поправка 2026-10-01, проверка W1 |
+| AQ-08 | Точные ключи PWA-пресета и `JavaScriptBridge.pwa_needs_update()/pwa_update()` в 4.7.2; кэширует ли сгенерированный service worker музыку рядом с `index.html`. | Medium | ADR-0001 поправка 2026-10-01, W2/W3 |
+| AQ-09 | Адрес игры (`FlowConfig.game_url`) и `feedback_url` — решение владельца; до него Share и Send feedback скрыты. | Medium | владелец |
 
 ---
 
@@ -574,3 +597,34 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | 027 | Музыка: старт после жеста и загрузки; пауза/скрытие — пауза с позиции; на итогах low-pass (800 Гц / 0,3 с, конфиг, по `ui_dt`); «Играть снова» — с начала без фильтра; mute = Master (2026-09-30, ADR-0001/0003/0004) | Audio |
 | 028 | Бюджет музыки: файл ≤ 2,7 МБ вне `.pck`, после `ready_reached`; Stream, ≈ 2,7 МБ в куче, ≤ 1,0 мс/кадр (предв.); `.pck` 3,0 МБ целиком под остальное (2026-09-30, ADR-0007) | Performance |
 | 029 | HUD — всегда верхняя строка: Mode A, если верхняя полоса ≥ 56 dp (`ViewConfig.hud_min_strip_dp`), иначе Mode C — резерв верхней полосы 56 dp (аспекты ≈ 0,8–1,0); кухня < 95 % поля — явное исключение; боковые полосы под HUD не используются (2026-09-30, ADR-0002/0004) | UI |
+
+### Game Flow & Meta (TR-flow) — `design/ux/game-flow.md`, 2026-10-01
+| ID | Требование | Домен |
+|---|---|---|
+| 001 | Главное меню (Play / Records / Settings / How to Play) вместо стартового экрана E18; `ready_reached` → меню, без автостарта партии (F1) | UI |
+| 002 | Из меню до партии — 1 тап, если `tutorial.seen` | UI |
+| 003 | How to Play: 3 карточки автоматически перед первой сменой, дальше из меню; `tutorial.seen` сохраняется (F4) | UI |
+| 004 | Settings: Music / Sound effects / Vibration, применяются сразу, сохраняются; доступны из меню и из паузы; из паузы пауза не снимается (F2) | UI |
+| 005 | Строки Vibration нет, если `navigator.vibrate` не поддерживается | Platform-Web |
+| 006 | Весь текст игры — только английский, строки через `tr()`-ключи; выбора языка нет (F3) | UI |
+| 007 | Records: рекорд, до 5 последних смен, счётчики, серия; пустое состояние (F5) | UI |
+| 008 | Пауза: Resume / Settings / Main Menu; Main Menu → подтверждение; выход = `match_ended(quit)`, очки засчитываются, итоги пропускаются | Core |
+| 009 | Строка статуса в меню: Till A / C и Best; при Full — время до нового дня | UI |
+| 010 | Кнопки меню срабатывают по release; Escape = назад; кнопка «назад» браузера не перехватывается | Input |
+| 011 | Меню показывает «Progress can't be saved», если `SaveStore.persistent = false` | Persistence |
+| 012 | Итоги (M1): порядок строк, накрутка счёта ≤ 0,8 с с пропуском по тапу, «N to beat», Play Again / Share / Menu с grace | UI |
+| 013 | Плашка «Till full!» (M2): 2 с, звон, вибрация, не останавливает партию и не ловит тапы (F9) | UI |
+| 014 | Тач-устройство в ландшафте → оверлей «Rotate your phone» + пользовательская пауза; обратный поворот паузу не снимает; на ПК оверлея нет (F6) | Platform-Web |
+| 015 | Адресная строка не обрабатывается; «кухня ≥ 95 %» — от видимого вьюпорта (F7) | Platform-Web |
+| 016 | Экран загрузки: логотип, прогресс, одна случайная подсказка (в HTML-оболочке) | Platform-Web |
+| 017 | About: версия сборки, авторы, лицензии (включая Godot MIT) | UI |
+| 018 | PWA: установка, строка Install app, одноразовая подсказка после 3-й смены, инструкция на iOS, скрыто в standalone; обновление — при следующем запуске | Platform-Web |
+| 019 | Шаринг: PNG-карточка 1080×1350, рендер на `match_ended`, Web Share с файлом; фолбэк — скачать PNG + текст в буфер (F8) | Platform-Web |
+| 020 | Wake lock только во время идущей партии | Platform-Web |
+| 021 | Send feedback открывает `feedback_url` в новой вкладке; пустой конфиг — строки нет (M10) | UI |
+| 022 | NEW BEST! в партии: один раз, только при рекорде на старте > 0, по `Currency.record_passed` (M11) | Core |
+| 023 | Последний страйк: виньетка + сердцебиение при `guests_lost == max − 1`, замирают на паузе, reduced motion — без пульса (M12) | UI |
+| 024 | Вызов `?beat=N`: валидация, сохранение, удаление параметра из адреса, строка в меню, итог на экране результатов, сброс при выполнении (M13) | Platform-Web |
+| 025 | Серия дней: `day_index` по `daily_reset_time_utc`, рост на Open→Full, сгоревшая серия показывается 0 (M14) | Persistence |
+| 026 | Reduced motion: все переходы потока мгновенные | UI |
+| 027 | Новые ключи SaveStore аддитивны, `schema_version` = 1; `stats.recent` — валидируемая JSON-строка | Persistence |

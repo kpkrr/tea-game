@@ -40,7 +40,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: "2026-09-29"
+last_updated: "2026-10-01"
 # updated: +1 formula (till_amount), +2 constants (till_capacity,
 # daily_reset_time_utc) from design/gdd/till-day-cycle.md; referenced_by
 # on coins_earned updated
@@ -350,6 +350,41 @@ formulas:
     added: 2026-09-29
     revised: ""
 
+  - name: record_passed
+    status: active
+    source: design/gdd/currency-coins-score.md
+    referenced_by:
+      - design/gdd/currency-coins-score.md
+      - design/gdd/hud-feedback-ui.md
+    variables:
+      - match_score
+      - best_at_start
+    output_range: [false, true]
+    expression: "best_at_start > 0 and match_score > best_at_start  # first Served that satisfies it; fires once per match"
+    notes: "Event, not a stored value. best_at_start = best_score at
+      match_started. Drives mid-match NEW BEST! popup (game-flow.md M11).
+      Never fires in the first-ever match (best 0) or on a tie. Currency
+      Rule 10, added 2026-10-01."
+    added: 2026-10-01
+    revised: ""
+
+  - name: day_index
+    status: active
+    source: design/gdd/till-day-cycle.md
+    referenced_by:
+      - design/gdd/till-day-cycle.md
+      - design/gdd/player-stats.md
+    variables:
+      - now_utc_s
+      - daily_reset_time_utc
+    output_range: [0, unbounded]
+    expression: "floor((now_utc_s - daily_reset_time_utc * 3600) / 86400)"
+    notes: "Game-day number; boundaries coincide with till reset moments.
+      Carried by day_filled(day_index) (Till Rule 10) and used by Player
+      Stats streak / displayed_streak. Till Formula 5, added 2026-10-01."
+    added: 2026-10-01
+    revised: ""
+
   - name: coins_earned
     status: active
     source: design/gdd/currency-coins-score.md
@@ -574,9 +609,10 @@ constants:
     source: design/gdd/guest-ai-patience.md
     referenced_by:
       - design/gdd/guest-ai-patience.md
+      - design/gdd/hud-feedback-ui.md
     value: 3
     unit: guests
-    notes: "Match ends when guests_lost reaches this value; guests_lost is clamped to it. From game-concept (3 lives). Read by HUD and Currency via match_ended (Till & Day Cycle no longer listens to match_ended since its 2026-09-29 revision)."
+    notes: "HUD last-strike tension (game-flow.md M12) triggers at guests_lost == max_guests_lost - 1 (added 2026-10-01). Match ends when guests_lost reaches this value; guests_lost is clamped to it. From game-concept (3 lives). Read by HUD and Currency via match_ended (Till & Day Cycle no longer listens to match_ended since its 2026-09-29 revision)."
     added: 2026-09-28
     revised: "2026-09-29"
 
@@ -695,11 +731,14 @@ constants:
     source: design/gdd/till-day-cycle.md
     referenced_by:
       - design/gdd/till-day-cycle.md
+      - design/gdd/player-stats.md
     value: 0
     unit: hour UTC (00:00 UTC)
     notes: "User decision — neutral, no audience-geography assumption.
-      Checked only on match_started (Guest AI Rule 13) and on cold start
-      (save load) — never mid-match, on the results screen or on return
+      Also defines day boundaries for day_index (Till Formula 5) used by
+      Player Stats streak (2026-10-01). Checked on match_started (Guest AI
+      Rule 13), on cold start (save load) and on main-menu show /
+      countdown expiry (Till Rule 6, 2026-10-01) — never mid-match, on the results screen or on return
       from background; only applies to a Full till (reset is the first
       crossing after full_since_utc) — an unfilled (Open) till never
       resets. Candidate for

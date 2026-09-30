@@ -85,6 +85,31 @@ Currency must keep `best_score` across restarts and never lower it; Till must ke
 > - **Schema version:** stays `1`. The change is **additive with a default**: an existing v1 blob without the key validates to `false` via the per-key default, so no `_migrate_v1_to_v2` is needed. Bumping is reserved for changes of meaning, type or removal of an existing key (§3 migration rule).
 > - Validation adds: missing key → `false`; `"true"`/`1` → `false` + one log; round-trip `true`; mute toggle → one `write_blob` at step 6 of that frame (or on page hide).
 
+> **Amendment 2026-10-01 — settings, flow and statistics keys (`design/ux/game-flow.md` Data Requirements, M7/M13/M14; authored autonomously, pending owner review).** All keys are **additive with defaults**; `schema_version` stays **1** (same rule as the `settings.muted` amendment: an old v1 blob validates missing keys to their defaults, no migration).
+>
+> | Key | Type | Owner (scope) | Written | Default | Validation |
+> |---|---|---|---|---|---|
+> | `settings.music_on` | bool | AudioDirector (`settings`) | Settings toggle | `true` | JSON bool only |
+> | `settings.sfx_on` | bool | AudioDirector (`settings`) | Settings toggle | `true` | JSON bool only |
+> | `haptics.vibration_on` | bool | Haptics (`haptics`) | Settings toggle | `true` | JSON bool only |
+> | `tutorial.seen` | bool | GameFlow (`tutorial`) | last How to Play card or Skip | `false` | JSON bool only |
+> | `ui.install_hint_shown` | bool | GameFlow (`ui`) | one-time install hint shown (M7) | `false` | JSON bool only |
+> | `challenge.target` | int | GameFlow (`challenge`) | boot with a valid `?beat=`; cleared to 0 when beaten (M13) | 0 | integral, 0…1 000 000 |
+> | `stats.shifts_played` | int | PlayerStats (`stats`) | `match_ended(*)` | 0 | integral, 0…2 147 483 647 |
+> | `stats.cups_served` | int | PlayerStats (`stats`) | `match_ended(*)` (sum of the match's `served`) | 0 | same |
+> | `stats.days_filled` | int | PlayerStats (`stats`) | `Till.day_filled` | 0 | same |
+> | `stats.streak` | int | PlayerStats (`stats`) | `Till.day_filled` (M14 rule) | 0 | same |
+> | `stats.best_streak` | int | PlayerStats (`stats`) | `Till.day_filled` | 0 | same |
+> | `stats.streak_last_day` | int | PlayerStats (`stats`) | `Till.day_filled` | −1 | integral, −1…10 000 000 (day index) |
+> | `stats.recent` | string (JSON) | PlayerStats (`stats`) | `match_ended(*)` | `"[]"` | see below |
+>
+> - **One writer per prefix.** A scope is still one prefix with one owner. The UX spec's `settings.vibration_on` is therefore stored as **`haptics.vibration_on`**: `settings` already belongs to `AudioDirector`, and two writers on one prefix would break §1. The player-facing setting is unchanged; `game-flow.md` Data Requirements should be updated to this key name. `GameFlow` owns three prefixes (`tutorial`, `ui`, `challenge`) — allowed, since each prefix still has a single owner; `_compose()` hands it three scopes.
+> - **Settings screen writes through owners.** `GameFlow` never holds the `settings`/`haptics` scopes; it calls `AudioDirector.set_music_on()/set_sfx_on()` and `Haptics.set_enabled()`, which write their own keys. Audible rule: a channel plays only when `settings.muted == false` **and** its `*_on == true` (Music bus / SFX bus mute; Master mute keeps its meaning).
+> - **`stats.recent` is a JSON string inside the JSON blob.** `SaveScope` gains `declare_text(key, default: String, max_length: int)` — a free-form string (the existing `declare_string` takes an allow-list and does not fit). `stats.recent` is declared with `max_length = 1024`. `PlayerStats` owns the inner format and validates it on read: a JSON array of ≤ `recent_shifts_max` (FlowConfig, default 5) objects `{ "score": int ≥ 0, "coins": int ≥ 0, "new_record": bool }`, numbers checked finite and integral as in §3; anything else → `"[]"` for that key only, logged once. Newest first; appended on `match_ended(*)` and trimmed to the maximum.
+> - **Day index for the streak** (M14): `day_index = floor((utc_now − daily_reset_time_utc) / 86400)` using the injected `UtcClock` and `TillConfig.daily_reset_time_utc` — the same boundary as the till reset, so a "day" means the same thing to Till and PlayerStats. Device-clock manipulation is the accepted MVP risk already recorded for the till (TR-till-012).
+> - **Flush.** No new flush path: these writes happen in the tick (step 0/5 via signals) or from UI input between frames and are flushed at the next step 6 or on page hide. Settings toggled from the pause menu (clock paused) are flushed by step 6, which runs even when `dt == 0` (ADR-0003).
+> - **Validation (added):** v1 blob without any new key → all defaults, no rewrite until a real change; `stats.recent` corrupted (`"[{]"`, 6 entries, negative score, string score) → `"[]"` + one log, other keys kept; `challenge.target = 5_000_000` → 0; `haptics.vibration_on = 1` → `true` default + log; round-trip of every key through `MemoryBackend`.
+
 ### Architecture Diagram
 
 ```
@@ -117,6 +142,10 @@ func read_int(key: StringName) -> int                 # validated value or decla
 func write_int(key: StringName, value: int) -> void   # memory only; marks dirty
 func read_string(key: StringName) -> String
 func write_string(key: StringName, value: String) -> void
+func declare_bool(key: StringName, default: bool) -> void           # amendment 2026-09-30
+func read_bool(key: StringName) -> bool; func write_bool(key: StringName, value: bool) -> void
+func declare_text(key: StringName, default: String, max_length: int) -> void   # amendment 2026-10-01: free-form string (stats.recent)
+func read_text(key: StringName) -> String; func write_text(key: StringName, value: String) -> void
 
 class_name SaveBackend extends RefCounted             # WebStorageBackend | FileBackend | MemoryBackend
 func read_blob() -> String                            # "" when nothing stored

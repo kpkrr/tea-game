@@ -105,6 +105,21 @@ Barista `offer_action()` to a guest is answered synchronously inside step 3 and 
 > - Kitchen taps during a player pause are dropped by the existing `tap_picker.flush(dt > 0.0)` (ADR-0006 amendment). Tests: `MatchLifecycle` — pause ignored outside `RUNNING`; hide → show while user-paused stays paused; resume while hidden stays paused until show; `paused_changed` fires once per edge.
 > - **Audio consumers (revised 2026-09-30, ADR-0001 amendment):** `_compose()` also connects `match_ended` → `AudioDirector.on_match_ended()` (music low-pass ramp) and `match_started` → `AudioDirector.on_match_started()` (filter off, track restarts at 0), and injects `GameClock` into `AudioDirector`. The filter ramp is results-overlay timing, so it accumulates **`clock.ui_dt`** (runs while `frozen`, 0 while hidden) in `AudioDirector._process` at priority 0. It is never driven by a `Tween` or by raw `delta`. Music pause stays on `paused_changed` only; `frozen` does not pause music.
 
+> **Amendment 2026-10-01 — main menu, quitting a match, rotate overlay, new facts (`design/ux/game-flow.md`; authored autonomously, pending owner review).**
+> - **No auto-start.** `on_ready_reached()` moves `BOOTING → IDLE` (new state: no match yet, clock frozen, nothing steps) instead of starting the first match. The first and every later match start only through `request_new_match()` (queued, applied at step 0 as before). `State` becomes `{ BOOTING, IDLE, RUNNING, ENDED }`; `IDLE` is also where a quit lands.
+> - **`request_quit_match()`** — new command, called only by `GameFlow` (Pause → Main Menu → confirm "End shift"). Accepted only in `RUNNING` (the player is normally user-paused at that moment); otherwise ignored with one debug log. It is **queued** like `request_new_match()` and applied at step 0 of the next frame: clear `_user_paused`, `clock.freeze()`, emit `match_ended(&"quit")`, then `state = IDLE`. Step 0 runs every frame even while the clock is paused, so the quit is applied although no simulation step runs. If `on_guests_lost_reached()` and a quit land in the same frame, the guests-lost end wins (it is emitted inside step 5c, before the next step 0 sees the quit) and the queued quit is dropped because `state != RUNNING`.
+> - **`match_ended(reason: StringName)`** replaces the parameterless signal: `&"lost"` (Guest AI Rule 7) or `&"quit"`. Currency, Till and `PlayerStats` treat both reasons identically (score counts toward the record, the quit is a normal shift — owner-visible rule in game-flow.md States & Variants). Only presentation branches on it: `GameFlow` skips the results overlay on `&"quit"` and shows the main menu; `AudioDirector` skips the MatchEnd low-pass on `&"quit"`. Guest AI and Currency GDDs must name the new reason (GDD sync, outside this ADR).
+> - **Rotate overlay (M3).** `_compose()` connects `PlatformBridge.orientation_blocked_changed(true)` → `lifecycle.request_pause()` (existing command; ignored outside `RUNNING` or when already paused). `false` does **not** resume — same rule as tab return during a player pause. `GameFlow` shows the overlay in every state; only `RUNNING` gets the pause side effect.
+> - **New facts for presentation and meta** (typed signals, connected in `_compose()`, synchronous, no deferral):
+>   - `Currency.record_passed()` — emitted at most once per match, inside the Served chain, on the first `score_earned` after which `match_score > best_score_at_match_start`, and only if `best_score_at_match_start > 0` (M11). `best_score_at_match_start` is captured on `match_started`.
+>   - `Till.day_filled()` — emitted once on the Open → Full transition, inside the Served chain after `coins_added` (M2 banner, M14 streak).
+>   - `GuestSim.guests_lost_changed(count: int)` — on every walkout (M12 last-strike tension: HUD vignette + `AudioDirector` heartbeat layer when `count == max_guests_lost − 1`). The HUD keeps reading the count per frame (Core Rule 2); the signal exists for audio.
+>   - `served` is already public; `PlayerStats` counts cups from it.
+> - **Out-of-match UI time.** Menu, How to Play, Records, Settings-from-menu and the rotate overlay are not bound to game time: while `state ∈ {IDLE}` or before `ready_reached` they may animate on the frame `delta` and may use `Tween` (§6 bans them only for game-time effects). Anything shown **over a paused match** (Settings from pause, the "End shift?" confirm) stays static, because `ui_dt = 0` during a player pause (2026-09-30 amendment) and a raw-delta animation there would move while the match is frozen. The results overlay (M1 count-up, NEW RECORD stamp, "to beat" line, share/menu buttons) stays on `ui_dt`. In-match effects added by M2/M11/M12 (till-full banner 2 s, NEW BEST! popup 1.2 s, vignette pulse, heartbeat fade) accumulate `clock.ui_dt` when they must freeze with the page and the player pause — they are feedback, not simulation, so `ui_dt` (not `sim_dt`) is the correct clock; both are 0 while paused or hidden.
+> - **Wake lock.** `_compose()` calls `PlatformBridge.set_wake_lock(true)` on `match_started` and on `paused_changed(false)`, and `set_wake_lock(false)` on `paused_changed(true)` and `match_ended(*)` (M9). The shell handles re-acquiring after tab return.
+> - **Callers updated:** HUD writes `request_pause()`, `request_resume()`, `request_new_match()` (Play Again), `AudioDirector.set_muted()`; `GameFlow` writes `request_new_match()` (Play / Start shift), `request_quit_match()`, `request_resume()` (Resume from the pause menu), plus settings setters on `AudioDirector`/`Haptics`. Nothing else writes to `MatchLifecycle`.
+> - **Tests (added):** `ready_reached` → `IDLE`, no `match_started`; quit in `RUNNING` (user-paused) → one `match_ended(&"quit")` at next step 0, state `IDLE`; quit outside `RUNNING` ignored; quit + guests-lost same frame → one `match_ended(&"lost")`; `orientation_blocked_changed(true)` in `RUNNING` pauses, `false` keeps paused; `record_passed` fires once, never when best at start is 0, never on a tie; `day_filled` fires once per Open → Full.
+
 ### Architecture Diagram
 
 ```
@@ -143,12 +158,13 @@ func reset() -> void          # t = 0, frozen = false; hidden unchanged
 func is_running() -> bool     # not hidden and not frozen
 
 class_name MatchLifecycle extends RefCounted
-enum State { BOOTING, RUNNING, ENDED }
+enum State { BOOTING, IDLE, RUNNING, ENDED }   # IDLE: amendment 2026-10-01 (menu, after quit)
 signal match_started()
-signal match_ended()
+signal match_ended(reason: StringName)        # &"lost" | &"quit" (amendment 2026-10-01)
 var state: State              # read-only
-func request_new_match() -> void          # HUD command; queued, deduped
-func on_ready_reached() -> void           # first match
+func request_new_match() -> void          # HUD Play Again / GameFlow Play; queued, deduped
+func request_quit_match() -> void         # GameFlow only; queued, applied at step 0 (amendment 2026-10-01)
+func on_ready_reached() -> void           # BOOTING -> IDLE; no auto-start (amendment 2026-10-01)
 func on_visibility_changed(visible: bool) -> void
 func on_guests_lost_reached() -> void     # from GuestSim step 5c
 func apply_pending() -> void              # MatchDirector step 0 only
@@ -168,7 +184,7 @@ func step(dt: float) -> void              # dt > 0, already clamped; never reads
 - `PlatformBridge.visibility_changed` must be emitted synchronously from the JS callback and handled synchronously by `MatchLifecycle` (no `call_deferred`), so the page-hide save flush (ADR-0005) runs inside the browser event.
 - `MatchDirector._process` gains step 6 after the tick: `save_store.flush_if_dirty()` (ADR-0005); it runs even when `dt == 0`.
 - `TapPicker` must keep at most one pending press per frame (last wins) and drop it when `flush(false)`.
-- Presentation nodes must stay at `process_priority` ≥ 0 and must not write to logic modules (HUD's only write is `request_new_match()`).
+- Presentation nodes must stay at `process_priority` ≥ 0 and must not write to logic modules except through the commands listed in the amendments (HUD: `request_new_match()`, `request_pause()`, `request_resume()`; GameFlow: `request_new_match()`, `request_quit_match()`, `request_resume()` — amendment 2026-10-01).
 - No node may set `process_thread_group` (a separate process group breaks cross-tree `process_priority` ordering); ordering by `process_priority` covers `_process` only, not `SceneTree` tweens/timers.
 - Signals between `RefCounted` modules must connect plain method `Callable`s only — no lambdas and no `.bind()` holding a `RefCounted` (both keep strong references and leak cycles); injected references must point one way (downstream → collaborator), and `MatchDirector` must call `dispose()` (disconnect all, drop references) in `_exit_tree`. gdUnit4 orphan checks stay on.
 - "Read-only" fields in Key Interfaces (`t`, `sim_dt`, `ui_dt`, `state`) must be `_private` fields exposed by a getter (or a property whose setter rejects writes) — GDScript has no read-only vars.

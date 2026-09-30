@@ -2,7 +2,7 @@
 
 > **Status**: Draft
 > **Created**: 2026-09-27
-> **Last Updated**: 2026-09-29 (batch-fix — все 10 MVP-систем Approved)
+> **Last Updated**: 2026-10-01 (добавлена #18 Player Stats — MVP, Meta; экраны вне партии — `design/ux/game-flow.md` как часть HUD & Feedback UI)
 > **Source Concept**: design/gdd/game-concept.md
 
 ---
@@ -135,7 +135,20 @@ Monetization / IAP Integration.
 Currency: Coins & Score, Till & Day Cycle и Brewing & Crafting Mechanic —
 отображает состояние почти всего ядра.
 
-**Audio & Juice Feedback** *(inferred, Vertical Slice)* — Звуковой и
+**Player Stats** *(explicit, MVP — добавлено 2026-10-01)* — Локальная
+статистика игрока для экрана Records и меню: сыгранные смены, поданные
+чашки, дни с заполненной кассой, 5 последних смен, серия дней подряд с
+заполненной кассой и лучшая серия. Только пишет и читает свои счётчики
+(scope сохранения `stats`), ни на что в партии не влияет. Зависит от
+Guest AI & Patience (`match_ended`, Served), Currency (`match_score`,
+`is_new_record`) и Till & Day Cycle (`day_filled`, `day_index`).
+Решение `design/ux/game-flow.md` F5/M14; GDD `player-stats.md`.
+
+**Экраны вне партии (главное меню, How to Play, Settings, Records, пауза,
+итоги)** — не отдельная система: часть HUD & Feedback UI (Presentation),
+спек — `design/ux/game-flow.md` (2026-10-01).
+
+**Audio & Juice Feedback** *(inferred, MVP — перенесено из Vertical Slice 2026-10-01: продуктовому MVP нужен звук, `game-flow.md` требует звуки меню, стингеры, сердцебиение)* — Звуковой и
 тактильный фидбек: звон монет в кассе, пар, «успел!». Player Experience
 Analysis называет Sensation приоритетом 3, Technical Considerations —
 «Audio Needs: Moderate». Зависит от Brewing & Crafting Mechanic, Currency:
@@ -159,11 +172,12 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 | 10 | HUD & Feedback UI (inferred) | UI | MVP | Approved | design/gdd/hud-feedback-ui.md | Platform Integration (Telegram Mini App), Kitchen & Station Layout, Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic, Player Control / Barista Movement |
 | 11 | Backend & Persistence | Persistence | Vertical Slice | Not Started | — | Till & Day Cycle, Currency: Coins & Score |
 | 12 | Leaderboard & Leagues | Meta | Vertical Slice | Not Started | — | Backend & Persistence, Currency: Coins & Score |
-| 13 | Audio & Juice Feedback (inferred) | Audio | Vertical Slice | Not Started | — | Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle |
+| 13 | Audio & Juice Feedback (inferred) | Audio | MVP | Not Started | — | Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle |
 | 14 | Progression & Upgrades | Progression | Alpha | Not Started | — | Till & Day Cycle, Currency: Coins & Score, Player Control |
 | 15 | Monetization / IAP Integration | Economy | Alpha | Not Started | — | Progression & Upgrades |
 | 16 | Co-op / Multiplayer | Core | Full Vision | Not Started | — | Player Control, Kitchen & Station Layout, Guest AI & Patience, Backend & Persistence |
 | 17 | Token Integration | Economy | Full Vision | Not Started | — | Currency: Coins & Score, Backend & Persistence, Monetization / IAP Integration |
+| 18 | Player Stats | Meta | MVP | Designed (pending review) | design/gdd/player-stats.md | Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle |
 
 ---
 
@@ -176,9 +190,9 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 | **Progression** | How the player grows over time | Progression & Upgrades |
 | **Economy** | Resource creation and consumption | Currency: Coins & Score, Till & Day Cycle, Monetization / IAP, Token Integration |
 | **Persistence** | Save state and continuity | Backend & Persistence |
-| **UI** | Player-facing information displays | HUD & Feedback UI |
+| **UI** | Player-facing information displays | HUD & Feedback UI (включая экраны вне партии — `design/ux/game-flow.md`) |
 | **Audio** | Sound and music systems | Audio & Juice Feedback |
-| **Meta** | Systems outside the core game loop | Leaderboard & Leagues |
+| **Meta** | Systems outside the core game loop | Player Stats, Leaderboard & Leagues |
 
 **Narrative** removed — game-concept explicitly states "Сюжета нет
 (антистолп)".
@@ -223,16 +237,18 @@ Coins & Score и Till & Day Cycle (события, на которые реаг�
 9. **Monetization / IAP Integration** — depends on: Progression & Upgrades
 10. **Co-op / Multiplayer** — depends on: Player Control, Kitchen & Station Layout, Guest AI & Patience, Backend & Persistence
 11. **Token Integration** — depends on: Currency: Coins & Score, Backend & Persistence, Monetization / IAP Integration
+12. **Player Stats** — depends on: Guest AI & Patience (`match_ended`, Served), Currency: Coins & Score (`match_score`, `is_new_record`), Till & Day Cycle (`day_filled`, Formula 5 `day_index`) — добавлено 2026-10-01
 
 ### Presentation Layer (depends on features)
 
-1. **HUD & Feedback UI** — depends on: Platform Integration (safe area — добавлено при дизайне platform-integration), Kitchen & Station Layout (till anchor, свободные полосы экрана — добавлено при дизайне kitchen-station-layout), Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic, Player Control / Barista Movement (контур выбранной цели, кольцо точки назначения — обнаружено на design-review 2026-09-29, контракт уже существовал в player-control-barista-movement.md UI Requirements, но не был перенесён ни сюда, ни в hud-feedback-ui.md до этого прохода). *Обратная зависимость HUD → Guest AI & Patience: `request_new_match` по кнопке «Играть снова»; владелец старта партии — `guest-ai-patience.md` Rule 13 (закрыто 2026-09-29).*
+1. **HUD & Feedback UI** — depends on: Platform Integration (safe area — добавлено при дизайне platform-integration), Kitchen & Station Layout (till anchor, свободные полосы экрана — добавлено при дизайне kitchen-station-layout), Order & Recipe System, Guest AI & Patience, Currency: Coins & Score, Till & Day Cycle, Brewing & Crafting Mechanic, Player Control / Barista Movement (контур выбранной цели, кольцо точки назначения — обнаружено на design-review 2026-09-29, контракт уже существовал в player-control-barista-movement.md UI Requirements, но не был перенесён ни сюда, ни в hud-feedback-ui.md до этого прохода). *Обратная зависимость HUD → Guest AI & Patience: `request_new_match` по Play / Start shift (главное меню, GameFlow) и Play Again (итоги); владелец старта партии — `guest-ai-patience.md` Rule 13 (закрыто 2026-09-29).*
 2. **Audio & Juice Feedback** — depends on: Brewing & Crafting Mechanic, Currency: Coins & Score, Till & Day Cycle
 
 ### Polish Layer (depends on everything)
 
 Пусто на текущий момент. Онбординг встроен в Difficulty Curve & Session
-Pacing (первые ~30 секунд партии), отдельной Polish-системы не требуется.
+Pacing (первые ~15 секунд партии) плюс карточки How to Play (`game-flow.md` F4,
+часть HUD & Feedback UI), отдельной Polish-системы не требуется.
 
 ---
 
@@ -252,11 +268,12 @@ Pacing (первые ~30 секунд партии), отдельной Polish-�
 | 10 | HUD & Feedback UI | MVP | Presentation | ux-designer, ui-programmer | M |
 | 11 | Backend & Persistence | Vertical Slice | Feature | technical-director, security-engineer | L |
 | 12 | Leaderboard & Leagues | Vertical Slice | Feature | economy-designer, community-manager | M |
-| 13 | Audio & Juice Feedback | Vertical Slice | Presentation | audio-director, sound-designer | S |
+| 13 | Audio & Juice Feedback | MVP | Presentation | audio-director, sound-designer | S |
 | 14 | Progression & Upgrades | Alpha | Feature | economy-designer | M |
 | 15 | Monetization / IAP Integration | Alpha | Feature | economy-designer, technical-director | M |
 | 16 | Co-op / Multiplayer | Full Vision | Feature | network-programmer | L |
 | 17 | Token Integration | Full Vision | Feature | economy-designer, security-engineer | L |
+| 18 | Player Stats | MVP | Feature | systems-designer, ux-designer | S |
 
 ---
 
@@ -287,11 +304,11 @@ Pacing (первые ~30 секунд партии), отдельной Polish-�
 
 | Metric | Count |
 |--------|-------|
-| Total systems identified | 17 |
-| Design docs started | 10 |
+| Total systems identified | 18 |
+| Design docs started | 11 |
 | Design docs reviewed | 7 |
 | Design docs approved | 10 |
-| MVP systems designed | 10/10 |
+| MVP systems designed | 11/11 (Player Stats — pending review) |
 | Vertical Slice systems designed | 0/3 |
 
 ---

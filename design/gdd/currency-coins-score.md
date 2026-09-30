@@ -2,7 +2,7 @@
 
 > **Status**: Approved (batch-fix 2026-09-29: все находки `gdd-cross-review-2026-09-29b.md`/`-29c.md` закрыты, см. review-log)
 > **Author**: Yan + systems-designer, economy-designer, qa-lead
-> **Last Updated**: 2026-09-29
+> **Last Updated**: 2026-10-01 (синхронизация с `design/ux/game-flow.md`: событие `record_passed` — Core Rule 10, конец по `quit` засчитывается — Rule 7, AC 35–38)
 > **Last Verified**: 2026-09-28
 > **Implements Pillar**: Pillar 4 — Монеты за работу, очки за мастерство
 > **Creative Director Review (CD-GDD-ALIGN)**: пропущен — Lean mode
@@ -72,6 +72,11 @@ Tea Coin (заработок, накапливается в кассе) и Score
    (HUD Core Rule 13) — сам HUD сравнение не повторяет, т.к. к моменту
    рендера `best_score` уже обновлён. *(Исправлено 2026-09-29 batch-fix:
    S4 — раньше флага не было, и HUD не мог вычислить «новый рекорд».)*
+   Причина конца партии (`match_ended(reason)`, Guest AI Rule 9) на это
+   правило **не влияет**: при `quit` (выход из партии через паузу) счёт
+   засчитывается в рекорд так же, как при `lost`. Эксплойта нет — очки за
+   партию только растут, выход не может их увеличить. *(2026-10-01,
+   game-flow.)*
 8. `best_score` никогда не уменьшается и не сбрасывается ничем в этой
    GDD — ни новой партией, ни заполнением кассы (состояние Full), ни
    дневным сбросом кассы (это вне области Till & Day Cycle).
@@ -80,6 +85,18 @@ Tea Coin (заработок, накапливается в кассе) и Score
    Monetization или Token Integration не может превращать
    `coins_earned`/сумму в кассе в `score_earned`/`match_score` или
    наоборот (design test Pillar 4).
+10. **`record_passed` — рекорд побит прямо в партии** *(2026-10-01,
+    `design/ux/game-flow.md` M11, решение владельца)*. На `match_started`
+    система запоминает `best_at_start = best_score`. На Served, после
+    прибавления `score_earned`, если `record_passed_fired = false`,
+    `best_at_start > 0` и `match_score > best_at_start` — отправляется
+    событие `record_passed(match_score, best_at_start)` и флаг ставится
+    в `true`. Ровно один раз за партию; в первой партии жизни
+    (`best_at_start = 0`) не отправляется никогда — побивать нечего.
+    `best_score` при этом **не** меняется (он обновляется только на
+    `match_ended`, Rule 7). Флаг и `best_at_start` сбрасываются на
+    `match_started`. Слушатели — HUD (попап **NEW BEST!**, золотой
+    счёт) и Audio & Juice (стингер).
 
 ### States and Transitions
 
@@ -89,6 +106,7 @@ Tea Coin (заработок, накапливается в кассе) и Score
 | `match_score`: Accumulating | Первое событие Served | Сигнал `match_ended` | Увеличивается на `score_earned` при каждом Served |
 | `match_score`: Frozen | Сигнал `match_ended` | Старт следующей партии — сигнал `match_started` (Guest AI & Patience Rule 13), сброс в Idle | Значение зафиксировано; читается HUD/итогами партии |
 | `best_score`: Held | Всегда (хранится между партиями, локальное сохранение) | Никогда не выходит | При переходе `match_score` в Frozen сравнивается и при необходимости обновляется на месте |
+| `record_passed_fired` (bool) + `best_at_start` (int) | `match_started`: флаг `false`, `best_at_start = best_score` | Флаг `true` на первом Served, где `match_score > best_at_start > 0` (Rule 10) | Гарантирует однократность `record_passed`; не сохраняется |
 | `is_new_record` (bool) | `match_ended`: вычисляется как `match_score > best_score` до обновления `best_score` | `match_started` — сброс в `false` | Читается HUD на оверлее итогов (HUD Core Rule 13) |
 
 ### Interactions with Other Systems
@@ -98,7 +116,7 @@ Tea Coin (заработок, накапливается в кассе) и Score
 | Order & Recipe System | Upstream, Hard | `recipe_price(recipe_id)` — вход обеих формул (монет и очков) |
 | Guest AI & Patience | Upstream, Hard | Событие Served с `(recipe_id, remaining_fraction)` — единственный триггер расчёта; `match_ended` — заморозка `match_score` и сравнение с `best_score`; `match_started` (её Rule 13) — сброс `match_score` в Idle. Тот же контракт зафиксирован в Downstream Guest AI |
 | Till & Day Cycle | Downstream, Hard | Получает `coins_earned` на каждый Served; владеет суммой кассы и её вместимостью — эта система не знает, приняты монеты или отброшены |
-| HUD & Feedback UI | Downstream, Hard | Читает `match_score`, `best_score`, `score_earned` по каждому событию (счётчик и попап очков; попап монет HUD берёт из `coins_added` Till & Day Cycle); `is_new_record` на `match_ended` — для акцента нового рекорда (HUD Core Rule 13) |
+| HUD & Feedback UI | Downstream, Hard | Событие `record_passed` (Rule 10) — попап NEW BEST! в партии; читает `match_score`, `best_score`, `score_earned` по каждому событию (счётчик и попап очков; попап монет HUD берёт из `coins_added` Till & Day Cycle); `is_new_record` на `match_ended` — для акцента нового рекорда (HUD Core Rule 13) |
 | Audio & Juice Feedback | Downstream, Hard, Vertical Slice | Реагирует на выход события Served (звон монет из game-concept) |
 | Backend & Persistence | Downstream, Hard, Vertical Slice | Позже возьмёт на себя серверный учёт `best_score`/лидерборда; в MVP `best_score` — только в локальном сохранении, серверных вызовов из этой системы нет |
 | Leaderboard & Leagues | Downstream, Hard, Vertical Slice | Ранжирует игроков по `best_score`/`match_score` |
@@ -379,8 +397,10 @@ Mechanic / Player Control), не эта система.
 | `match_score` (текущий счёт партии) | Единственный постоянный числовой счётчик в полосе HUD, рядом — индикатор страйков (HUD Core Rule 10, `design/ux/hud.md` E1) | На каждое событие Served | Всегда во время партии (`Active`, `Paused`) |
 | `coins_added` за событие (фактический прирост кассы, не `coins_earned`) | Временный popup, летит от точки подачи к кассе; излишек — отскок без числа, при `coins_added = 0` числа нет (HUD Core Rule 11, `design/ux/hud.md` E12) | На событие Served | Одноразово, ~400 мс |
 | `score_earned` за событие | Временный popup, летит от точки подачи к счётчику `match_score`; отличается от монет цветом, иконкой и направлением | На событие Served | Одноразово, ~400 мс |
-| `best_score` (личный рекорд) | Оверлей итогов партии; стартовый экран «Начать смену» | При `match_ended`; при показе стартового экрана | На оверлее итогов и на стартовом экране (HUD Core Rule 19) *(Исправлено 2026-09-29 batch-fix: N5; 2026-10-01 — стартовый экран, решение владельца 2026-09-30)* |
+| `best_score` (личный рекорд) | Оверлей итогов партии; главное меню (строка статуса) | При `match_ended`; при показе меню | На оверлее итогов и в главном меню (`design/ux/game-flow.md`) *(Исправлено 2026-09-29 batch-fix: N5; 2026-10-01 — стартовый экран «Начать смену» заменён главным меню)* |
 | Индикатор нового рекорда | Оверлей итогов партии | Один раз при `match_ended` | Только если `is_new_record = true` |
+| Попап **NEW BEST!** в партии + золотой `match_score` до конца партии | Под плашкой счёта (`design/ux/game-flow.md` M11) | Один раз, на `record_passed` | Только если `best_at_start > 0` (Rule 10) |
+| `best_score` в меню и Records, `Best N · K to beat` на итогах | Главное меню, экран Records, итоги (`game-flow.md`, M1) | При показе экрана | Всегда; `K = best_score − match_score` при не-рекорде |
 
 *(Обновлено 2026-09-30 под `design/ux/hud.md`: попап монет летит к кассе,
 тикета-виджета нет; попап показывает `coins_added`, а не `coins_earned`.)*
@@ -477,6 +497,10 @@ Mechanic / Player Control), не эта система.
 
 **No hardcoded values**
 
+35. **GIVEN** `best_score = 1000` на старте партии, **WHEN** Served поднимает `match_score` с 980 до 1040, **THEN** `record_passed(1040, 1000)` отправлен ровно один раз; следующие Served в этой партии событие не отправляют; `best_score` остаётся 1000 до `match_ended` (Rule 10).
+36. **GIVEN** `best_score = 1000` и `match_score` становится ровно 1000, **WHEN** Served, **THEN** `record_passed` не отправлен (строго больше).
+37. **GIVEN** `best_score = 0` (первая партия), **WHEN** любые Served, **THEN** `record_passed` не отправляется; на `match_ended` `is_new_record = true` как обычно.
+38. **GIVEN** `match_ended(reason = quit)` при `match_score = 1500 > best_score = 1200`, **WHEN** событие обработано, **THEN** `is_new_record = true`, `best_score = 1500` сохранён — как при `lost` (Rule 7).
 34. **GIVEN** data-файл/ресурс с `score_multiplier_base`, **WHEN** просматривается код, реализующий Formula 1, **THEN** значение читается из data file по ключу, а не задано числовым литералом `10` внутри функции.
 
 ## Open Questions

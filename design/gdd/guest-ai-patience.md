@@ -2,7 +2,7 @@
 
 > **Status**: Approved (batch-fix 2026-09-29: все находки `gdd-cross-review-2026-09-29b.md`/`-29c.md` закрыты, см. review-log)
 > **Author**: Yan + ai-programmer, game-designer
-> **Last Updated**: 2026-10-01 (плейтест владельца: онбординг 30 → 15 с, `onboarding_factor` 0.5 → 1.0, baseline потока 7 → 15 — OQ #12)
+> **Last Updated**: 2026-10-01 (синхронизация с `design/ux/game-flow.md`: первая партия из главного меню, конец партии по выходу `quit` — Rule 9/13, AC 56–58; ранее — плейтест владельца: онбординг 30 → 15 с, `onboarding_factor` 0.5 → 1.0, baseline потока 7 → 15 — OQ #12)
 > **Last Verified**: 2026-09-28
 > **Implements Pillar**: Pillar 1 (Хаос за стойкой), Pillar 4 (Монеты за работу, очки за мастерство)
 > **Creative Director Review (CD-GDD-ALIGN)**: пропущен — Lean mode
@@ -111,6 +111,17 @@ Questions как «→ становится ADR», а не решаются зд
    раз (его получают Currency: Coins & Score, HUD и другие — вне этой
    GDD). Уже начатые анимации ухода (Served / Leaving) доигрываются.
    Замороженная партия ждёт запроса на новую (Rule 13).
+   **Причина конца** — поле сигнала `match_ended(reason)`:
+   - `lost` — `guests_lost` = `max_guests_lost` (как выше);
+   - `quit` — входящая команда `request_quit_match` (игрок в паузе выбрал
+     Main Menu → «End shift», `design/ux/game-flow.md` M-раздел Pause).
+     Принимается только в активной партии (в том числе стоящей на
+     пользовательской паузе); в любом другом состоянии игнорируется (одна
+     запись в debug-лог). Последствия те же, что у `lost`: заморозка в
+     том же тике, `match_ended` один раз, `guests_lost` **не** меняется.
+     Currency засчитывает счёт в рекорд так же, как при `lost`. Отличие
+     только в показе: HUD на `quit` не показывает итоги, а сразу уходит в
+     главное меню. *(Добавлено 2026-10-01, game-flow F1/[A].)*
    *(Till & Day Cycle исключена из получателей `/propagate-design-change`
    2026-09-29: после ревизии её Core Rule 4/5 переход Open → Full больше
    не зависит от `match_ended` — касса реагирует напрямую на событие
@@ -125,8 +136,12 @@ Questions как «→ становится ADR», а не решаются зд
 11. **Пауза**: эта система решает, когда игра стоит на паузе (закрывает
     Open Question #3 в `platform-integration-telegram-mini-app.md`: при
     уходе в фон партия ставится на паузу, а не теряется). В MVP
-    триггер один: сигнал Platform Integration об уходе приложения в фон.
-    Кнопки паузы нет. **Единое игровое время** (решение 2026-09-29):
+    триггеры: сигнал Platform Integration об уходе приложения в фон,
+    пользовательская пауза (кнопка паузы HUD / Escape, `hud.md` E3) и
+    поворот телефона в ландшафт (`game-flow.md` M3 — выставляет ту же
+    пользовательскую паузу). *(2026-10-01: было «триггер один, кнопки
+    паузы нет»; кнопка паузы добавлена решением владельца 2026-09-30,
+    механика — ADR-0003 amended.)* **Единое игровое время** (решение 2026-09-29):
     все таймеры партии идут от одного игрового времени, которое эта
     система ставит на паузу, — единственный источник паузы в проекте.
     Другие системы не слушают сигнал Platform напрямую, а подчиняются
@@ -157,8 +172,11 @@ Questions как «→ становится ADR», а не решаются зд
     циклом партии — и `match_ended` (Rule 9), и её началом. Партия
     стартует в двух случаях:
     - **первая партия запуска** — по входящему запросу `request_new_match`,
-      который шлёт HUD при нажатии «Начать смену» на стартовом экране
-      (`hud-feedback-ui.md` Core Rule 19). Запрос принимается, только когда
+      который шлёт UI при нажатии **Play** в главном меню (или **Start
+      shift** на последней карточке How to Play при первом запуске) —
+      `design/ux/game-flow.md` F1/F4. *(2026-10-01: стартовый экран
+      «Начать смену» (`hud-feedback-ui.md` Core Rule 19) заменён главным
+      меню.)* Запрос принимается, только когда
       Platform Integration в состоянии `Ready` **и** сцена кухни
       загружена; раньше — игнорируется (без ошибки, одна запись в
       debug-лог). Автостарта нет: пока игрок не нажал, гостей нет, `t` не
@@ -169,7 +187,9 @@ Questions как «→ становится ADR», а не решаются зд
       batch-fix, N1). Нажатие — ещё и первый жест, разблокирующий звук
       браузера.)*;
     - **следующая партия** — по тому же `request_new_match`,
-      который шлёт HUD при тапе «Играть снова» на оверлее итогов.
+      который шлёт HUD при тапе **Play Again** на оверлее итогов, или UI —
+      при **Play** в главном меню после выхода из партии (`quit`) или
+      кнопки **Menu** на итогах.
       Запрос принимается только до первой партии (условия выше) или после
       `match_ended`; во время активной
       партии он игнорируется (без ошибки, одна запись в debug-лог).
@@ -213,7 +233,7 @@ Approaching → Waiting, терпение и спавн стоят. Старт �
 | Currency: Coins & Score | Guest AI → Currency | На каждое событие Served: `(recipe_id, remaining_fraction)` — Currency считает монеты (`coins_earned = recipe_price`) и очки (`score_earned`). Контракт подтверждён Currency: Coins & Score (Core Rule 1, Formula 1/2) без изменений 2026-09-28. `match_ended` (Rule 9) — заморозка `match_score`; `match_started` (Rule 13) — сброс `match_score` в Idle |
 | Till & Day Cycle | Guest AI → Till | Только `match_started` (Rule 13) — граница «между партиями», на которой Till проверяет пересечение `daily_reset_time_utc`. `match_ended` Till не получает (исключена 2026-09-29) |
 | Difficulty Curve & Session Pacing | двунаправленно | Эта система выставляет три параметра как точки расширения: `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)`. Их реализует Difficulty Curve (Formula 2–4 там, ease-in по общему `difficulty_progress(t)`, 180 с); значения при t = 0 совпадают с baseline этой GDD (15 / 50 / 0; поток: 8 → 7 `/balance-check` 2026-09-29, Difficulty Curve OQ #7; 7 → 15 плейтест 2026-10-01, Difficulty Curve OQ #8) |
-| HUD & Feedback UI | двунаправленно | Guest AI → HUD: на каждого активного гостя — `recipe_id` (жетон заказа), `remaining_fraction` (кольцо терпения), состояние (Approaching/Waiting/Leaving/Served); жетон и кольцо показываются уже в Approaching (Rule 4). На партию: `guests_lost`, `match_ended`, `match_started`. HUD → Guest AI: `request_new_match` по тапу «Играть снова» (Rule 13) |
+| HUD & Feedback UI | двунаправленно | Guest AI → HUD: на каждого активного гостя — `recipe_id` (жетон заказа), `remaining_fraction` (кольцо терпения), состояние (Approaching/Waiting/Leaving/Served); жетон и кольцо показываются уже в Approaching (Rule 4). На партию: `guests_lost`, `match_ended`, `match_started`. GameFlow/HUD → Guest AI: `request_new_match` по Play / Start shift (главное меню, How to Play) и Play Again (итоги); `request_quit_match` по End shift (пауза) (Rule 13, `game-flow.md`, синхр. 2026-10-01) |
 | Co-op / Multiplayer *(Full Vision)* | — | Не в MVP; модель "один бариста — общая очередь" потребует пересмотра при добавлении второго игрока |
 
 Имена контрактов — описание, не API; реализация — в ADR.
@@ -461,6 +481,15 @@ Difficulty Curve OQ #8. *(История: baseline 8 → 7 `/balance-check`
   текущем значении (Rule 9) — он не засчитывается ни как Served, ни как
   потерянный. При старте следующей партии такие «зависшие» гости
   удаляются без событий Served/Leaving (Rule 13).
+- **Если игрок выходит в меню посреди партии** (`request_quit_match`):
+  партия заканчивается с `reason = quit` (Rule 9) — те же заморозка и
+  `match_ended`; гости остаются замороженными под меню и удаляются при
+  следующем старте (Rule 13). Команда в тике, где уже случился
+  `match_ended(lost)`, игнорируется — побеждает `lost` (одна запись в
+  debug-лог).
+- **Если `request_quit_match` приходит вне активной партии** (итоги, меню,
+  двойной тап «End shift»): игнорируется, второй `match_ended` не
+  отправляется.
 - **Если `request_new_match` приходит во время активной партии**
   (двойной тап, гонка ввода): запрос игнорируется, партия продолжается,
   одна запись в debug-лог (Rule 13).
@@ -502,8 +531,8 @@ Difficulty Curve OQ #8. *(История: baseline 8 → 7 `/balance-check`
 | Kitchen & Station Layout | Hard | Точка появления гостей + ровно 4 точки ожидания в очереди у прилавка со стабильными ID и точка выхода (NavMesh-координаты) |
 | Order & Recipe System | Hard | `recipes_by_tier(tier)` — список `recipe_id` по уровню сложности, для назначения заказа гостю (Formula 3) |
 | Player Control / Barista Movement | Hard | Контракт допустимости тапа по гостю (да/нет по Rule 4/8) и «выполнить» в Holding (доставка чашки); в обратную сторону — сигнал «цель исчезла», когда гость уходит, пока бариста идёт к нему |
-| Platform Integration (Telegram Mini App) | Hard | Состояние `Ready` — вместе с загрузкой сцены кухни условие, при котором принимается запрос первой партии (Rule 13; без него первая партия не стартует; сам старт — по «Начать смену», с 2026-10-01). Сигнал ухода приложения в фон — триггер паузы (Rule 11; без него партия просто не встаёт на паузу при сворачивании). *(Soft → Hard 2026-09-29 batch-fix, N1)* |
-| HUD & Feedback UI | Hard | `request_new_match` — единственный триггер каждой партии: первой — по «Начать смену» на стартовом экране, следующих — по «Играть снова» (Rule 13). *(Добавлено 2026-09-29 batch-fix, N4; первая партия — 2026-10-01, решение владельца 2026-09-30)* |
+| Platform Integration (Telegram Mini App) | Hard | Состояние `Ready` — вместе с загрузкой сцены кухни условие, при котором принимается запрос первой партии (Rule 13; без него первая партия не стартует; сам старт — по Play / Start shift в главном меню, с 2026-10-01). Сигнал ухода приложения в фон — триггер паузы (Rule 11; без него партия просто не встаёт на паузу при сворачивании). *(Soft → Hard 2026-09-29 batch-fix, N1)* |
+| HUD & Feedback UI | Hard | `request_new_match` — единственный триггер каждой партии: первой — по **Play** в главном меню / **Start shift** в How to Play (`design/ux/game-flow.md`), следующих — по **Play Again** или снова Play из меню (Rule 13); `request_quit_match` — выход из партии из паузы (Rule 9, `quit`). *(Добавлено 2026-09-29 batch-fix, N4; первая партия — 2026-10-01, решение владельца 2026-09-30)* |
 | Brewing & Crafting Mechanic | Hard | Владеет чашкой в руках: `held_cup.steps` для проверки допустимости через `matches()` (Rule 5); `consume_held_cup()`, который эта система вызывает при подаче |
 
 **Downstream (зависят от этой системы):**
@@ -548,8 +577,8 @@ Difficulty Curve OQ #8. *(История: baseline 8 → 7 `/balance-check`
   (`request_new_match`) — сходится (пропагировано 2026-09-29).
 - Platform Integration перечисляет эту систему в Downstream с `Ready` как
   триггером первой партии (2026-09-29 batch-fix, N1) — **расходится с
-  2026-10-01**: `Ready` теперь условие, а триггер — «Начать смену» (Rule
-  13); формулировку Platform нужно поправить.
+  2026-10-01**: `Ready` теперь условие, а триггер — Play / Start shift в главном меню
+  (Rule 13); Platform поправлена 2026-10-01 (/consistency-check).
 - **Требуют отражения новых контрактов 2026-09-29** (Rule 11, 13):
   Currency (`match_started` как старт следующей партии в States), Brewing
   (Edge Case «Начало новой партии» — источник `match_started`; `t_brew`
@@ -684,7 +713,7 @@ Rule 11) — тоже не баланс-ручка, а техническая з
 | `guests_lost` (0–3) и `max_guests_lost` (= 3) | Rule 6/7 | Счётчик «жизней» партии — HUD рисует 3 иконки-страйка в экранной полосе рядом с `match_score` (HUD Core Rule 10, решено 2026-09-29 batch-fix, D9) |
 | `match_ended` (bool) | Rule 9 | Сигнал закончить показ HUD партии |
 | `match_started` (событие) | Rule 13 | `MatchEnd` → `Active`, сброс HUD партии |
-| Вход: `request_new_match` | Rule 13 | HUD шлёт по тапу «Играть снова»; во время партии игнорируется |
+| Вход: `request_new_match` | Rule 13 | GameFlow шлёт по Play / Start shift (меню) и Play Again (итоги); во время партии игнорируется |
 
 📌 **UX Flag — Guest AI & Patience**: этот контракт напрямую определяет,
 что HUD & Feedback UI должна уметь отрисовать (до 4 одновременных
@@ -1002,7 +1031,7 @@ Integration — в `tests/integration/guest_ai/`.
     отправлен, в debug-логе одна запись. **AND GIVEN** Platform в `Ready`
     и кухня загружена, **WHEN** 1000 шагов проходят без запроса, **THEN**
     гостей нет, `t` = 0, `match_started` не отправлен (автостарта нет);
-    **WHEN** приходит `request_new_match` (нажатие «Начать смену»),
+    **WHEN** приходит `request_new_match` (нажатие Play / Start shift в главном меню),
     **THEN** в этом же шаге `match_started` отправлен ровно один раз,
     после него — спавн первого гостя при t = 0 (AC 6); второй запрос в
     том же шаге игнорируется. *(Переписано 2026-10-01 — было: автостарт на
@@ -1034,6 +1063,20 @@ Integration — в `tests/integration/guest_ai/`.
     один раз; второй запрос обрабатывается уже как «во время активной
     партии» (игнор + одна запись в debug-лог, AC 52). *(Добавлено
     2026-09-29 batch-fix.)*
+
+56. **[Logic]** **GIVEN** активная партия (в том числе на
+    пользовательской паузе), `guests_lost` = 1, **WHEN** приходит
+    `request_quit_match`, **THEN** в этом тике система замораживается,
+    `match_ended(reason = quit)` отправлен ровно один раз, `guests_lost`
+    остаётся 1. *(Добавлено 2026-10-01, game-flow.)*
+57. **[Logic]** **GIVEN** `match_ended` уже отправлен (любая причина) или
+    партия ещё не стартовала, **WHEN** приходит `request_quit_match`,
+    **THEN** ничего не меняется, второго `match_ended` нет, одна запись в
+    debug-лог. **AND GIVEN** в одном тике третий уход и
+    `request_quit_match`, **THEN** один `match_ended(reason = lost)`.
+58. **[Logic]** **GIVEN** партия закончилась с `quit`, **WHEN** приходит
+    `request_new_match` (Play в меню), **THEN** старт по Rule 13 как после
+    `lost`: замороженные гости удалены, `match_started` один раз.
 
 ## Open Questions
 

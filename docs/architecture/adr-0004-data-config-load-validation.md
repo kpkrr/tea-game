@@ -97,6 +97,25 @@ Boot step 3:  ConfigLoader.load("res://assets/data/config/game_config.tres")
 > - **`ViewConfig.hud_min_strip_dp: int = -1`**, default 56 (ADR-0002 amendment). Validator: `1 ≤ x ≤ 160` (`range`), and `hud.hud_row_height_dp ≤ view.hud_min_strip_dp` (`invariant`) if `HudConfig` carries that field.
 > - Both ship with their validator rules in the same change (Implementation Guidelines).
 
+> **Amendment 2026-10-01 — game-flow knobs (`design/ux/game-flow.md` M1–M14; authored autonomously, pending owner review).** Values the UX spec marks as tunable become data, following the existing sentinel-default + validator rule (every field ships with its validator rule in the same change).
+> - **New `FlowConfig`** (`assets/data/config/flow.tres`, `GameConfig.flow`), injected into `GameFlow` and `PlayerStats`:
+>   | Field | Default | Validator |
+>   |---|---|---|
+>   | `feedback_url: String` | `""` (row hidden while empty — M10; the address is an open owner decision) | empty, or starts with `https://` (`format`) |
+>   | `game_url: String` | `""` (share card, `?beat=` link, PWA — the domain is an open owner decision) | empty, or `https://` (`format`); Share button hidden while empty |
+>   | `challenge_max: int` | 1 000 000 | `1 ≤ x ≤ 2 147 483 647` (`range`); ADR-0005 clamps `challenge.target` to the same bound |
+>   | `recent_shifts_max: int` | 5 | `1 ≤ x ≤ 20` (`range`) |
+>   | `install_hint_after_shifts: int` | 3 | `1 ≤ x ≤ 50` (`range`) |
+>   | `results_count_up_s: float` | 0.8 | `0 ≤ x ≤ 3` (`range`; 0 = no count-up) |
+>   | `share_card_size: Vector2i` | (1080, 1350) | both `256 ≤ x ≤ 2048` (`range`) |
+>   | `menu_fade_s: float` | 0.2 | `0 ≤ x ≤ 1` |
+>   | `match_fade_s: float` | 0.3 | `0 ≤ x ≤ 1` |
+>   | `how_to_play_cards: int` | 3 | `1 ≤ x ≤ 6` (content lives in the scene; the count is checked against it at boot, `invariant`) |
+> - **`HudConfig` additions** (in-match moments): `till_full_banner_s` 2.0 (`0.5…5`), `new_best_popup_s` 1.2 (`0.3…3`), `last_strike_vignette_alpha_min` 0.25 / `_max` 0.35 (`0 ≤ min ≤ max ≤ 0.6`, `invariant`), `last_strike_pulse_hz` 1.0 (`0…3`; 0 = static), `last_strike_edge_fraction` 0.12 (`0.05…0.25`), `vibrate_till_full_ms` 40 and `vibrate_new_best_ms` 30 (`0…200`; 0 = no vibration for that event).
+> - **`AudioConfig` addition:** `heartbeat_fade_in_s` 0.4 (`0…3`).
+> - **Not config:** the loading tips (M5) are shown by the HTML shell before the engine and `ConfigLoader` exist, so they live in the shell (ADR-0001 amendment 2026-10-01), not in a `Resource`. How to Play / About / menu strings are UI text, keyed through `tr()` (English only), not tuning data.
+> - A missing `flow.tres` or an invalid field fails boot exactly like any other sub-resource (`fail_boot`, all errors listed).
+
 ### Key Interfaces
 
 ```gdscript
@@ -112,6 +131,7 @@ class_name GameConfig extends Resource
 @export var till: TillConfig
 @export var hud: HudConfig
 @export var audio: AudioConfig          # amendment 2026-09-30 (ADR-0001 music low-pass)
+@export var flow: FlowConfig            # amendment 2026-10-01 (game-flow: menu, results, share, challenge, stats)
 
 class_name RecipeDef extends Resource
 @export var recipe_id: StringName = &""

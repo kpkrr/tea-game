@@ -25,7 +25,7 @@
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
 version: 2
-last_updated: "2026-09-30"
+last_updated: "2026-10-01"
 
 # Seeded 2026-09-30 by /architecture-review from architecture.md Appendix A (164 IDs).
 # `deferred:` marks requirements parked by a scope decision — still active IDs, not deprecated.
@@ -1402,6 +1402,224 @@ requirements:
     domain: "UI"
     created: 2026-09-30
     revised: 2026-09-30
+    status: active
+
+# Added 2026-10-01 from design/ux/game-flow.md (UX spec, not a GDD — `gdd:` points at the spec).
+  - id: TR-flow-001
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Главное меню (Play / Records / Settings / How to Play) вместо стартового экрана E18; `ready_reached` → меню, без автостарта партии (F1)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-002
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Из меню до партии — 1 тап, если `tutorial.seen`"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-003
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "How to Play: 3 карточки автоматически перед первой сменой, дальше из меню; `tutorial.seen` сохраняется (F4)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-004
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Settings: Music / Sound effects / Vibration, применяются сразу, сохраняются; доступны из меню и из паузы; из паузы пауза не снимается (F2)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-005
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Строки Vibration нет, если `navigator.vibrate` не поддерживается"
+    domain: "Platform-Web"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-006
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Весь текст игры — только английский, строки через `tr()`-ключи; выбора языка нет (F3)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-007
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Records: рекорд, до 5 последних смен, счётчики, серия; пустое состояние (F5)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-008
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Пауза: Resume / Settings / Main Menu; Main Menu → подтверждение; выход = `match_ended(quit)`, очки засчитываются, итоги пропускаются"
+    domain: "Core"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-009
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Строка статуса в меню: Till A / C и Best; при Full — время до нового дня"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-010
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Кнопки меню срабатывают по release; Escape = назад; кнопка «назад» браузера не перехватывается"
+    domain: "Input"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-011
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Меню показывает «Progress can't be saved», если `SaveStore.persistent = false`"
+    domain: "Persistence"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-012
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Итоги (M1): порядок строк, накрутка счёта ≤ 0,8 с с пропуском по тапу, «N to beat», Play Again / Share / Menu с grace"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-013
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Плашка «Till full!» (M2): 2 с, звон, вибрация, не останавливает партию и не ловит тапы (F9)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-014
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Тач-устройство в ландшафте → оверлей «Rotate your phone» + пользовательская пауза; обратный поворот паузу не снимает; на ПК оверлея нет (F6)"
+    domain: "Platform-Web"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-015
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Адресная строка не обрабатывается; «кухня ≥ 95 %» — от видимого вьюпорта (F7)"
+    domain: "Platform-Web"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-016
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Экран загрузки: логотип, прогресс, одна случайная подсказка (в HTML-оболочке)"
+    domain: "Platform-Web"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-017
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "About: версия сборки, авторы, лицензии (включая Godot MIT)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-018
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "PWA: установка, строка Install app, одноразовая подсказка после 3-й смены, инструкция на iOS, скрыто в standalone; обновление — при следующем запуске"
+    domain: "Platform-Web"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-019
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Шаринг: PNG-карточка 1080×1350, рендер на `match_ended`, Web Share с файлом; фолбэк — скачать PNG + текст в буфер (F8)"
+    domain: "Platform-Web"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-020
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Wake lock только во время идущей партии"
+    domain: "Platform-Web"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-021
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Send feedback открывает `feedback_url` в новой вкладке; пустой конфиг — строки нет (M10)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-022
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "NEW BEST! в партии: один раз, только при рекорде на старте > 0, по `Currency.record_passed` (M11)"
+    domain: "Core"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-023
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Последний страйк: виньетка + сердцебиение при `guests_lost == max − 1`, замирают на паузе, reduced motion — без пульса (M12)"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-024
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Вызов `?beat=N`: валидация, сохранение, удаление параметра из адреса, строка в меню, итог на экране результатов, сброс при выполнении (M13)"
+    domain: "Platform-Web"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-025
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Серия дней: `day_index` по `daily_reset_time_utc`, рост на Open→Full, сгоревшая серия показывается 0 (M14)"
+    domain: "Persistence"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-026
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Reduced motion: все переходы потока мгновенные"
+    domain: "UI"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-flow-027
+    system: flow
+    gdd: design/ux/game-flow.md
+    requirement: "Новые ключи SaveStore аддитивны, `schema_version` = 1; `stats.recent` — валидируемая JSON-строка"
+    domain: "Persistence"
+    created: 2026-10-01
+    revised: ""
     status: active
 
 # --- EXAMPLE ENTRIES (remove when first real entries are added) ---
