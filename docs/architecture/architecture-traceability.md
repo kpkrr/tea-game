@@ -3,7 +3,7 @@ Last Updated: 2026-10-01
 Engine: Godot 4.7.2
 
 ## Coverage Summary
-- Total requirements: 219 in `tr-registry.yaml` (+13 TR-audio on 2026-10-01, audio GDD + ADR-0001/0007 audio amendments); before that 206 (+8 TR-art on 2026-10-01, art bible + ADR-0002/0007 amendments); previously 198 (164 at the 2026-09-30 review + TR-hud-023…029 added the same day + 27 TR-flow on 2026-10-01); matrix rows for TR-hud-023…029 were missing and are added below
+- Total requirements: 222 in `tr-registry.yaml` (+3 TR-art-009…011 on 2026-10-01, diorama camera amendments of ADR-0002/0006/0007; TR-layout-011, -016, TR-art-001, -002, -007, -008 reworded); before that 219 (+13 TR-audio on 2026-10-01, audio GDD + ADR-0001/0007 audio amendments); before that 206 (+8 TR-art on 2026-10-01, art bible + ADR-0002/0007 amendments); previously 198 (164 at the 2026-09-30 review + TR-hud-023…029 added the same day + 27 TR-flow on 2026-10-01); matrix rows for TR-hud-023…029 were missing and are added below
 - 2026-10-01: TR-flow-001…027 (`design/ux/game-flow.md`) covered by the 2026-10-01 amendments of ADR-0001/0003/0004/0005/0006 — amendments authored autonomously, pending owner review; 26 🟡, 1 routed (TR-flow-006, `tr()` convention)
 - Covered by Accepted ADR: 0
 - Covered by Proposed ADR (🟡): 145 (91% of active) — all seven ADRs Accepted 2026-09-30; counts are as of the review
@@ -42,12 +42,12 @@ Engine: Godot 4.7.2
 | TR-layout-008 | Kitchen Layout | Путь из till-anchor до каждого слота и станции существует, изолированных карманов нет | ADR-0006 | 🟡 |
 | TR-layout-009 | Kitchen Layout | `station_types` точно совпадает с расставленными станциями | ADR-0004 | 🟡 |
 | TR-layout-010 | Kitchen Layout | Кухня заполняет ≥ 0,95 playfield при любом `safe_aspect` ∈ [0,45; 1,0], равномерный масш… | ADR-0002 | 🟡 |
-| TR-layout-011 | Kitchen Layout | Камера фиксирована, zoom/ortho-size пересчитывается от `safe_aspect` | ADR-0002 | 🟡 |
+| TR-layout-011 | Kitchen Layout | Камера фиксирована — перспективная диорама (FOV 30°, pitch 52°); от `safe_aspect` пересчитываются дистанция и h/v_offset (rev. 2026-10-01) | ADR-0002 (поправка 2026-10-01 diorama) | 🟡 |
 | TR-layout-012 | Kitchen Layout | Зазор у точек взаимодействия ≥ `agent_radius` = 0,40 м | ADR-0006 | 🟡 |
 | TR-layout-013 | Kitchen Layout | Формы станций и столешницы не пересекаются | ADR-0006, ADR-0004 | 🟡 |
 | TR-layout-014 | Kitchen Layout | Минимальная зона тапа 48×48 dp на эталоне 360×640 dp | ADR-0002, ADR-0006 | 🟡 |
 | TR-layout-015 | Kitchen Layout | `playfield_min_fill` = 0,95, `min_tap_target` = 48 dp — данные из реестра | ADR-0004 | 🟡 |
-| TR-layout-016 | Kitchen Layout | Статика окружения — 3D-меши с запечённым в vertex colors светом и AO (unshaded); без шейдерных анимаций окружения и параллакса; единственный реальный свет — DirectionalLight3D для теней динамики (ADR-0002 amendment 2026-10-01); статичное свечение till-anchor | ADR-0002 | 🟡 |
+| TR-layout-016 | Kitchen Layout | Статика кухни — рисованные текстуры-атласы × запечённый свет/AO; без шейдерных анимаций внутри `frame_bounds`; 1 DirectionalLight3D (rev. 2026-10-01) | ADR-0002 (поправки 2026-10-01) | 🟡 |
 | TR-layout-017 | Kitchen Layout | Для гостей: 1 точка спавна, 4 точки очереди со стабильными ID, 1 выход — все на навигаци… | ADR-0006 | 🟡 |
 | TR-control-001 | Player Control | Выбор тапа: ближайшая точка в `tap_pick_radius` → иначе луч/проверка точки → иначе no-op | ADR-0006 | 🟡 |
 | TR-control-002 | Player Control | Тап вне навигационной области → ближайшая достижимая точка XZ | ADR-0006 | 🟡 |
@@ -212,14 +212,17 @@ Engine: Godot 4.7.2
 | TR-flow-025 | Game Flow | Серия дней: `day_index` по `daily_reset_time_utc`, рост на Open→Full, сгоревшая серия по… | ADR-0005 | 🟡 |
 | TR-flow-026 | Game Flow | Reduced motion: все переходы потока мгновенные | ADR-0001 | 🟡 |
 | TR-flow-027 | Game Flow | Новые ключи SaveStore аддитивны, `schema_version` = 1; `stats.recent` — валидируемая JSO… | ADR-0005 | 🟡 |
-| TR-art-001 | Art Direction | Презентация: 3D-окружение из простых мешей, свет и AO запечены в vertex colors (unshaded… | ADR-0002 (поправка 2026-10-01) | 🟡 |
-| TR-art-002 | Art Direction | Один DirectionalLight3D; тени отбрасывают только динамические объекты через shadow-only … | ADR-0002, ADR-0007 (поправка 2026-10-01) | 🟡 |
+| TR-art-001 | Art Direction | 3D-окружение с рисованными атласами × vertex-color свет/AO (unshaded); кухня ≤ 5 мешей, декорации ≤ 6 (rev. 2026-10-01) | ADR-0002, ADR-0007 (поправки 2026-10-01) | 🟡 |
+| TR-art-002 | Art Direction | Один DirectionalLight3D, тени от прокси динамики; runtime DOF запрещён, tilt-shift — запечённый / High после S5 (rev. 2026-10-01) | ADR-0002, ADR-0007 (поправки 2026-10-01) | 🟡 |
 | TR-art-003 | Art Direction | Спрайты персонажей и предметов — кастомный toon spatial-шейдер (unshaded база × тонировк… | ADR-0002 (поправка 2026-10-01) | 🟡 |
 | TR-art-004 | Art Direction | Мировые оверлеи (жетоны, кольца, цены, контур цели, кольцо назначения) исключены из тума… | ADR-0002 (поправка 2026-10-01) | 🟡 |
 | TR-art-005 | Art Direction | Blob-тени под персонажами, чашками и кассой на всех тирах; реальные тени Mid/High поверх… | ADR-0002 (поправка 2026-10-01) | 🟡 |
 | TR-art-006 | Art Direction | Уровни качества Low/Mid/High выбираются статически при загрузке + ручной переключатель; … | ADR-0007 (поправка 2026-10-01) | 🟡 |
-| TR-art-007 | Art Direction | Бюджеты «качество важнее мегабайт»: `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, texture memory … | ADR-0007 (поправка 2026-10-01) | 🟡 |
-| TR-art-008 | Art Direction | Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color м… | ADR-0007 (поправка 2026-10-01) | 🟡 |
+| TR-art-007 | Art Direction | Бюджеты: `.pck` ≤ 22,0 МБ, загрузка ≤ 32,5 МБ, текстуры ≤ 192/144 МБ, census ≤ 115, draw calls 140/200 (rev. 2026-10-01) | ADR-0007 (таблица текущих бюджетов) | 🟡 |
+| TR-art-008 | Art Direction | Pre-warm: toon, shadow-caster, текстурный env, декорации, VFX, fog; ≤ 1,0 с (rev. 2026-10-01) | ADR-0007 (поправка 2026-10-01 diorama) | 🟡 |
+| TR-art-009 | Art Direction | Перспективная камера-диорама, stretch `1/cos α` на спрайт, минимальный экранный размер оверлеев в дальней точке | ADR-0002 (поправка 2026-10-01 diorama), ADR-0006 | 🟡 |
+| TR-art-010 | Art Direction | VFX-пуфы: пул ≤ 12, ниже полос оверлеев — не перекрывают жетоны | ADR-0007 (поправка 2026-10-01 diorama) | 🟡 |
+| TR-art-011 | Art Direction | Декорации вокруг кухни в letterbox, вне `frame_bounds`, только Mid/High | ADR-0002, ADR-0007 (поправки 2026-10-01 diorama) | 🟡 |
 | TR-audio-001 | Audio & Juice | Музыка партии — 4 stems (120 BPM, F major, 96,0 с) в одном AudioStreamSynchronized, Stre… | ADR-0001, ADR-0007 (поправка 2026-10-01) | 🟡 |
 | TR-audio-002 | Audio & Juice | Переход слоя квантуется к ближайшему такту и нарастает stem_fade_bars (2) такта; огибающ… | ADR-0001, ADR-0003 (поправка 2026-10-01) | 🟡 |
 | TR-audio-003 | Audio & Juice | Отдельный трек меню (Stream), с начала на каждый заход, fade-in 1 с; меню→партия 0,6 с, … | ADR-0001 (поправка 2026-10-01) | 🟡 |
@@ -238,4 +241,4 @@ Engine: Godot 4.7.2
 None. Partial items and UX-routed items: see `architecture-review-2026-09-30.md`.
 
 ## Superseded Requirements
-Reworded 2026-09-30 after ADR-0006 GDD sync (same intent, IDs unchanged): TR-control-001 (pick anchors, physics-free picking), TR-control-007 and TR-layout-012 (clearance tolerance −0.05 m), TR-layout-013 (footprints instead of collision shapes). Deferred with Telegram: TR-platform-002, -003, -004, -014, -015.
+Reworded 2026-10-01 (diorama camera, same IDs): TR-layout-011 (ortho → perspective), TR-layout-016 and TR-art-001 (textured environment), TR-art-002, -007, -008 (budgets). Reworded 2026-09-30 after ADR-0006 GDD sync (same intent, IDs unchanged): TR-control-001 (pick anchors, physics-free picking), TR-control-007 and TR-layout-012 (clearance tolerance −0.05 m), TR-layout-013 (footprints instead of collision shapes). Deferred with Telegram: TR-platform-002, -003, -004, -014, -015.

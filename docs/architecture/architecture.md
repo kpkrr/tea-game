@@ -3,7 +3,7 @@
 ## Document Status
 
 - Version: 1.0
-- Last Updated: 2026-10-01 (art bible: 3D-окружение + toon-спрайты + 1 направленный свет, бюджеты «качество важнее мегабайт» — поправки ADR-0002/0007, TR-art-001…008; game-flow: модули GameFlow, PlayerStats, Haptics; поправки ADR-0001/0003/0004/0005/0006 от 2026-10-01 — автономно, ждут ревью владельца)
+- Last Updated: 2026-10-01 (diorama camera: перспективная камера FOV 30°/pitch 52° вместо ortho, рисованное текстурное окружение, декорации в letterbox, VFX-пуфы — поправки ADR-0002/0006/0007, TR-art-009…011; art bible: 3D-окружение + toon-спрайты + 1 направленный свет, бюджеты «качество важнее мегабайт» — поправки ADR-0002/0007, TR-art-001…008; game-flow: модули GameFlow, PlayerStats, Haptics; поправки ADR-0001/0003/0004/0005/0006 от 2026-10-01 — автономно, ждут ревью владельца)
 - Engine: Godot 4.7.2 (GDScript, Compatibility renderer / WebGL2, web export)
 - Platform scope: **только обычный web** (браузер ПК и телефона). Telegram Mini App
   отложен решением 2026-09-30 — в MVP не детектится и не реализуется
@@ -86,7 +86,7 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 | Модуль | Слой | Владеет | Отдаёт наружу | Потребляет | Engine API |
 |---|---|---|---|---|---|
 | **PlatformBridge** (autoload) | Foundation | safe-area rect (= вьюпорт браузера в px окна, `DisplayServer.window_get_size()`), видимость (`is_visible()`), состояние `Loading/Ready/Failed` | `safe_area_changed(rect)`, `visibility_changed(visible)`, `ready_reached`; поправка 2026-10-01: `orientation_blocked_changed`, `install_availability_changed`, `share_finished`, PWA/share/wake lock/launch param/`open_external`/vibrate (ADR-0001) | браузер: resize/orientationchange, Page Visibility API, `pointer: coarse`, `beforeinstallprompt`, Web Share, Wake Lock, `location.search` | ⚠️ `JavaScriptBridge` (visibility + хелпер оболочки `teaRushPlatform`), `get_viewport().size_changed`, PWA-опции экспорта (⚠️ проверить в 4.7.2) |
-| **ViewFit** | Foundation | `safe_aspect`, playfield rect, letterbox, размер и смещение ortho-камеры, `kitchen_rect` (ADR-0002; 1 единица канваса = 1 dp; поправка 2026-09-30: HUD — всегда верхняя строка; если верхняя полоса < `hud_min_strip_dp` = 56 dp (аспекты ≈ 0,8–1,0), она резервируется, кухня < 95 % поля — исключение; боковые полосы — только letterbox) | `playfield_changed(playfield, kitchen_rect)` | `PlatformBridge.safe_area_changed`, габариты кухни | ⚠️ stretch mode, `Camera3D` (ortho `size`) |
+| **ViewFit** | Foundation | `safe_aspect`, playfield rect, letterbox, дистанция и `h_offset`/`v_offset` перспективной камеры-диорамы (FOV и pitch фиксированы; было: ortho `size` — поправка 2026-10-01), `kitchen_rect`, глубина кадра `get_depth_range()` для теней/тумана/stretch спрайтов (ADR-0002; 1 единица канваса = 1 dp; поправка 2026-09-30: HUD — всегда верхняя строка; если верхняя полоса < `hud_min_strip_dp` = 56 dp (аспекты ≈ 0,8–1,0), она резервируется, кухня < 95 % поля — исключение; боковые полосы — только letterbox) | `playfield_changed(playfield, kitchen_rect)` | `PlatformBridge.safe_area_changed`, габариты кухни | ⚠️ stretch mode, `Camera3D` (perspective: `fov`, `keep_aspect`, `h_offset`/`v_offset` — проверить в 4.7.2) |
 | **GameClock** | Foundation | игровое время `t`, флаги `hidden` и `frozen`, clamp `max_step_delta` (ADR-0003) | `t`, `sim_dt`, `ui_dt`, `running_changed(running)` | команды pause/resume/freeze/reset от MatchLifecycle | — (чистый GDScript) |
 | **MatchDirector** | Foundation | порядок тика, корень композиции матча (DI) | — | все модули матча | `_process` с `process_priority = -100` (ADR-0003; не `_physics_process`) |
 | **ConfigLoader** | Foundation | загруженные и провалидированные данные тюнинга (ADR-0004: `GameConfig` + подресурсы на систему, `.tres` в `assets/data/config/`, `ConfigValidator` собирает все ошибки во всех сборках) | типизированные `Resource`-конфиги, инъекция через конструкторы | файлы данных | `ResourceLoader`, `Resource` |
@@ -100,8 +100,8 @@ Progression, Monetization, Co-op, Token) в этот документ **не в�
 | **MatchLifecycle** (Guest AI) | Feature | `match_started`/`match_ended`, `guests_lost`, политика паузы; состояния `BOOTING/IDLE/RUNNING/ENDED` (IDLE — меню, поправка 2026-10-01) | `match_started`, `match_ended(reason)` (`guests_lost` \| `quit`), `paused_changed`, команды GameClock | `ready_reached` (→ IDLE, без автостарта), `visibility_changed`, `orientation_blocked_changed`, `request_new_match`, `request_quit_match`, `request_pause`/`request_resume` | — |
 | **GuestSim** (Guest AI) | Feature | гости (4 слота), терпение, спавн, RNG выбора рецепта | `served(recipe_id, remaining_fraction)`, `target_vanished`, данные гостей для HUD | DifficultyCurve, RecipeBook, Brewing, Pathing (`Navigator`) | `AnimatedSprite3D` (без `NavigationAgent3D`, ADR-0006) |
 | **DifficultyCurve** | Feature | ничего (без состояния) | `guests_per_minute(t)`, `patience_max(t)`, `complex_order_share(t)` | конфиг | — |
-| **Currency** | Feature | `match_score`, `best_score`, `is_new_record`, `best_score_at_match_start` | `coins_earned(n)`, `score_earned(n)`, `record_passed()` (раз за партию, при рекорде на старте > 0; поправка 2026-10-01), геттеры | `served`, `match_started`, `match_ended`, SaveStore | — |
-| **Till** | Feature | `till_amount`, `Open/Full`, `full_since_utc` | `coins_added(n)`, `day_filled()` (Open→Full, поправка 2026-10-01), `day_state`, `till_fill_ratio` | `coins_earned`, `match_started`, `UtcClock`, SaveStore | — |
+| **Currency** | Feature | `match_score`, `best_score`, `is_new_record`, `best_score_at_match_start` | `coins_earned(n)`, `score_earned(n)`, `record_passed(match_score, best_at_start)` (раз за партию, при рекорде на старте > 0; поправка 2026-10-01), геттеры | `served`, `match_started`, `match_ended`, SaveStore | — |
+| **Till** | Feature | `till_amount`, `Open/Full`, `full_since_utc` | `coins_added(amount, earned)`, `day_filled(day_index)` (Open→Full, поправка 2026-10-01; сигнатуры синхронизированы с GDD 2026-10-01), `day_state`, `till_fill_ratio` | `coins_earned`, `match_started`, `UtcClock`, SaveStore | — |
 | **AudioDirector** | Presentation | шины Master ← Music, Master ← SFX ← {Voice, UI, Stinger, Amb}; mute-слои (Master / Music / SFX); low-pass на шине Music (последний страйк 2500 Гц, итоги 800 Гц, по `ui_dt`); адаптивная музыка — 4 stems в одном `AudioStreamSynchronized` (слои по `difficulty_progress`, квантование по такту) + трек меню; дакинг скриптом под стингеры; пул SFX ≤ 16 с классами P0–P4, лимитер голосов; награды монеты/очки раздельно; загрузка музыки после `ready_reached` (меню → stems) *(поправка ADR-0001/0007 audio 2026-10-01, `design/gdd/audio-juice-feedback.md`)*; ключи `settings.muted`, `settings.music_on`, `settings.sfx_on` (поправки ADR-0001/0005); слой «сердцебиение» на последнем страйке (поправка 2026-10-01) | `is_muted()`, `set_music_on()`, `set_sfx_on()` | `set_muted()` от HUD, `MatchLifecycle.paused_changed`/`match_started`/`match_ended`, `GameClock.ui_dt`, `cfg.audio`, первый жест игрока, `SaveScope` `settings`, URL от `PlatformBridge.asset_url()` через `_compose()` | `AudioServer.set_bus_mute`, `AudioEffectLowPassFilter`, `AudioStreamPlayer` (SFX: Sample; музыка: Stream), `AudioStreamOggVorbis.load_from_buffer`, `HTTPRequest` |
 | **HUD** | Presentation | ничего игрового (правило «без кэша») | `request_new_match`, `request_pause`/`request_resume`, `set_muted` | всё перечисленное выше, только чтение; поправка 2026-10-01: `record_passed`, `day_filled`, `guests_lost` (плашка «касса полна», NEW BEST!, виньетка последнего страйка — не блокируют тапы, ADR-0006) | `Control`, `Sprite3D`/`Label3D`, `Tween` |
 | **GameFlow** *(поправка 2026-10-01, `design/ux/game-flow.md`)* | Presentation | экраны вне партии и навигация: Main Menu, How to Play, Records, Settings, About, подтверждение «End shift?», итоги (M1), оверлей «Rotate your phone», подсказка установки; ключи `tutorial.seen`, `ui.install_hint_shown`, `challenge.target`; строки только английские через `tr()` | `request_new_match`, `request_quit_match`, `request_resume`; сеттеры настроек AudioDirector/Haptics; команды PlatformBridge через `_compose()` (share, install, open_external) | `ready_reached`, `match_ended(reason)`, Currency/Till/PlayerStats геттеры, `FlowConfig`, `SaveScope` `tutorial`/`ui`/`challenge`, `PlatformBridge` (через инъекцию из `_compose()`) | `Control`, `Tween` (только вне партии, ADR-0003 поправка), `SubViewport` → `Image.save_png_to_buffer` (карточка шаринга) |
@@ -252,7 +252,7 @@ enum ActionReply { EXECUTE, WAIT, REFUSE }    # общий контракт Hold
 signal served(recipe_id: StringName, remaining_fraction: float)   # GuestSim
 signal match_started(); signal match_ended()                        # MatchLifecycle
 signal coins_earned(amount: int); signal score_earned(amount: int)  # Currency
-signal coins_added(amount: int)                                     # Till (включая 0)
+signal coins_added(amount: int, earned: int)                        # Till (включая 0); earned − amount = излишек для «отскока» HUD
 func request_new_match() -> void    # MatchLifecycle; вызывает HUD (команда, не сигнал — ADR-0003)
 func request_pause() -> void; func request_resume() -> void   # MatchLifecycle; вызывает HUD (поправка ADR-0003, 2026-09-30)
 signal paused_changed(paused: bool)                                 # MatchLifecycle: hidden ИЛИ user_paused
@@ -260,8 +260,8 @@ func set_muted(muted: bool) -> void                                 # AudioDirec
 # поправка 2026-10-01 (game-flow)
 signal match_ended(reason: StringName)                              # заменяет match_ended(): &"lost" | &"quit"
 func request_quit_match() -> void                                   # MatchLifecycle; вызывает только GameFlow
-signal record_passed()                                              # Currency, раз за партию
-signal day_filled()                                                 # Till, переход Open → Full
+signal record_passed(match_score: int, best_at_start: int)          # Currency, раз за партию (Currency Rule 10)
+signal day_filled(day_index: int)                                  # Till, переход Open → Full (Till Rule 10)
 signal guests_lost_changed(count: int)                              # GuestSim
 func set_music_on(on: bool) -> void; func set_sfx_on(on: bool) -> void   # AudioDirector; вызывает GameFlow (Settings)
 func set_enabled(on: bool) -> void                                  # Haptics; вызывает GameFlow (Settings)
@@ -316,7 +316,7 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | # | `/architecture-decision` | Решает | Пробелы в знаниях |
 |---|---|---|---|
 | **ADR-0001** | **Web build & platform shell** | Single-thread-экспорт против threads (COOP/COEP-заголовки хостинга), профиль шаблона экспорта и размер, HTML-оболочка + проверка WebGL2 + экран загрузки, resize/orientationchange с debounce, единый `visibility_changed` через Page Visibility API, `ready_reached` без белой вспышки, хостинг. **Spike на реальном слабом Android в мобильном браузере — часть этого ADR.** Telegram не входит. | ⚠️ HIGH — сначала добавить `docs/engine-reference/godot/modules/web.md` |
-| **ADR-0002** | **Viewport, camera fit & 2.5D presentation** | Явный stretch mode/aspect, ortho-камера и формула её `size` от `safe_aspect` (заполнение ≥ 0,95), letterbox, масштаб dp→px, мировые оверлеи (`Sprite3D`/`Label3D` против проекции в `Control`), billboard-персонажи, бюджет draw calls. | ⚠️ HIGH (дефолты stretch в 4.7, Compatibility) |
+| **ADR-0002** | **Viewport, camera fit & 2.5D presentation** | Явный stretch mode/aspect, камера и её подгонка от `safe_aspect` (заполнение ≥ 0,95; ortho `size` → с 2026-10-01 перспективная диорама: решается дистанция), letterbox, масштаб dp→px, мировые оверлеи (`Sprite3D`/`Label3D` против проекции в `Control`), billboard-персонажи, бюджет draw calls. | ⚠️ HIGH (дефолты stretch в 4.7, Compatibility) |
 | **ADR-0003** | **Match simulation: game clock, tick order, pause & event wiring** | `GameClock` + `MatchDirector`, фиксированный порядок тика, отказ от `SceneTree.paused`, типизированные сигналы без глобального event bus, корень композиции и DI, сброс по `match_started`. | LOW (чистый GDScript) |
 | **ADR-0004** | **Data config & load-time validation** | Формат данных (`Resource .tres` против JSON), единый валидатор, поведение инвариантов в release-сборке (recipe OQ), реализация кривых сложности (`Curve` против формулы), потоки RNG и инъекция `RandomNumberGenerator` (guest OQ9). | LOW |
 | **ADR-0005** | **Local persistence (SaveStore)** | Интерфейс `SaveStore`, формат, `schema_version`, момент `flush()`, `user://` → IndexedDB на web, очистка хранилища WebView, шов под Backend & Persistence. Закрывает `currency-coins-score.md:483`. | ⚠️ HIGH (синхронизация IDBFS в 4.7) |
@@ -331,7 +331,7 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 
 | # | `/architecture-decision` | Решает |
 |---|---|---|
-| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено; музыка 2,7 МБ вне `.pck`, догружается после `ready_reached` — поправка 2026-09-30), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. **Поправка 2026-10-01 (art bible, «качество важнее мегабайт»):** `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, текстуры ≤ 96 МБ, census ≤ 95, draw calls ≤ 180 с теневым проходом, 1 направленный свет, уровни качества Low/Mid/High, TTI ≤ 15 с на 25 Мбит/с. **Поправка 2026-10-01 (аудио):** `.pck` ≤ 11,0 МБ, загрузка ≤ 21,5 МБ, музыка ≤ 6,0 МБ набором (меню + 4 stems), CPU музыки ≤ 2,5 мс, Sample PCM ≈ 35 МБ, TTI ≤ 16 с на 25 Мбит/с. |
+| **ADR-0007** | **Performance & load budgets** | ✅ Accepted: эталонное слабое Android-устройство как класс, 60 fps цель / 30 fps пол, мс на систему (Guest AI 0,5/1,0), потолки draw calls (100/150) и инстансов (75), текстуры 48 МБ, загрузка ≤ 13,5 МБ (движок 10,2 МБ — замерено; музыка 2,7 МБ вне `.pck`, догружается после `ready_reached` — поправка 2026-09-30), TTI холодный ≤ 20 с / тёплый ≤ 6 с, пре-прогрев материалов при `Booting`, `PerfProbe` + CI-гейты. Числа на устройстве предварительные до spike ADR-0001. **Поправка 2026-10-01 (art bible, «качество важнее мегабайт»):** `.pck` ≤ 11,0 МБ, загрузка ≤ 21,5 МБ (с аудио-поправкой ADR-0007), текстуры ≤ 96 МБ, census ≤ 95, draw calls ≤ 180 с теневым проходом, 1 направленный свет, уровни качества Low/Mid/High, TTI ≤ 15 с на 25 Мбит/с. **Поправка 2026-10-01 (аудио):** `.pck` ≤ 11,0 МБ, загрузка ≤ 21,5 МБ, музыка ≤ 6,0 МБ набором (меню + 4 stems), CPU музыки ≤ 2,5 мс, Sample PCM ≈ 35 МБ, TTI ≤ 16 с на 25 Мбит/с. **Поправка 2026-10-01 (diorama):** `.pck` ≤ 22,0 МБ, загрузка ≤ 32,5 МБ, текстуры ≤ 192/144 МБ, census ≤ 115, draw calls 140/200, pre-warm ≤ 1,0 с, TTI ≤ 21 с на 25 Мбит/с; таблица текущих бюджетов в начале Decision ADR-0007 — единственный источник чисел. |
 
 ### Can defer to implementation
 
@@ -381,7 +381,7 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | AQ-08 | Точные ключи PWA-пресета и `JavaScriptBridge.pwa_needs_update()/pwa_update()` в 4.7.2; кэширует ли сгенерированный service worker музыку рядом с `index.html`. | Medium | ADR-0001 поправка 2026-10-01, W2/W3 |
 | AQ-09 | Адрес игры (`FlowConfig.game_url`) и `feedback_url` — решение владельца; до него Share и Send feedback скрыты. | Medium | владелец |
 | AQ-10 | Уровни качества Low/Mid/High (ADR-0007 поправка 2026-10-01): как детектировать тир на web (`RenderingServer.get_video_adapter_name()` информативен ли в WebGL2?), где живёт переключатель (Settings, ключ сохранения), нужен ли отдельный ADR «Quality Tiers» или хватит поправки ADR-0007. | Medium | ADR-0007 поправка / spike S1 |
-| AQ-11 | Spike S1–S4 (ADR-0007 поправка 2026-10-01): стоимость теней + toon-шейдера на RD и среднем устройстве, LightmapGI/vertex AO на WebGL2 и порядок опаковых мешей и прозрачных спрайтов, мерцание спрайтов без мипов, исключение оверлеев из тонмаппинга в Compatibility. До производства арта. | High | ADR-0002/0007 поправки 2026-10-01 |
+| AQ-11 | Spike S1–S4 (ADR-0007 поправка 2026-10-01): стоимость теней + toon-шейдера на RD и среднем устройстве, LightmapGI/vertex AO на WebGL2 и порядок опаковых мешей и прозрачных спрайтов, мерцание спрайтов без мипов, исключение оверлеев из тонмаппинга в Compatibility; **S5 (2026-10-01)** — перспективный fit против `Camera3D`, stretch спрайтов, размер оверлеев у дальней стены, анизотропия пола, стоимость декораций/VFX, опц. runtime tilt-shift на High. До производства арта. Риск: текстуры 192 МБ на мобильном браузере — запасной план VRAM-компрессия. | High | ADR-0002/0007 поправки 2026-10-01 |
 
 ---
 
@@ -425,12 +425,12 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 | 008 | Путь из till-anchor до каждого слота и станции существует, изолированных карманов нет | Navigation |
 | 009 | `station_types` точно совпадает с расставленными станциями | Data-Config |
 | 010 | Кухня заполняет ≥ 0,95 playfield при любом `safe_aspect` ∈ [0,45; 1,0], равномерный масштаб | Rendering |
-| 011 | Камера фиксирована, zoom/ortho-size пересчитывается от `safe_aspect` | Rendering |
+| 011 | Камера фиксирована — перспективная диорама (FOV 30°, pitch 52°); от `safe_aspect` пересчитываются дистанция и h/v_offset (rev. 2026-10-01) | Rendering |
 | 012 | Зазор у точек взаимодействия ≥ `agent_radius` = 0,40 м | Navigation |
 | 013 | Формы станций и столешницы не пересекаются | Physics |
 | 014 | Минимальная зона тапа 48×48 dp на эталоне 360×640 dp | UI/Input |
 | 015 | `playfield_min_fill` = 0,95, `min_tap_target` = 48 dp — данные из реестра | Data-Config |
-| 016 | Без шейдерных анимаций и параллакса; запечённый свет; статичное свечение till-anchor | Rendering |
+| 016 | Рисованные текстуры-атласы × запечённый свет/AO; без шейдерных анимаций и параллакса внутри кухни; статичное свечение till-anchor (rev. 2026-10-01) | Rendering |
 | 017 | Для гостей: 1 точка спавна, 4 точки очереди со стабильными ID, 1 выход — все на навигационной области | Navigation |
 
 ### Player Control / Barista Movement (TR-control)
@@ -635,14 +635,17 @@ UX-спеку, 5 отложены вместе с Telegram, пробелов н�
 ### Art Direction (TR-art) — `design/art/art-bible.md`, 2026-10-01
 | ID | Требование | Домен |
 |---|---|---|
-| 001 | Презентация: 3D-окружение из простых мешей, свет и AO запечены в vertex colors (unshaded), опц. LightmapGI для пола/стен; статика ≤ 3 меша, вне теневого прохода (ADR-0002) | Rendering |
-| 002 | Один DirectionalLight3D; тени отбрасывают только динамические объекты через shadow-only прокси-капсулы; Omni/Spot, SSAO/SSR/SDFGI/VoxelGI, volumetric fog, runtime DOF запрещены (ADR-0002, ADR-0007) | Rendering |
+| 001 | Презентация: 3D-окружение с рисованными атласами × свет и AO в vertex colors (unshaded), опц. LightmapGI для пола/стен; кухня ≤ 5 мешей, декорации ≤ 6, вне теневого прохода (ADR-0002, rev. 2026-10-01) | Rendering |
+| 002 | Один DirectionalLight3D; тени отбрасывают только динамические объекты через shadow-only прокси-капсулы; дистанция тени следует глубине перспективной камеры; tilt-shift — запечённый, рантайм — только High после спайка S5 (rev. 2026-10-01); Omni/Spot, SSAO/SSR/SDFGI/VoxelGI, volumetric fog, runtime DOF запрещены (ADR-0002, ADR-0007) | Rendering |
 | 003 | Спрайты персонажей и предметов — кастомный toon spatial-шейдер (unshaded база × тонировка зоны ≤ 15 %, ramp 2 шага по псевдонормали, rim 1 dp); стандартный lit Sprite3D запрещён (ADR-0002) | Rendering |
 | 004 | Мировые оверлеи (жетоны, кольца, цены, контур цели, кольцо назначения) исключены из тумана и грейдинга: unshaded, disable_fog; смена «день → вечер» — светом и материалами окружения, их hex не меняется (ADR-0002) | Rendering |
 | 005 | Blob-тени под персонажами, чашками и кассой на всех тирах; реальные тени Mid/High поверх (ADR-0002) | Rendering |
 | 006 | Уровни качества Low/Mid/High выбираются статически при загрузке + ручной переключатель; Low — без реальных теней и glow (ADR-0007) | Performance |
-| 007 | Бюджеты «качество важнее мегабайт»: `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, texture memory ≤ 96 МБ (спрайты персонажей без мипов), census ≤ 95, draw calls ≤ 180 вкл. теневой проход, shadow casters ≤ 12 (ADR-0007) | Performance |
-| 008 | Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color материал окружения, fog on/off для выбранного тира; ≤ 0,8 с (ADR-0007) | Performance |
+| 007 | Бюджеты (таблица текущих бюджетов ADR-0007): `.pck` ≤ 22,0 МБ, загрузка ≤ 32,5 МБ, текстуры ≤ 192 МБ Mid/High / 144 МБ Low, census ≤ 115, draw calls 140/200 вкл. теневой проход, shadow casters ≤ 12 (rev. 2026-10-01) | Performance |
+| 008 | Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color материал окружения, текстурный env, декорации, VFX, fog on/off для выбранного тира; ≤ 1,0 с (ADR-0007, rev. 2026-10-01) | Performance |
+| 009 | Перспективная камера-диорама (FOV 30°, pitch 52°), stretch `1/cos α` на спрайт, минимальный экранный размер оверлеев в дальней точке (ADR-0002) | Rendering |
+| 010 | VFX-пуфы: пул ≤ 12 квадов, ниже полос оверлеев — никогда не перекрывают жетоны (ADR-0007) | Rendering |
+| 011 | Декорации вокруг кухни в letterbox: вне `frame_bounds`, только Mid/High, на Low — `background_color` (ADR-0002, ADR-0007) | Rendering |
 
 ### Audio & Juice (TR-audio) — `design/gdd/audio-juice-feedback.md`, 2026-10-01
 | ID | Требование | Домен |

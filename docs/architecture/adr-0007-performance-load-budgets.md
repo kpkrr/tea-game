@@ -9,13 +9,13 @@ Accepted
 2026-09-30
 
 ## Last Verified
-2026-09-30 (template sizes measured on the installed 4.7.2 web export template; size, TTI, heap and draw-call figures checked on iPhone Safari in the ADR-0001 spike — see Spike Results; **frame-time, per-system ms and RD boot sub-budget remain provisional** until a weak-Android run)
+2026-10-01 (diorama amendment: budget arithmetic and the effective-budget table reconciled across all four amendments; texture figures computed from atlas sizes, not measured) · 2026-09-30 (template sizes measured on the installed 4.7.2 web export template; size, TTI, heap and draw-call figures checked on iPhone Safari in the ADR-0001 spike — see Spike Results; **frame-time, per-system ms and RD boot sub-budget remain provisional** until a weak-Android run)
 
 ## Decision Makers
 User (project owner); godot-specialist (engine validation, 3 blocking findings resolved). `technical-director` sign-off on the numbers is pending (TD-ADR skipped in Lean review mode) and is required before Accepted, as Guest AI Open Question #8 assigns the threshold to that role.
 
 ## Summary
-Tea Rush has only a global 16.6 ms budget; GDDs ask for per-system thresholds (Guest AI ≤ 0.5 ms avg / ≤ 1.0 ms p99) and the load size/time question is open. This ADR fixes a reference low-end Android class, a 60 fps target with a 30 fps floor, per-system CPU allocations, draw-call / texture / memory ceilings, a compressed download ceiling (13.5 MB, of which the stock engine is a measured 10.2 MB), cold/warm time-to-interactive targets, a boot-time material pre-warm, and how each budget is enforced (CI size gate, worst-case scene census, on-device perf-probe evidence).
+Tea Rush has only a global 16.6 ms budget; GDDs ask for per-system thresholds (Guest AI ≤ 0.5 ms avg / ≤ 1.0 ms p99) and the load size/time question is open. This ADR fixes a reference low-end Android class, a 60 fps target with a 30 fps floor, per-system CPU allocations, draw-call / texture / memory ceilings, a compressed download ceiling (baseline 13.5 MB, of which the stock engine is a measured 10.2 MB — **raised by the 2026-10-01 amendments to 32.5 MB; current values: "Current effective budgets" table at the top of the Decision**), cold/warm time-to-interactive targets, a boot-time material pre-warm, and how each budget is enforced (CI size gate, worst-case scene census, on-device perf-probe evidence).
 
 ## Engine Compatibility
 
@@ -55,6 +55,37 @@ Tea Rush has only a global 16.6 ms budget; GDDs ask for per-system thresholds (G
 - Every budget has an owner, a unit, a measurement method and an enforcement point.
 
 ## Decision
+
+### Current effective budgets (authoritative — as of Amendment 2026-10-01 "diorama")
+
+> Sections 1–8 below are the **2026-09-30 baseline** and keep their original numbers for history; the amendments after section 8 change them in order (music 2026-09-30 → art 2026-10-01 → audio 2026-10-01 → diorama 2026-10-01). **This table is the single current answer**; where any older line in this ADR (Summary, §3, §4, §5, §6, §8, Diagram, Guidelines, Validation) disagrees, this table wins. The CI constants file holds exactly these values.
+
+| Budget | Current value | Set by | Superseded values |
+|---|---|---|---|
+| Engine `godot.wasm` + `godot.js` (gzip) | 10.2 MB planned, **gate ≤ 10.5 MB** | §4 | — |
+| Game `.pck` | **≤ 22.0 MB** | diorama | 3.0 (§4) → 8.0 (art) → 11.0 (audio) |
+| HTML shell + loader + loading art | ≤ 0.2 MB | §4 | — |
+| **Boot download (gates play)** | **≤ 32.5 MB** (10.2 + 22.0 + 0.2 = 32.4) | diorama | 13.5 → 18.5 → 21.5 |
+| Post-boot music set (outside boot) | ≤ 6.0 MB | audio | 2.7 (music) |
+| First-visit transfer (boot + music) | ≈ 38.4 MB | diorama | 16.2 → 21.1 → 27.4 |
+| Cold TTI, 25 Mbps / 60 ms RTT (reference link) | **≤ 21 s**, fail > 31 s | diorama | 15 / 25 → 16 / 26 |
+| Cold TTI, 10 Mbps / 100 ms (secondary) | **≤ 36 s**, fail > 46 s | diorama | 20 / 30 → 25 / 35 → 28 / 38 |
+| Warm TTI | **≤ 8 s**, fail > 12 s | diorama | 6 / 10 → 7 / 10 |
+| RD local boot | **≤ 10 s** (wasm+init 5.0, config 0.1, scene 0.5, nav 0.1, pre-warm 1.0, texture decode + upload 2.0, slack 1.3) | diorama | ≤ 9 s |
+| Texture memory (GPU, RGBA8, mips ×1.33 where mipped) | **Mid/High ≤ 192 MB; Low ≤ 144 MB** (no scenery) | diorama | 48 → 96 |
+| WASM linear memory peak | ≤ 256 MB | §6 | — |
+| Sample-mode decoded PCM (outside wasm heap) | ≈ 35 MB, total Sample duration ≤ 90 s | audio | — |
+| Renderable 3D instances (census, worst-case frame) | **≤ 115** | diorama | 75 → 95 |
+| Draw calls per frame (incl. shadow pass and HUD) | **target ≤ 140, ceiling 200** | diorama | 100 / 150 → 120 / 180 |
+| Shadow casters | ≤ 12 | art | — |
+| Triangles in frame | **kitchen env + clutter ≤ 30 k; scenery ≤ 20 k (Mid/High)** | diorama | env ≤ 20 k |
+| VFX puffs on screen | **≤ 12 pooled quads**, none wider than 25 % of `kitchen_rect` | diorama | — |
+| Frame rate | 60 fps target (mid/high), 30 fps floor on RD at Low | §1, art | — |
+| Script CPU (RD) | avg ≤ 2.0 ms, p99 ≤ 4.0 ms (table 2) | §2 | — |
+| Music decode CPU (Mid) | avg ≤ 2.5 ms | audio | 1.0 |
+| GPU lines (Mid, provisional) | shadow pass ≤ 3 ms; scenery + VFX ≤ 2 ms; tilt-shift (High only, if enabled) ≤ 1.0 ms | art, diorama | — |
+| Boot pre-warm | **≤ 1.0 s** | diorama | 0.5 → 0.8 |
+| Render scale | `render_pixel_budget` 1.5 Mpx, `render_scale_min` 0.6, `render_scale_3d` 1.0 | §3 | — |
 
 ### 1. Reference device and frame targets
 The **reference device (RD)** is a class, not a model: Android 9–12-era phone, 2–3 GB RAM, entry-level SoC (Adreno 5xx / Mali-G5x-class GPU), current Chrome for Android, canvas 720×1600 to 1080×2400 device px. The concrete phone was **not** chosen in the ADR-0001 spike (iPhone only); it is recorded with the first weak-Android `perf_probe` run, and every "RD" frame-time/CPU number below is provisional until then.
@@ -97,7 +128,7 @@ Per-line **averages are gated**; per-line p99 values are **reported, not gated**
 | Engine `godot.wasm` + `godot.js` | **10.2 MB** (fixed line item) | Measured 2026-09-30, stock 4.7.2 `web_nothreads_release`: wasm 39 514 754 B raw → 10 114 302 B gzip-6; js 279 815 B → 68 749 B |
 | Game `.pck` | ≤ 3.0 MB | Mostly PNG/WebP; treat raw size as transfer size |
 | HTML shell, loader script, loading-screen art | ≤ 0.2 MB | ADR-0001 |
-| **Total ceiling** | **13.5 MB** | 10.2 + 3.0 + 0.2 = 13.4 |
+| **Total ceiling** | **13.5 MB** | 10.2 + 3.0 + 0.2 = 13.4 *(baseline; current 32.5 MB — effective table)* |
 
 The stock template is the MVP baseline. A custom-built template (SCons, unused modules off) is a **contingency**, triggered only by the fail thresholds in table 5; its saving is not measured and is not assumed anywhere in this ADR. The ceiling assumes the host serves `.wasm` compressed (gzip at minimum); uncompressed it is ≈ 4× larger, so compression is a hosting requirement, not an optimisation.
 
@@ -171,6 +202,18 @@ Timings are never asserted in unit tests (Testing Standards: determinism).
 > - **Enforcement (§8):** single constants file: boot ceiling 18.5 → **21.5 MB**, `.pck` 8.0 → **11.0 MB**, music 2.7 → **6.0 MB (set)**, music CPU 1.0 → **2.5 ms**; new constants `sample_pcm_mb = 35`, `sample_total_s = 90`.
 > - **Verification:** audio spikes S1–S3 (ADR-0001 amendment 2026-10-01 audio).
 
+> **Amendment 2026-10-01 — diorama: perspective camera, hand-painted textured environment, scenery, VFX puffs (owner decision 2026-10-01, binding; ADR-0002 Amendment 2026-10-01 "diorama camera"; owner policy "quality over megabytes — raise budgets rather than cut art; Low tier = fallback only").** All resulting numbers are in the **Current effective budgets** table at the top of the Decision; this block gives the reasoning.
+> - **Perspective camera — render cost.** Projection type does not change draw calls or shader cost; frustum culling now trims scenery outside the view. What changes: the 3D scene fills the **whole viewport** (letterbox and strips show scenery on Mid/High instead of a clear colour → roughly +40 % opaque fill on phones, more on wide windows; `render_scale` already caps the pixel count), the directional shadow covers a camera slice ≈ 22–46 m deep instead of an ortho box (texel density re-checked in S1/S5), and depth fog/shadow distances follow the solved camera distance (ADR-0002 diorama amendment, point 3). No draw-call increase is expected from the camera itself; the census increase below is scenery and VFX.
+> - **Environment textures (hand-painted atlases).** Kitchen environment meshes (floor, walls, counters, station bases, periphery clutter) use **2 × 2048² albedo atlases**, mipmapped, multiplied by baked light/AO in vertex colors (optionally LightmapGI floor/walls, already in the art budget), unshaded; `.pck` storage **lossless WebP** (≈ 2.5–3.5 MB each). Floor/walls use anisotropic filtering where WebGL2 exposes it (ADR-0002 V8, проверить в 4.7.2). Scenery outside `frame_bounds` (water, cliffs, far props) uses **2 × 2048²** atlases, **lossy WebP** allowed (like the pre-blurred background layer; ≈ 1 MB each), **loaded only on Mid/High** — the Low tier never instantiates scenery and shows `background_color`. Static meshes merge into ≤ 5 kitchen meshes (was ≤ 3; second atlas + alpha-cut foliage) and ≤ 6 scenery meshes, all outside the shadow pass.
+> - **VFX puffs (steam, smoke, sparks, fire glow).** Flipbook sprite sheets in **one 2048×1024 atlas** (mipped, lossless), drawn as a **pool of ≤ 12 camera-facing quads** (`Sprite3D`/`AnimatedSprite3D`, or one `CPUParticles3D` per emitter type if story 014 shows it is cheaper — each is one draw call; **GPU particles stay forbidden**). Their materials are alpha-blended or additive, `render_priority` in the **world band below every overlay band** and overlays keep `no_depth_test`, so a puff can never draw over a token, ring, price, tag or the target outline (TR-art-010); none is wider than 25 % of `kitchen_rect` (overdraw cap). Lantern and fire glow = baked into vertex color/lightmap + additive glow quads; Omni/Spot lights stay forbidden. Reduced motion: puffs keep their first frame or are hidden (HUD/flow rule).
+> - **Texture memory (planned).** Previous plan ≈ 89–91 MB (art amendment) − old env trim ≈ 6 MB + kitchen atlases 42.7 MB + VFX atlas 10.7 MB + scenery 42.7 MB ≈ **180 MB on Mid/High**, ≈ 137 MB on Low (no scenery) → ceilings **192 / 144 MB**. Character atlases stay unmipped, but far-side characters are now ≈ 0.82× of near-side size, so worst-case minification rises to ≈ 1.7× — spike S3 re-runs at back-wall depth; if it shimmers, characters get mipmaps (+24 MB) and the Mid/High line becomes ≈ 216 MB by a further amendment. **This is a hard-platform risk, not only a budget**: mobile browsers kill tabs on GPU memory pressure regardless of policy. Contingency (cheapest first, before any art cut): (1) VRAM compression for environment/scenery/VFX atlases on web — ETC2/ASTC **and** S3TC/BPTC imports (≈ ¼ of RGBA8 in memory, ≈ 2× those textures' bytes in `.pck`) — needs its own spike and a §4 amendment; (2) scenery atlases 1024² on Mid; (3) Low-tier half-resolution kitchen atlases.
+> - **Load.** `.pck` ≤ **22.0 MB** = 11.0 (previous line: characters, props, UI, old env, SFX, fonts, scenes, data) + kitchen atlases ≤ 7.0 + scenery atlases ≤ 2.0 + VFX ≤ 1.5 + scenery/clutter meshes ≤ 0.5. Boot = 10.2 + 22.0 + 0.2 = 32.4 → **ceiling 32.5 MB** (engine gate ≤ 10.5 MB unchanged). TTI at 25 Mbps: 32.4 MB ≈ 10.4 s + ≤ 10 s local → **≤ 21 s**, fail > 31 s; at 10 Mbps ≈ 25.9 s + 10 s → **≤ 36 s**, fail > 46 s; warm ≤ 8 s (fail > 12 s). RD local boot ≤ 10 s, of which texture decode + upload ≤ 2.0 s (WebP decode of ≈ 10 large atlases on the main thread) and pre-warm ≤ 1.0 s. Contingency step added before the custom template: **stream scenery atlases after `ready_reached`** (like music; letterbox shows `background_color` until they arrive) — saves ≈ 2.5 MB of boot.
+> - **Census / draw calls / triangles.** Census ≤ **115** (+2 kitchen env meshes, +6 scenery meshes, +12 VFX quads). Draw calls **target ≤ 140, ceiling 200** including the shadow pass; scenery and VFX never cast shadows (shadow casters ≤ 12 unchanged). Triangles: kitchen env + clutter ≤ 30 k, scenery ≤ 20 k.
+> - **Tilt-shift.** Baked (pre-blurred scenery textures) is allowed on all tiers and costs nothing extra. Runtime screen-space tilt-shift stays **forbidden** under the existing "no runtime DOF / screen-texture post-processing" rule, with one gated exception: High tier only, if spike S5 (visual-pipeline story 013) measures ≤ 1.0 ms/frame on a High-tier device and shows the mask never touches `kitchen_rect`, overlays or HUD.
+> - **Pre-warm (§7).** Adds the textured env material (albedo × vertex color, ± lightmap), the scenery material (+ UV-scroll variant, Mid/High), the VFX alpha and additive flipbook materials, and the tilt-shift pass if enabled; ≤ **1.0 s**.
+> - **Enforcement (§8).** Constants file: boot 21.5 → **32.5 MB**, `.pck` 11.0 → **22.0 MB**, texture 96 → **192 MB (Mid/High) / 144 MB (Low)**, census 95 → **115**, draw-call ceiling 180 → **200**, new `vfx_pool_max = 12`, `env_tris_max = 30000`, `scenery_tris_max = 20000`; engine 10.5 MB and music 6.0 MB unchanged. The census test builds the worst-case frame twice (Low without scenery, High with scenery and a full VFX pool) and asserts both texture lines.
+> - **Verification (spikes).** S1 re-run with the perspective camera (shadow slice depth, texel density, peter-panning). **S5 (new, visual-pipeline story 013):** perspective fit vs `Camera3D` (ADR-0002 V5), per-sprite upright stretch on screen, overlay minimum size at the back wall, anisotropic vs trilinear floor, scenery + VFX GPU cost on Mid, optional runtime tilt-shift cost on High. S3 re-run at back-wall depth.
+
 **Validation note (godot-specialist, 2026-09-30):** 3 blocking findings resolved — pre-warm rewritten (visible, in frustum, `frame_post_draw` ×2, text shaping and audio added), memory evidence split by template, `scaling_3d_scale` in Compatibility verified on desktop (WebGL2 pending). Per-line p99 un-gated.
 
 ### Architecture Diagram
@@ -178,7 +221,8 @@ Timings are never asserted in unit tests (Testing Standards: determinism).
 Booting:  config ─ scene ─ Pathing.poll_ready ─ verify ─ RenderPrewarm(2 frames) ─► mark_boot_complete ─► ready_reached
 Running:  MatchDirector._process
             └─ [PerfProbe] wraps step 2,3,4,5,6 ─► avg/p99 per second ─► overlay/log   (only with feature perf_probe)
-Build:    export ─► CI: gzip-6 size ≤ 13.5 MB (blocking)     Tests: census ≤ 75 inst, tex ≤ 48 MB (blocking)
+Build:    export ─► CI: gzip-6 boot size ≤ 32.5 MB (blocking)   Tests: census ≤ 115 inst, tex ≤ 192/144 MB (blocking)
+          (baseline was 13.5 MB / 75 / 48 MB — values from the effective-budget table)
 Device:   perf build on RD ─► production/qa/evidence/perf-<date>.md ─► Vertical Slice gate
 ```
 
@@ -199,7 +243,7 @@ static func render_scale(canvas_px: Vector2i, pixel_budget: int, scale_min: floa
 - `PerfProbe` must be absent (null, no calls beyond one null check) in release builds without the `perf_probe` feature.
 - New per-frame work must state its ms line in table 2 or fit the presentation line; exceeding a line requires amending this ADR.
 - No new draw-call sources (particles, extra overlays) without updating the census test's worst-case scene.
-- Budgets live in this ADR and the registry; numeric thresholds used by tests (75, 48 MB, 13.5 MB) come from a single data/constants file, not scattered literals.
+- Budgets live in this ADR and the registry; numeric thresholds used by tests (currently 115, 192/144 MB, 32.5 MB — effective-budget table) come from a single data/constants file, not scattered literals.
 - Pre-warm must instantiate from the same scenes/materials as gameplay (no separate look-alike materials), visible, in frustum, under the gameplay `Environment` and camera.
 - `PerfProbe` must never be created from any condition other than the `perf_probe` feature tag.
 
@@ -265,21 +309,22 @@ Source: `prototypes/web-spike/README.md` (session `0b7b7c05`, iPhone Safari, DPR
 |------------|-------------|--------------------------|
 | guest-ai-patience.md | AC 48 / Open Question #8 — Guest AI ≤ 0.5 ms avg / ≤ 1.0 ms p99 on the reference weak Android (TR-guest-022) | Table 2 sets the threshold; measured by `PerfProbe`; path queries on their own line |
 | player-control-barista-movement.md | TR-control-015 — feedback ≤ 50 ms (3 frames) engine-internal | Same-frame resolution and marker draw; ≤ 33 ms at the 30 fps floor |
-| platform-integration-telegram-mini-app.md | Open Question 1 — exact load time/size budget on weak Android (Telegram deferred; applies to plain web) | Sections 4–5: 13.5 MB ceiling, cold ≤ 20 s / warm ≤ 6 s with fail thresholds |
+| platform-integration-telegram-mini-app.md | Open Question 1 — exact load time/size budget on weak Android (Telegram deferred; applies to plain web) | Sections 4–5 (baseline 13.5 MB, cold ≤ 20 s / warm ≤ 6 s); current: 32.5 MB, cold ≤ 21 s at 25 Mbps, warm ≤ 8 s — effective-budget table |
 | kitchen-station-layout.md | TR-layout-014 — reference device for the 360×640 dp canvas; baked-lighting look with weak-Android cost | RD class defined; no lights/shadows; draw-call and census ceilings |
 | game-concept.md | Technical risk: web build size / load time on weak Android | Measured engine size baseline and contingency ladder |
+| art-bible.md | TR-art-007 (revised 2026-10-01), TR-art-010, TR-art-011 — diorama budgets, VFX puffs never over tokens, scenery Mid/High only | Effective-budget table; Amendment 2026-10-01 "diorama" |
 
 ## Performance Implications
 - **CPU**: script total avg ≤ 2.0 ms; `PerfProbe` costs nothing in normal builds.
-- **Memory**: WASM ≤ 256 MB, textures ≤ 48 MB, no cross-match growth.
-- **Load Time**: 13.5 MB ceiling; cold TTI ≤ 20 s at 10 Mbps, warm ≤ 6 s; pre-warm ≤ 0.5 s.
+- **Memory**: WASM ≤ 256 MB, textures ≤ 192 MB Mid/High / 144 MB Low (baseline 48 MB), no cross-match growth.
+- **Load Time**: boot ceiling 32.5 MB (baseline 13.5); cold TTI ≤ 21 s at 25 Mbps / ≤ 36 s at 10 Mbps, warm ≤ 8 s; pre-warm ≤ 1.0 s (effective-budget table).
 - **Network**: single static bundle; requires compressed `.wasm` from the host.
 
 ## Migration Plan
 No production code exists. Doc syncs done with this ADR: `architecture.md` (ADR-0007 row), ADR-0002 §7 (`render_scale_3d` now a ceiling under a pixel budget), ADR-0003 (Booting pre-warm), ADR-0001 (`mark_boot_complete` prerequisites), ADR-0004 (`ViewConfig` fields), Guest AI GDD (AC 48 threshold, Open Question 8). Follow-ups: `render_pixel_budget`/`render_scale_min` fields in `ViewConfig` (sentinel defaults, ADR-0004); `tests/performance/` protocol at `/test-setup`; CI size script.
 
 ## Validation Criteria
-- CI: export size ≤ 13.5 MB (gzip-6) and engine bytes ≤ 10.5 MB; census test ≤ 75 instances and ≤ 48 MB textures, every worst-case material in the pre-warm set.
+- CI: boot export size ≤ 32.5 MB (gzip-6; baseline 13.5) and engine bytes ≤ 10.5 MB; census test ≤ 115 instances (baseline 75) and ≤ 192 MB (Mid/High) / 144 MB (Low) textures (baseline 48 MB), every worst-case material in the pre-warm set.
 - gdUnit4 Logic: `ViewFitMath.render_scale` — 720×1600 → 1.0; 1080×2400 → ≈ 0.76; tiny budget → clamped to `render_scale_min`; `ConfigValidator` rejects bad `ViewConfig` render fields.
 - On RD with `perf_probe` (Vertical Slice): table 1–3, 5, 6 met or the ADR amended with the measured values; no frame > 100 ms after ready; 5-match memory check passes.
 - Spike recorded before Accepted (iPhone, done): cold/warm TTI, wasm size as served, draw-call count. Still open, due at the first weak-Android run / Vertical Slice gate: RD model, frame time, first-spawn hitch with/without pre-warm (Verification 4).

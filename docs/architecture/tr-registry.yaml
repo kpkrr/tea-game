@@ -262,10 +262,10 @@ requirements:
   - id: TR-layout-011
     system: layout
     gdd: design/gdd/kitchen-station-layout.md
-    requirement: "Камера фиксирована, zoom/ortho-size пересчитывается от `safe_aspect`"
+    requirement: "Камера фиксирована — перспективная диорама (FOV `camera_fov_deg` 30°, pitch `camera_pitch_deg` 52°, yaw и точка взгляда не меняются, не панорамируется и не вращается); от `safe_aspect` пересчитываются только дистанция вдоль оси взгляда и `h_offset`/`v_offset` (ADR-0002 поправка 2026-10-01 «diorama camera»; было: zoom/ortho-size)"
     domain: "Rendering"
     created: 2026-09-30
-    revised: ""
+    revised: "2026-10-01"
     status: active
   - id: TR-layout-012
     system: layout
@@ -302,10 +302,10 @@ requirements:
   - id: TR-layout-016
     system: layout
     gdd: design/gdd/kitchen-station-layout.md
-    requirement: "Статика окружения — 3D-меши с запечённым в vertex colors светом и AO (unshaded); без шейдерных анимаций окружения и параллакса; единственный реальный свет — DirectionalLight3D для теней динамики (ADR-0002 amendment 2026-10-01); статичное свечение till-anchor"
+    requirement: "Статика кухни — 3D-меши с рисованными текстурами-атласами × свет и AO, запечённые в vertex colors (unshaded, опц. LightmapGI пол/стены); без шейдерных анимаций и параллакса внутри `frame_bounds` (UV-анимация допустима только у декораций вне кухни, Mid/High); единственный реальный свет — DirectionalLight3D для теней динамики; фонари и огонь — запечённый свет + аддитивные квады, без Omni/Spot; статичное свечение till-anchor (ADR-0002 поправки 2026-10-01)"
     domain: "Rendering"
     created: 2026-09-30
-    revised: 2026-10-01
+    revised: "2026-10-01"
     status: active
   - id: TR-layout-017
     system: layout
@@ -1624,18 +1624,18 @@ requirements:
   - id: TR-art-001
     system: art
     gdd: design/art/art-bible.md
-    requirement: "Презентация: 3D-окружение из простых мешей, свет и AO запечены в vertex colors (unshaded), опц. LightmapGI для пола/стен; статика ≤ 3 меша, вне теневого прохода"
+    requirement: "Презентация: 3D-окружение из простых мешей с рисованными текстурами-атласами (кухня 2 × 2048², lossless) × свет и AO в vertex colors (unshaded), опц. LightmapGI для пола/стен; кухня ≤ 5 слитых мешей, декорации ≤ 6; всё вне теневого прохода (ADR-0002, ADR-0007 поправки 2026-10-01)"
     domain: "Rendering"
     created: 2026-10-01
-    revised: ""
+    revised: "2026-10-01"
     status: active
   - id: TR-art-002
     system: art
     gdd: design/art/art-bible.md
-    requirement: "Один DirectionalLight3D; тени отбрасывают только динамические объекты через shadow-only прокси-капсулы; Omni/Spot, SSAO/SSR/SDFGI/VoxelGI, volumetric fog, runtime DOF запрещены"
+    requirement: "Один DirectionalLight3D; тени отбрасывают только динамические объекты через shadow-only прокси-капсулы; дистанция тени следует дистанции камеры; Omni/Spot, SSAO/SSR/SDFGI/VoxelGI, volumetric fog, runtime DOF запрещены; tilt-shift — запечённый (размытые текстуры декораций), рантайм — только High после спайка S5"
     domain: "Rendering"
     created: 2026-10-01
-    revised: ""
+    revised: "2026-10-01"
     status: active
   - id: TR-art-003
     system: art
@@ -1672,16 +1672,40 @@ requirements:
   - id: TR-art-007
     system: art
     gdd: design/art/art-bible.md
-    requirement: "Бюджеты «качество важнее мегабайт»: `.pck` ≤ 8,0 МБ, загрузка ≤ 18,5 МБ, texture memory ≤ 96 МБ (спрайты персонажей без мипов), census ≤ 95, draw calls ≤ 180 вкл. теневой проход, shadow casters ≤ 12"
+    requirement: "Бюджеты «качество важнее мегабайт» (таблица текущих бюджетов ADR-0007): `.pck` ≤ 22,0 МБ, загрузка ≤ 32,5 МБ, texture memory ≤ 192 МБ Mid/High / ≤ 144 МБ Low (спрайты персонажей без мипов), census ≤ 115, draw calls цель ≤ 140 / потолок 200 вкл. теневой проход, shadow casters ≤ 12, треугольники: кухня ≤ 30 k, декорации ≤ 20 k"
     domain: "Performance"
     created: 2026-10-01
-    revised: ""
+    revised: "2026-10-01"
     status: active
   - id: TR-art-008
     system: art
     gdd: design/art/art-bible.md
-    requirement: "Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, vertex-color материал окружения, fog on/off для выбранного тира; ≤ 0,8 с"
+    requirement: "Pre-warm включает toon-шейдер (lit + shadow receive), shadow-caster pass, текстурный vertex-color материал окружения, материал декораций (Mid/High), VFX-материалы (alpha + additive), fog on/off для выбранного тира; ≤ 1,0 с"
     domain: "Performance"
+    created: 2026-10-01
+    revised: "2026-10-01"
+    status: active
+  - id: TR-art-009
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Перспективная камера-диорама: FOV 30° (25–35), pitch 52° (45–60), фиксированные yaw и точка взгляда; fit решает дистанцию и h/v_offset так, что кухня ≥ `kitchen_fill_target` ограничивающей стороны; upright-спрайты растягиваются `1/cos α` по лучу камеры к каждому спрайту; мировые оверлеи world-size и держат минимальный экранный размер (текст ≥ 14 dp, цена ≥ 12 dp) в самой дальней точке, `fixed_size` — только исключением"
+    domain: "Rendering"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-010
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "VFX-пуфы (пар, дым, искры, огонь): пул ≤ 12 квадов-флипбуков (без GPU-частиц), alpha/additive, render_priority ниже всех полос оверлеев — никогда не перекрывают жетоны, кольца, цены, теги и контур цели; ширина ≤ 25 % `kitchen_rect`; reduced motion — статичный кадр или скрыты"
+    domain: "Rendering"
+    created: 2026-10-01
+    revised: ""
+    status: active
+  - id: TR-art-011
+    system: art
+    gdd: design/art/art-bible.md
+    requirement: "Декорации вокруг кухни (вода, скалы, фонари) могут заполнять letterbox и полосы; никогда не входят в `frame_bounds` и не стоят между камерой и кухней; покрывают вьюпорт до аспекта 2,4; только Mid/High — на Low фон `background_color`; тапы вне `kitchen_rect` отклоняются"
+    domain: "Rendering"
     created: 2026-10-01
     revised: ""
     status: active
