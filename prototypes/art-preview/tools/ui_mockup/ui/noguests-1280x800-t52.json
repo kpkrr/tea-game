@@ -1,0 +1,274 @@
+{
+  "barista": {
+    "feet": [
+      428.9,
+      275.5
+    ],
+    "hand": [
+      441.1,
+      253.0
+    ],
+    "head": [
+      423.7,
+      186.3
+    ],
+    "held": null,
+    "match": false
+  },
+  "guests": [
+    {
+      "feet": [
+        441.9,
+        461.9
+      ],
+      "head": [
+        435.4,
+        347.2
+      ],
+      "level": "calm",
+      "patience": 0.839208932453528,
+      "price": 5,
+      "ring": [
+        434.6,
+        332.7
+      ],
+      "slot": 0,
+      "state": 1,
+      "steps": [
+        "leaf_black",
+        "water_100"
+      ]
+    },
+    {
+      "feet": [
+        535.4,
+        461.9
+      ],
+      "head": [
+        537.5,
+        347.1
+      ],
+      "level": "calm",
+      "patience": 0.75871661235274,
+      "price": 5,
+      "ring": [
+        537.8,
+        332.5
+      ],
+      "slot": 2,
+      "state": 1,
+      "steps": [
+        "leaf_black",
+        "water_100"
+      ]
+    },
+    {
+      "feet": [
+        582.1,
+        461.9
+      ],
+      "head": [
+        588.6,
+        347.2
+      ],
+      "level": "calm",
+      "patience": 0.920518140798889,
+      "price": 5,
+      "ring": [
+        589.4,
+        332.6
+      ],
+      "slot": 3,
+      "state": 1,
+      "steps": [
+        "leaf_black",
+        "water_100"
+      ]
+    }
+  ],
+  "guests_lost": 0,
+  "score": 595,
+  "stations": {
+    "cups": {
+      "front": [
+        464.8,
+        192.1
+      ],
+      "top": [
+        465.3,
+        181.4
+      ],
+      "type": "cup"
+    },
+    "iced_tea": {
+      "front": [
+        489.7,
+        265.2
+      ],
+      "top": [
+        490.0,
+        249.8
+      ],
+      "type": "iced_tea"
+    },
+    "kettle_100": {
+      "front": [
+        365.3,
+        277.1
+      ],
+      "progress": 0.199999999999999,
+      "state": 1,
+      "top": [
+        368.1,
+        255.4
+      ],
+      "type": "water_100"
+    },
+    "kettle_80": {
+      "front": [
+        660.6,
+        277.1
+      ],
+      "progress": 0.0,
+      "state": 0,
+      "top": [
+        657.8,
+        255.4
+      ],
+      "type": "water_80"
+    },
+    "leaf_black": {
+      "front": [
+        569.8,
+        192.1
+      ],
+      "top": [
+        569.3,
+        181.4
+      ],
+      "type": "leaf_black"
+    },
+    "leaf_green": {
+      "front": [
+        521.8,
+        192.1
+      ],
+      "top": [
+        521.7,
+        181.4
+      ],
+      "type": "leaf_green"
+    },
+    "lemon": {
+      "front": [
+        535.4,
+        331.3
+      ],
+      "top": [
+        535.0,
+        314.1
+      ],
+      "type": "lemon"
+    },
+    "slot_island_l1": {
+      "front": [
+        447.8,
+        427.9
+      ],
+      "top": [
+        449.1,
+        401.0
+      ],
+      "type": "slot"
+    },
+    "slot_island_l2": {
+      "front": [
+        489.0,
+        297.3
+      ],
+      "top": [
+        489.4,
+        281.0
+      ],
+      "type": "slot"
+    },
+    "slot_island_l3": {
+      "front": [
+        488.4,
+        331.3
+      ],
+      "top": [
+        488.7,
+        314.1
+      ],
+      "type": "slot"
+    },
+    "slot_island_r1": {
+      "front": [
+        534.1,
+        265.2
+      ],
+      "top": [
+        533.8,
+        249.8
+      ],
+      "type": "slot"
+    },
+    "slot_island_r2": {
+      "front": [
+        534.7,
+        297.3
+      ],
+      "top": [
+        534.4,
+        281.0
+      ],
+      "type": "slot"
+    },
+    "slot_left": {
+      "front": [
+        355.4,
+        312.6
+      ],
+      "top": [
+        357.2,
+        298.5
+      ],
+      "type": "slot"
+    },
+    "slot_right": {
+      "front": [
+        669.8,
+        313.9
+      ],
+      "top": [
+        667.8,
+        299.2
+      ],
+      "type": "slot"
+    },
+    "trash": {
+      "front": [
+        354.4,
+        338.9
+      ],
+      "top": [
+        355.3,
+        331.2
+      ],
+      "type": "trash"
+    }
+  },
+  "till": {
+    "amount": 250,
+    "cap": 250,
+    "pos": [
+      512.0,
+      389.0
+    ]
+  },
+  "viewport": [
+    1024.0,
+    640.0
+  ]
+}

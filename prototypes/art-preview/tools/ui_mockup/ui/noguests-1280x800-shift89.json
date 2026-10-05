@@ -1,0 +1,272 @@
+{
+  "barista": {
+    "feet": [
+      446.6,
+      388.1
+    ],
+    "hand": [
+      459.5,
+      365.7
+    ],
+    "head": [
+      442.4,
+      298.5
+    ],
+    "held": null,
+    "match": false
+  },
+  "guests": [
+    {
+      "feet": [
+        488.6,
+        550.9
+      ],
+      "head": [
+        486.5,
+        436.1
+      ],
+      "level": "calm",
+      "patience": 0.93546884392494,
+      "price": 2,
+      "ring": [
+        486.2,
+        421.5
+      ],
+      "slot": 1,
+      "state": 1,
+      "steps": [
+        "iced_tea"
+      ]
+    },
+    {
+      "feet": [
+        535.4,
+        550.9
+      ],
+      "head": [
+        537.5,
+        436.1
+      ],
+      "level": "warn",
+      "patience": 0.357255291173121,
+      "price": 2,
+      "ring": [
+        537.8,
+        421.5
+      ],
+      "slot": 2,
+      "state": 1,
+      "steps": [
+        "iced_tea"
+      ]
+    },
+    {
+      "feet": [
+        582.1,
+        550.9
+      ],
+      "head": [
+        588.6,
+        436.2
+      ],
+      "level": "warn",
+      "patience": 0.593689760408571,
+      "price": 5,
+      "ring": [
+        589.4,
+        421.7
+      ],
+      "slot": 3,
+      "state": 1,
+      "steps": [
+        "leaf_black",
+        "water_100"
+      ]
+    }
+  ],
+  "guests_lost": 0,
+  "score": 773,
+  "stations": {
+    "cups": {
+      "front": [
+        464.8,
+        281.1
+      ],
+      "top": [
+        465.3,
+        270.4
+      ],
+      "type": "cup"
+    },
+    "iced_tea": {
+      "front": [
+        489.7,
+        354.2
+      ],
+      "top": [
+        490.0,
+        338.8
+      ],
+      "type": "iced_tea"
+    },
+    "kettle_100": {
+      "front": [
+        365.3,
+        366.1
+      ],
+      "progress": 0.0,
+      "state": 0,
+      "top": [
+        368.1,
+        344.4
+      ],
+      "type": "water_100"
+    },
+    "kettle_80": {
+      "front": [
+        660.6,
+        366.1
+      ],
+      "progress": 0.0,
+      "state": 0,
+      "top": [
+        657.8,
+        344.4
+      ],
+      "type": "water_80"
+    },
+    "leaf_black": {
+      "front": [
+        569.8,
+        281.1
+      ],
+      "top": [
+        569.3,
+        270.4
+      ],
+      "type": "leaf_black"
+    },
+    "leaf_green": {
+      "front": [
+        521.8,
+        281.1
+      ],
+      "top": [
+        521.7,
+        270.4
+      ],
+      "type": "leaf_green"
+    },
+    "lemon": {
+      "front": [
+        535.4,
+        420.3
+      ],
+      "top": [
+        535.0,
+        403.1
+      ],
+      "type": "lemon"
+    },
+    "slot_island_l1": {
+      "front": [
+        447.8,
+        516.9
+      ],
+      "top": [
+        449.1,
+        490.0
+      ],
+      "type": "slot"
+    },
+    "slot_island_l2": {
+      "front": [
+        489.0,
+        386.3
+      ],
+      "top": [
+        489.4,
+        370.0
+      ],
+      "type": "slot"
+    },
+    "slot_island_l3": {
+      "front": [
+        488.4,
+        420.3
+      ],
+      "top": [
+        488.7,
+        403.1
+      ],
+      "type": "slot"
+    },
+    "slot_island_r1": {
+      "front": [
+        534.1,
+        354.2
+      ],
+      "top": [
+        533.8,
+        338.8
+      ],
+      "type": "slot"
+    },
+    "slot_island_r2": {
+      "front": [
+        534.7,
+        386.3
+      ],
+      "top": [
+        534.4,
+        370.0
+      ],
+      "type": "slot"
+    },
+    "slot_left": {
+      "front": [
+        355.4,
+        401.6
+      ],
+      "top": [
+        357.2,
+        387.5
+      ],
+      "type": "slot"
+    },
+    "slot_right": {
+      "front": [
+        669.8,
+        402.9
+      ],
+      "top": [
+        667.8,
+        388.2
+      ],
+      "type": "slot"
+    },
+    "trash": {
+      "front": [
+        354.4,
+        427.9
+      ],
+      "top": [
+        355.3,
+        420.2
+      ],
+      "type": "trash"
+    }
+  },
+  "till": {
+    "amount": 250,
+    "cap": 250,
+    "pos": [
+      512.0,
+      478.0
+    ]
+  },
+  "viewport": [
+    1024.0,
+    640.0
+  ]
+}

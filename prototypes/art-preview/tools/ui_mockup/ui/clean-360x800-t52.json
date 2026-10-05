@@ -1,0 +1,296 @@
+{
+  "barista": {
+    "feet": [
+      263.1,
+      436.6
+    ],
+    "hand": [
+      278.4,
+      414.9
+    ],
+    "head": [
+      268.3,
+      350.7
+    ],
+    "held": null,
+    "match": false
+  },
+  "guests": [
+    {
+      "feet": [
+        180.7,
+        679.3
+      ],
+      "head": [
+        180.7,
+        566.2
+      ],
+      "level": "calm",
+      "patience": 0.969120648412548,
+      "price": 5,
+      "ring": [
+        180.7,
+        552.5
+      ],
+      "slot": 0,
+      "state": 0,
+      "steps": [
+        "leaf_black",
+        "water_100"
+      ]
+    },
+    {
+      "feet": [
+        158.2,
+        616.0
+      ],
+      "head": [
+        156.1,
+        505.4
+      ],
+      "level": "calm",
+      "patience": 0.886062322768057,
+      "price": 5,
+      "ring": [
+        155.9,
+        491.4
+      ],
+      "slot": 1,
+      "state": 1,
+      "steps": [
+        "leaf_green",
+        "water_80"
+      ]
+    },
+    {
+      "feet": [
+        203.2,
+        616.0
+      ],
+      "head": [
+        205.3,
+        505.4
+      ],
+      "level": "calm",
+      "patience": 0.722961468640694,
+      "price": 5,
+      "ring": [
+        205.6,
+        491.4
+      ],
+      "slot": 2,
+      "state": 1,
+      "steps": [
+        "leaf_black",
+        "water_100"
+      ]
+    },
+    {
+      "feet": [
+        248.2,
+        616.0
+      ],
+      "head": [
+        254.5,
+        505.6
+      ],
+      "level": "warn",
+      "patience": 0.483851687873654,
+      "price": 2,
+      "ring": [
+        255.3,
+        491.5
+      ],
+      "slot": 3,
+      "state": 1,
+      "steps": [
+        "iced_tea"
+      ]
+    }
+  ],
+  "guests_lost": 0,
+  "score": 848,
+  "stations": {
+    "cups": {
+      "front": [
+        135.3,
+        356.3
+      ],
+      "top": [
+        135.8,
+        345.9
+      ],
+      "type": "cup"
+    },
+    "iced_tea": {
+      "front": [
+        159.2,
+        426.6
+      ],
+      "top": [
+        159.5,
+        411.8
+      ],
+      "type": "iced_tea"
+    },
+    "kettle_100": {
+      "front": [
+        39.5,
+        438.1
+      ],
+      "progress": 0.0,
+      "state": 0,
+      "top": [
+        42.2,
+        417.2
+      ],
+      "type": "water_100"
+    },
+    "kettle_80": {
+      "front": [
+        323.7,
+        438.1
+      ],
+      "progress": 0.632570518518524,
+      "state": 1,
+      "top": [
+        321.1,
+        417.2
+      ],
+      "type": "water_80"
+    },
+    "leaf_black": {
+      "front": [
+        236.4,
+        356.3
+      ],
+      "top": [
+        235.9,
+        345.9
+      ],
+      "type": "leaf_black"
+    },
+    "leaf_green": {
+      "front": [
+        190.1,
+        356.3
+      ],
+      "top": [
+        190.1,
+        345.9
+      ],
+      "type": "leaf_green"
+    },
+    "lemon": {
+      "front": [
+        203.2,
+        490.3
+      ],
+      "top": [
+        202.9,
+        473.7
+      ],
+      "type": "lemon"
+    },
+    "slot_island_l1": {
+      "front": [
+        118.9,
+        583.3
+      ],
+      "top": [
+        120.2,
+        557.4
+      ],
+      "type": "slot"
+    },
+    "slot_island_l2": {
+      "front": [
+        158.6,
+        457.6
+      ],
+      "top": [
+        158.9,
+        441.9
+      ],
+      "type": "slot"
+    },
+    "slot_island_l3": {
+      "front": [
+        158.0,
+        490.3
+      ],
+      "top": [
+        158.3,
+        473.7
+      ],
+      "type": "slot"
+    },
+    "slot_island_r1": {
+      "front": [
+        202.0,
+        426.6
+      ],
+      "top": [
+        201.7,
+        411.8
+      ],
+      "type": "slot"
+    },
+    "slot_island_r2": {
+      "front": [
+        202.6,
+        457.6
+      ],
+      "top": [
+        202.3,
+        441.9
+      ],
+      "type": "slot"
+    },
+    "slot_left": {
+      "front": [
+        29.9,
+        472.3
+      ],
+      "top": [
+        31.7,
+        458.7
+      ],
+      "type": "slot"
+    },
+    "slot_right": {
+      "front": [
+        332.6,
+        473.5
+      ],
+      "top": [
+        330.8,
+        459.3
+      ],
+      "type": "slot"
+    },
+    "trash": {
+      "front": [
+        29.0,
+        497.5
+      ],
+      "top": [
+        29.9,
+        490.2
+      ],
+      "type": "trash"
+    }
+  },
+  "till": {
+    "amount": 250,
+    "cap": 250,
+    "pos": [
+      180.7,
+      545.8
+    ]
+  },
+  "viewport": [
+    360.0,
+    800.0
+  ]
+}
