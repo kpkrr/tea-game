@@ -1,0 +1,2906 @@
+project_model_pin:
+  model: nano_banana_pro @ 2k via Higgsfield MCP (service reports nano_banana_2); 2 credits per image
+  pinned: 2026-10-01 with style frame approval
+  seed_policy: Seeds are not exposed; job_id is recorded instead and is reusable as an image reference / recovery handle.
+entries:
+- path: design/art/references/ref-01-cozy-diorama-kitchen.png
+  kind: reference
+  status: approved
+  tool: ChatGPT (OpenAI image generation), owner-generated
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: null
+  prompt: null
+  input_refs: []
+  cleaner: null
+  licence: OpenAI Terms of Use — output rights assigned to the user (owner); snapshot of the terms page TO BE SAVED before
+    ship
+  sha256: c2d4c57b32d6be52d39f4d7dd5e43b40dab2957da8e029a9cebd043d56a7f940
+  notes: Original look reference. Uploaded to Higgsfield as media c30d3416-77c7-4a2b-8cf4-b970a42150f6.
+- path: art-source/style-frame/style-frame-approved-v1a.png
+  kind: style_frame
+  status: approved
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 6ef0eaaf-c4eb-4b1a-97dd-bf768f61b370
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Use the reference image ONLY for art style, materials, lighting, camera feel and character rendering; create a
+    completely new tall portrait composition. Top-down gameplay screenshot of a mobile arcade game: a barista rushing between
+    stations in a cozy tea house kitchen, two clay kettles steaming on small hearth fires, jars of black and green tea leaves,
+    a bowl of lemons, a stack of white cups, a big golden wooden cash box (till) on the counter, three guests waiting in a
+    queue at the counter edge | cozy rustic tea house kitchen on a floating stone terrace diorama above a river, cliffs and
+    water visible around the edges, stone tile floor, thick honey-wood counters, low stone-and-log parapet with rope railings,
+    lanterns on posts, crates and closed sacks of tea leaves, clay teapots, potted plants, steam puffs | chunky stylized 3D
+    with hand-painted textures, soft rounded bevels, cozy clutter only at the edges, clear open walkways | warm golden late-afternoon
+    light, lantern glow, small fires under kettles, amber shadows, soft cool shadows only on the distant water | fixed high-angle
+    perspective camera looking down about 52 degrees, narrow field of view, miniature diorama feel, portrait 9:19.5 framing
+    | 2D cartoon chibi characters with bold dark-umber outline, head about half of body height, huge expressive faces, dynamic
+    poses | palette anchors: #2B1D1A #F6EAD3 #F2B632, warm desaturated stone and wood | no text, no logos, no chef hats, no
+    tomatoes, no red or bright green produce, no red banners, no gold coins, no neon, no photorealism, no pixel art'
+  input_refs:
+  - design/art/references/ref-01-cozy-diorama-kitchen.png
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: ddabae9708e91c017f66bb305eac9e57b4471e56b7510858c628f555e041062b
+  notes: 'APPROVED style frame (owner 2026-10-01, iteration v1-a, unedited). THE style anchor: every later asset is derived
+    from its pixels. Retained copy: production/qa/evidence/aa-001-style-frame-approved-v1a.png.'
+- path: art-source/msr/msr-v1-props-materials.png
+  kind: msr
+  status: approved
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 5a8e15b4-c093-439c-a5e6-629d71049272
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Prop and material style sheet matching the reference: cup+saucer, golden cash register till, clay kettle on stone
+    hearth, black/green leaf jars, bowl of lemons, cup stack; stone/plank/burlap/clay swatches; Ink/Parchment/Till Gold chips.
+    Full text in Higgsfield job.'
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png (job 6ef0eaaf-c4eb-4b1a-97dd-bf768f61b370)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: c706b959a18804b818133410f3970b7dbe1d2680c2f52047aec4e3c9e9fbd066
+  notes: Approved by owner 2026-10-01. Hex labels over swatches (model added) — harmless.
+- path: art-source/pilot/kettle-on-hearth-from-msr.png
+  kind: sprite
+  status: candidate
+  tool: local crop (Pillow)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: Crop of msr-v1-props-materials.png (kettle on stone hearth).
+  input_refs:
+  - art-source/msr/msr-v1-props-materials.png
+  cleaner: null
+  licence: see source entry
+  sha256: c6d1ecf693dfa98e61a9b8d7b3247c8099544829114a978c7fd2bd1ad550a382
+  notes: Kettle station item for the pilot.
+- path: art-source/pilot/barista-v1a-top-canvas.png
+  kind: other
+  status: approved
+  tool: local composite (Pillow)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: 'Clean upper body of barista (job fbfa4b1a-…, now deleted) pasted on a tall #D9D9D9 canvas; uploaded as Higgsfield
+    media 26d1e302-2756-4f3c-ab21-0decbf7b7582.'
+  input_refs: []
+  cleaner: null
+  licence: see source entry
+  sha256: ed529065ce0f7942e7de0dbb06009e980c8e18872c9ce86691d429b95ace234d
+  notes: Prep input for the full-body outfill.
+- path: art-source/pilot/barista-v1a-fullbody-idle-v2.png
+  kind: sprite
+  status: approved
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: e0f118b4-6ff1-454c-8255-3669d0dc4eb3
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Edit: keep the upper body exactly, complete the lower body (short brown apron, dark trousers, short legs, small
+    boots) on the empty grey area, chibi proportions, seamless, plain grey bg. Full text in job.'
+  input_refs:
+  - art-source/pilot/barista-v1a-top-canvas.png (media 26d1e302-…)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: e0fc594dc53fec3c30278a63ba2259c39393c3d579021fc365a3326d92e204d8
+  notes: 'BARISTA ANCHOR (owner 2026-10-01): curly-haired barista from v1-a + short apron, idle, 3/4 front.'
+- path: art-source/pilot/barista-v1a-x4-canvas.png
+  kind: other
+  status: approved
+  tool: local composite (Pillow)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: '4 copies of barista-v1a-fullbody-idle-v2 on a 2752x1536 #D8D8D8 canvas; uploaded as Higgsfield media 04bb540f-22fa-4456-b3f2-d2dca352894d.'
+  input_refs:
+  - art-source/pilot/barista-v1a-fullbody-idle-v2.png
+  cleaner: null
+  licence: see source entry
+  sha256: 340183a3cdff37ae2d1aea448993645852ba59ea16a3ba1e01f4d2c99130d031
+  notes: Prep input for walk pose edits.
+- path: art-source/pilot/barista-v1a-walk-se.png
+  kind: sprite
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 02dea2ed-add8-4480-a348-50668e888beb
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Edit the 4-copy canvas: change ONLY the pose → walk cycle diagonally toward viewer/right (contact, down, passing,
+    up). Full text in job.'
+  input_refs:
+  - art-source/pilot/barista-v1a-x4-canvas.png (media 04bb540f-…)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: 9b4fb6e6675800635356ccf19565a732a58d8cbcbe4d322f29b15aa65581f46f
+  notes: ↘ walk keys (↙ = flip_h). Faint paste-box seams in bg — gone after cutout.
+- path: art-source/pilot/barista-v1a-walk-ne.png
+  kind: sprite
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 6f2d06a2-6bef-4394-b306-7557385442df
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Edit the 4-copy canvas: turn around, walk cycle diagonally away/right seen from behind (contact, down, passing,
+    up). Full text in job.'
+  input_refs:
+  - art-source/pilot/barista-v1a-x4-canvas.png (media 04bb540f-…)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: de043f80cb19d36c51e2f1cc45f45ff9050f5d3f85cb9e8386e126617352e2c3
+  notes: ↗ walk keys (↖ = flip_h), apron bow on the back.
+- path: art-source/pilot/guests-v1a-isolated.png
+  kind: sprite
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: a14943f5-22a2-4cac-bc69-a3931b6c8cc3
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Isolate the 3 queue guests from the style frame, full body, side by side, green shirt → muted olive, plain grey
+    bg. Full text in job.
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png (job 6ef0eaaf-c4eb-4b1a-97dd-bf768f61b370)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: 437178255c95183ec382f6490c13d87e5eca8e2110ccf3e115115d65acd39dd5
+  notes: Curly boy in white shirt, girl in pink dress, dark-haired boy in olive tee. Fog strip below feet. Check pink dress
+    vs water_100 red at cleanup.
+- path: art-source/pilot/vfx-v1a-isolated.png
+  kind: vfx
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: af357726-0bee-4847-bd93-9dc51b8f52cf
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Isolate the kettle flames and steam puffs from the style frame: 4 flames (flicker variants) + 4 steam puffs (small
+    → big → dissolve). Full text in job.'
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png (job 6ef0eaaf-c4eb-4b1a-97dd-bf768f61b370)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: 57f7b9fd4e292e249f7963bfc84d59d163bb1ea65949cc1f8f5906c0adfb799a
+  notes: 'Owner 2026-10-01: "пока так" (accepted for the pilot).'
+- path: art-source/pilot/clutter-v1a-isolated.png
+  kind: sprite
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: de833940-2abd-4679-b563-503c4cace344
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Isolate periphery props from the style frame: crate, open tea sack, clay teapot, potted plant, lantern post with
+    rope, leaf jar, cup stack. Full text in job.'
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png (job 6ef0eaaf-c4eb-4b1a-97dd-bf768f61b370)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: 8703a2f7af956a935baeabc912ab3e4cbb38ce0d90e961499499462f080e7ad4
+  notes: Plant leaves fairly bright green — desaturate at cleanup (art bible §4).
+- path: art-source/pilot/tex-stone-floor-v1a.png
+  kind: texture
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: b5e3a6dc-418c-4635-8da5-7ce1d59fcd74
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Flat top-down seamless texture of the style frame stone tile floor. Full text in job.
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png (job 6ef0eaaf-c4eb-4b1a-97dd-bf768f61b370)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: 8c2550c341af16bf701798b61d511ab36d1835cc339efebadec631e956d3ef92
+  notes: Tiles seamlessly (2x2 check); tiles more regular than in v1-a.
+- path: art-source/pilot/tex-wood-plank-v1a.png
+  kind: texture
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 87612408-1ffc-4a92-8843-e503a017a000
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Flat top-down seamless texture of the style frame honey-wood counter planks. Full text in job.
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png (job 6ef0eaaf-c4eb-4b1a-97dd-bf768f61b370)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: c1cabdfc1987abe4fe7db2b049654b8f2c2717ad589385f65a98898cd381daf2
+  notes: Tiles acceptably.
+- path: art-source/pilot/bg-cliffs-water-v1a.png
+  kind: texture
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 25b67c1e-8bd1-4ad8-83bc-452ce0e8b1a2
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Wide pre-blurred strip of the style frame cliffs and river, water muted teal-slate. Full text in job.
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png (job 6ef0eaaf-c4eb-4b1a-97dd-bf768f61b370)
+  cleaner: null
+  licence: Higgsfield starter plan — commercial terms TO BE SNAPSHOTTED before any asset ships
+  sha256: 9b132f786b744088a490f1b833ee6c1dddbdf021d3169807311babb7a0b29d75
+  notes: Background strip past the terrace edge.
+- path: prototypes/art-preview/art/barista_idle_0.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-fullbody-idle-v2.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: bd380950ddd94d29a9b626fead6162e91f5adbe498ae985f3649e8b874bebb8a
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/barista_ne_0.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-walk-ne.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 12446606179be0ee7d61f97d3dc6a1fe86950347891c8f5901dbb702294e0ed1
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/barista_ne_1.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-walk-ne.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: bde80155fc6332ef182ba97433c69b455c034e97885a27f4d7a410f22b9cf094
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/barista_ne_2.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-walk-ne.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 9434d51b1a80c10e2a290af56b00d18bc14aff3704ab880ee58e509a75088ce5
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/barista_ne_3.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-walk-ne.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 4f0ada033e1efa030c4f7a92c2d17609521a1b7da8f2715558b6d32d0db80957
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/barista_se_0.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-walk-se.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 30506fa767d8656706810e236dbfb2ac212e2d6eeafe4a06fb41c30d0d885375
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/barista_se_1.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-walk-se.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 7d7ce72bcb4c1579d9acf8828c743936092aeab2d37cdcf6d6b33d73f615eb6d
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/barista_se_2.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-walk-se.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 4f67c615d7eb7453885becc2404aea339f7e0ff6e4c640071c855c9a8ba22f13
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/barista_se_3.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/barista-v1a-walk-se.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 847f12171a605dc08d47b1e5cc8e9f22fcd1107d11b1ce60cc456282be0a54ba
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/bg-cliffs-water-v1a.png
+  kind: texture
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/bg-cliffs-water-v1a.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: c9b0a781c0cf51a12e92d497a05dddadc6aef3aa235fd9797a0f42b454269d58
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/clutter_crate.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/clutter-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 25bb2b7a91b1d7a78f1f1f0f8b4fbf13680a60c784026ca8689fecd5e3e81610
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/clutter_cups.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/clutter-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 158925e3cf011cffc138e45b7eb851ca2c59d862a6dd0ecdf0fc2ce0312fb84c
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/clutter_jar.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/clutter-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 3e8e412f74d1f3dc2c3824115c6719ccb6f958f1f5f16d3538ac0cca65742567
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/clutter_lantern.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/clutter-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 120f215f1b7e48504a972d449fc0a58bdbe2fc71a421b66947b9b01624e42d4a
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/clutter_plant.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/clutter-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 1b6a2ed302cf9eb83d8a471d255905a280736aea4514a9f946d70ff049c9fee0
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/clutter_sack.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/clutter-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: e8866187dda4b2535a93a89d78289fc6d3402a24482c6cfdaa4ac472d73b81a0
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/clutter_teapot.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/clutter-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 0456e4bc6dde4bae0b299e4a900c56309382ed5fb66460745b0bdf1d661b1df8
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/fire_0.png
+  kind: vfx
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/vfx-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 5a9a46624c52e6e1e8ab376fa7a35f900f81a1699c839f0de2af9c8b74cfb5a6
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/fire_1.png
+  kind: vfx
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/vfx-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: ac9e185e88b427a6e7f15008b4b3b6b86c55bde41ec4f5883c5c2c0b95a0ab40
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/fire_2.png
+  kind: vfx
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/vfx-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: ac657c619a9b00fab922f8da26636092b0f55aecdf8b22fdd98f1a177b604086
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/fire_3.png
+  kind: vfx
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/vfx-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: ed7adf25512b5dc3ae4262369e2708f2f983d17d346a8181ab2922762d76bc54
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/guest_0_0.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/guests-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: fc78b264c1e2872564be76186d56eeba5cbd7d475db3ddf5d1ed314579a06f20
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/guest_1_0.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/guests-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: b9b8954d1a9207a3ee40957131249888ef0794fa779e68339e0cb704098ed9a0
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/guest_2_0.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/guests-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: a13b85a82e578d8f8fbf3d892f9da2d479ce640976b3dee0c0fdf320edeb0078
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/kettle_hearth.png
+  kind: sprite
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/kettle-on-hearth-from-msr.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 8a9fc8eadf5bb8a36d00d43abcfefaa990a1aefa9917e981499755ce050eb844
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/steam_0.png
+  kind: vfx
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/vfx-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 1c45b2e100663f3802f613c2334b7e24f13ccd05e68bf71fd5019127e7608361
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/steam_1.png
+  kind: vfx
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/vfx-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 281558b4aec39504d9e4354e1ed31fcced52118ee3d0249d06ee19cc3b3b8107
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/steam_2.png
+  kind: vfx
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/vfx-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: 300a6f4e1e8b087258d67949f6216d9122cf92bfc45be7814a485a6fca69f2d8
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/steam_3.png
+  kind: vfx
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/vfx-v1a-isolated.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: fa1d0bca07ab31cde515c4bcc84931f7dab2c7b15ecdae3f3b589635a586730f
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/tex-stone-floor-v1a.png
+  kind: texture
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/tex-stone-floor-v1a.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: f9fc07ed9240c1c978d932874ee3d4d7eb1bfd08fc2d7256325ef9805f2834ee
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: prototypes/art-preview/art/tex-wood-plank-v1a.png
+  kind: texture
+  status: candidate
+  tool: derived — Pillow/numpy cutout script (session 6, look-test only)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/pilot/tex-wood-plank-v1a.png
+  cleaner: grey-key + connected-component pockets + soft rim, bg un-mix; frames split by bbox, feet pivot, common scale
+  licence: as input_refs
+  sha256: b67faec1290f89dbbd0440b1c3b212180d64f6f99dfd1d0be0b5adc8035dd915
+  notes: Look-test derivative for prototypes/art-preview (AA-003). Not a shipped asset; regenerate from source if reused.
+- path: art-source/plate/blockout-yaw0-p52-768x1376.png
+  kind: reference
+  status: approved
+  tool: Godot 4.7.2 grey-box render (prototypes/art-preview/tools/blockout.gd)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - prototypes/art-preview/data/game_config.tres
+  cleaner: null
+  licence: own work
+  sha256: 97d6f0095490044d4790dff3ef3c6ad6d72c5899a04fb406f4b9ac343f530af0
+  notes: Kitchen layout from config; camera pitch 52, yaw 0, fov 30, D 40.17 m, v_offset -0.164, fitted to 9:20 centre crop.
+    Higgsfield media 32ec999b-8780-4b67-903e-9ed39698bb48.
+- path: art-source/plate/plate-v1-28125df9.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 28125df9-f0ee-4f11-9412-c150d03d0ea5
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Repaint image 1 as a finished game scene in the exact art style, materials, colors, warm soft lantern lighting
+    and rendering of image 2 ... Image 1 is the layout: keep its camera, perspective, framing and the exact position, size
+    and shape of every object ... Empty scene: no people, no characters, no steam, no text. (full text in session 6 log)'
+  input_refs:
+  - art-source/plate/blockout-yaw0-p52-768x1376.png
+  - art-source/style-frame/style-frame-approved-v1a.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 441cf777cd9cdbfecfec1f3f5d944b8cb757bd9ef602374bdbaa0347aecc04f9
+  notes: 'Layout kept; owner: style too 3D-render, not warm enough -> restyle pass v2.'
+- path: art-source/plate/plate-v2-e4ce574c.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: e4ce574c-b893-46d3-b81a-26e5c1c017b7
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Restyle image 1 so it looks exactly like it was painted by the same artist in the same frame as image 2. Keep image
+    1''s camera, framing, layout and every object''s position, size and count exactly; change only the rendering ... warm
+    golden late-afternoon light, glowing amber lanterns ... Empty scene: no people, no steam, no text.'
+  input_refs:
+  - art-source/plate/plate-v1-28125df9.png
+  - art-source/style-frame/style-frame-approved-v1a.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: d03d05900ca0285bfadaa6a04be3a63e4d9e80627b2570f722679d6df9116aba
+  notes: Kitchen plate used in prototypes/art-preview (copy art/plate.png).
+- path: prototypes/art-preview/art/plate.png
+  kind: other
+  status: candidate
+  tool: copy
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v14-full.png
+  cleaner: null
+  licence: as input_refs
+  sha256: 363907737e3508742625221129585da9a72a87de30e15f4d9fe24c45fdc5c2cb
+  notes: Copy of plate-v14-full. Look-test only.
+- path: art-source/plate/v1a-crops/backcounter.png
+  kind: reference
+  status: approved
+  tool: Pillow crop
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png
+  cleaner: null
+  licence: as input_refs
+  sha256: 5eb164895a11806353212fbb1bbb29903e0645b8bfa38cff04faba56b819cfae
+  notes: Prop/location close-up of v1-a without characters, used as Nano Banana ref.
+- path: art-source/plate/v1a-crops/cliffs-water.png
+  kind: reference
+  status: approved
+  tool: Pillow crop
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png
+  cleaner: null
+  licence: as input_refs
+  sha256: 4fe4161c2bbdaa6cd0149c015d176a4668925da53595116ee3e3ceda22e04bdb
+  notes: Prop/location close-up of v1-a without characters, used as Nano Banana ref.
+- path: art-source/plate/v1a-crops/foreground.png
+  kind: reference
+  status: approved
+  tool: Pillow crop
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png
+  cleaner: null
+  licence: as input_refs
+  sha256: 1371302b0bab605bd3c1bb5e528cfa28ef07b227595df2564b62c15609aecd1a
+  notes: Prop/location close-up of v1-a without characters, used as Nano Banana ref.
+- path: art-source/plate/v1a-crops/frontcounter.png
+  kind: reference
+  status: approved
+  tool: Pillow crop
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png
+  cleaner: null
+  licence: as input_refs
+  sha256: 7ca2182b869e4138f62d6d0f7691eba77e8411ee2880713e06659a88b1446c2f
+  notes: Prop/location close-up of v1-a without characters, used as Nano Banana ref.
+- path: art-source/plate/v1a-crops/hearths.png
+  kind: reference
+  status: approved
+  tool: Pillow crop
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/style-frame/style-frame-approved-v1a.png
+  cleaner: null
+  licence: as input_refs
+  sha256: 3dba874957ab573cd3033d6e4188c1a6d8152df0aac83faf83b3d497f6269eb7
+  notes: Prop/location close-up of v1-a without characters, used as Nano Banana ref.
+- path: art-source/plate/plate-v2-cartoonized-local.png
+  kind: reference
+  status: candidate
+  tool: Pillow mode-filter + edge ink
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v2-e4ce574c.png
+  cleaner: null
+  licence: as input_refs
+  sha256: fbb5cea77673068c596d10b223d808f58291718f3aaca53d8a053d6dfd4b3590
+  notes: Local 2D-ish pre-pass, base of v3b.
+- path: art-source/plate/plate-v3a-f689b3a8.png
+  kind: other
+  status: approved
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: f689b3a8-0ce8-4230-b43f-1f77440d2318
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Image 1 gives ONLY camera/floor plan ... copy everything else from image 2 and crops ... (session 6)
+  input_refs:
+  - art-source/plate/plate-v2-e4ce574c.png
+  - art-source/style-frame/style-frame-approved-v1a.png
+  - art-source/plate/v1a-crops/backcounter.png
+  - art-source/plate/v1a-crops/cliffs-water.png
+  - art-source/plate/v1a-crops/foreground.png
+  - art-source/plate/v1a-crops/frontcounter.png
+  - art-source/plate/v1a-crops/hearths.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 87bf96b822d4db4b44ba51fe5679e2fe3db67f0492bfe7ecb23e99852c94744e
+  notes: Came out as v1-a itself without people (clean v1-a). Used as the only ref for v4.
+- path: art-source/plate/plate-v3b-278439db.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 278439db-8c05-483c-9fb0-3afceef67630
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: same as v3a
+  input_refs:
+  - art-source/plate/plate-v2-cartoonized-local.png
+  - art-source/style-frame/style-frame-approved-v1a.png
+  - art-source/plate/v1a-crops/backcounter.png
+  - art-source/plate/v1a-crops/cliffs-water.png
+  - art-source/plate/v1a-crops/foreground.png
+  - art-source/plate/v1a-crops/frontcounter.png
+  - art-source/plate/v1a-crops/hearths.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: e2d175b2a40736d164266b1c1afecb437a08b0e0b19c969d3ba50036ac909a8b
+  notes: Our layout but still 3D-ish; props moved. Not used.
+- path: art-source/plate/plate-v4a-0b532389.png
+  kind: other
+  status: approved
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 0b532389-9ee0-4ae2-9301-fdc2fafe4f94
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Same location ... change the camera and rearrange the kitchen: straight-on 52 deg + our layout in words (session
+    6)'
+  input_refs:
+  - art-source/plate/plate-v3a-f689b3a8.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 418543df7e83389875201e49f1c09088031682b07c300c9bd73a94757840ae50
+  notes: Variant 1 (middle picture of aa-003-plate-v4ab.jpg) — the one the owner liked ("второй вариант" = 2nd picture). Approved
+    backup.
+- path: art-source/plate/plate-v4b-2f6d036c.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 2f6d036c-7cb8-485b-b2bb-ea078d9fb8a6
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: same as v4a
+  input_refs:
+  - art-source/plate/plate-v3a-f689b3a8.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: e7b3bd41e48cd417634c2e2080895a516317b1c68993368c91d9c4ef097e908a
+  notes: Variant 2. Mistakenly marked as owner pick; owner meant v4a. Not used.
+- path: art-source/plate/plate-v5-a09062d2.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: a09062d2-ca20-47ae-bfac-13f67812dc3b
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: 'Edit: move stairs to centre in front of the till (text only)'
+  input_refs:
+  - art-source/plate/plate-v4b-2f6d036c.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 9af69a8e19ad8b076084ee0439855c4a5ba1bb3e2ef5706b2ad928c7bdf171c6
+  notes: 'Failed: unchanged.'
+- path: art-source/plate/plate-v4b-annotated.png
+  kind: reference
+  status: candidate
+  tool: Pillow red annotations
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v4b-2f6d036c.png
+  cleaner: null
+  licence: as input_refs
+  sha256: ea090271e9633d1f22d64395934e79d8ddddd021c7248794148b64bf3b78caa1
+  notes: Red X on right passage, STAIRS box at centre front.
+- path: art-source/plate/plate-v6a-f667596a.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: f667596a-5e98-4b6a-be49-0d04bed3749e
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Apply the red annotations, then remove every red mark ... (session 6)
+  input_refs:
+  - art-source/plate/plate-v4b-annotated.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 91e4a4593b241602f8cd93af53833953f41062737a222bf260bf499709ca61c2
+  notes: Stairs centred to the till, right passage closed. Awaiting owner approval.
+- path: art-source/plate/plate-v6b-337fa01b.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 337fa01b-a656-445b-96f7-ac8f09b90c9f
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: same as v6a
+  input_refs:
+  - art-source/plate/plate-v4b-annotated.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 260698286c20aa4ddbd8dc9f5696475ab05e00ed2a0fcf02ba777d63c7938973
+  notes: Stairs not applied.
+- path: art-source/plate/plate-v4a-annotated.png
+  kind: reference
+  status: candidate
+  tool: Pillow red annotations
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v4a-0b532389.png
+  cleaner: null
+  licence: as input_refs
+  sha256: d2542a220f22df0aafa5461ddf010c3d629f37d673d490c900893b1e4c3e9e73
+  notes: STAIRS box at the front corner, in front of the till.
+- path: art-source/plate/plate-v7a-01b96ac7.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 01b96ac7-10ce-45df-95dd-3d1fcf94ebce
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Apply the red annotation, then remove every red mark ... build wide chunky stone stairs ... centered in front of
+    the golden cash register ... (session 6)
+  input_refs:
+  - art-source/plate/plate-v4a-annotated.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: a448a17e8d21eb4e293270df3e8a36aa2c8f77033023e5135b30c8f05476ff1f
+  notes: v4a + centred stairs to the till. Awaiting owner approval.
+- path: art-source/plate/plate-v7b-f1e5e4a2.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: f1e5e4a2-8b0c-4050-b4b4-065748b357ec
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Apply the red annotation, then remove every red mark ... build wide chunky stone stairs ... centered in front of
+    the golden cash register ... (session 6)
+  input_refs:
+  - art-source/plate/plate-v4a-annotated.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: feac79080a63365546ae2105a079ed556a4730743bfb210bdea0330037d82876
+  notes: v4a + gate posts; stairs less readable.
+- path: art-source/plate/plate-v7a-annotated.png
+  kind: reference
+  status: candidate
+  tool: Pillow red/blue annotations
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v7a-01b96ac7.png
+  cleaner: null
+  licence: as input_refs
+  sha256: b7be53a51e0d4767f655bf635c319207310f75b6b7979948ac57b0ee62c8d376
+  notes: REMOVE gate posts, EMPTY FLOOR, lower STAIRS, MOVE props.
+- path: art-source/plate/plate-v8-7754deb0.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 7754deb0-60b0-4b0f-a559-b2d69e88e74a
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Apply the colored annotations ... remove gate posts, empty floor, lower stairs, move props (session 6)
+  input_refs:
+  - art-source/plate/plate-v7a-annotated.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 4f933bf1da25a5cba1c1111373fc8bb1995964b6f98ba6d39996f9b6e72d0cff
+  notes: Posts gone but lanterns moved onto the counter; floor in front of counter barely wider.
+- path: art-source/plate/plate-v8-annotated.png
+  kind: reference
+  status: candidate
+  tool: Pillow annotations with text
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v8-7754deb0.png
+  cleaner: null
+  licence: as input_refs
+  sha256: 0dde5ed78f14a8a566181e124f231eb1797e0badb3b95d27cb0f8ec1f936ed9f
+  notes: REMOVE LANTERN x2, WIDE EMPTY FLOOR, STAIRS HERE, REMOVE ITEMS x2.
+- path: art-source/plate/plate-v9-bbe1e1fd.png
+  kind: other
+  status: approved
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: bbe1e1fd-fcd3-44aa-ae2c-b9607966c3ef
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Follow the pencil marks and the text written on the image ... (session 6)
+  input_refs:
+  - art-source/plate/plate-v8-annotated.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 180c5539f6ed783b7c3cb0647be582887da16fd55c8d232508267057c7d2cd41
+  notes: Owner-approved final plate (B of aa-003-plate-v9.jpg).
+- path: art-source/plate/plate-v9-clean.png
+  kind: other
+  status: candidate
+  tool: OpenCV seamlessClone + inpaint (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-bbe1e1fd.png
+  cleaner: sack in front of the stairs removed, bottom-left step rebuilt
+  licence: as input_refs
+  sha256: 7ff31fba92327af1ce6918e92475afe8a7fbe9620648d53f92a6430e9d8d7770
+  notes: 'Right crates kept (removing them exposes a hidden crate base). Superseded 2026-10-01: owner rejected the local patch-up;
+    back to the original v9.'
+- path: art-source/plate/plate-v9-cool.png
+  kind: other
+  status: candidate
+  tool: numpy white balance (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-clean.png
+  cleaner: linear WB x(0.92, 0.99, 1.06), saturation 0.93
+  licence: as input_refs
+  sha256: 68c2ef7e8dbfb0fba344d639c935484d81af72de5408ec80f55b2db8db22ea7f
+  notes: 'Owner: background too warm. Superseded 2026-10-01: owner rejected the local patch-up; back to the original v9.'
+- path: art-source/plate/plate-v9-balanced.png
+  kind: other
+  status: approved
+  tool: numpy gray-world match to v1-a (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-bbe1e1fd.png
+  - art-source/style-frame/style-frame-approved-v1a.png
+  cleaner: linear per-channel gain (0.78, 1.0, 0.80) = v1-a mean balance / v9 mean balance
+  licence: as input_refs
+  sha256: 334a06468662845ca7cbae9af26e7c9929c599e1e16f9485c15ed7bb7e9259c1
+  notes: 'Owner: cooler, balance like the reference.'
+- path: prototypes/art-preview/art/post_l.png
+  kind: sprite
+  status: candidate
+  tool: OpenCV grabCut (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-px4.png
+  cleaner: grabCut mask snapped to the 4px plate grid
+  licence: as input_refs
+  sha256: a05a1e12d4100089bcd93824e1e0fd5d969863d59d29d20d89b0735e07ae953c
+  notes: Front fence post cut from the plate at px 368,1878, drawn over 3D so queued guests stand behind it.
+- path: prototypes/art-preview/art/post_r.png
+  kind: sprite
+  status: candidate
+  tool: OpenCV grabCut (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-px4.png
+  cleaner: grabCut mask snapped to the 4px plate grid
+  licence: as input_refs
+  sha256: bf802b56d1bbeec63b20a93ec397025942078583c740cefdb84b635be27af8ce
+  notes: Front fence post cut from the plate at px 1114,1868, drawn over 3D so queued guests stand behind it.
+- path: art-source/plate/plate-v9-cold.png
+  kind: other
+  status: approved
+  tool: numpy white balance (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: linear gain (0.88, 0.98, 1.12)
+  licence: as input_refs
+  sha256: b8e85fe1291c875e81733406d7297c248d14b4e84c7a09c688e11b51f22588a1
+  notes: 'Owner: still too warm.'
+- path: prototypes/art-preview/art/fire_ring_l.png
+  kind: vfx
+  status: candidate
+  tool: numpy colour-key mask (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: warm-bright key inside a tight box, 1.2px blur
+  licence: as input_refs
+  sha256: 4cca5c12745d077b6a900bad231a01a5f6190e933ad81884e6d2eb7714b0adb7
+  notes: Light mask for in-place flicker (dim/glow).
+- path: prototypes/art-preview/art/fire_mouth_l.png
+  kind: vfx
+  status: candidate
+  tool: numpy colour-key mask (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: warm-bright key inside a tight box, 1.2px blur
+  licence: as input_refs
+  sha256: 0490a248150352d42a4181ebc8d8279a44577c0a37594c4c23b9a6542196939a
+  notes: Light mask for in-place flicker (dim/glow).
+- path: prototypes/art-preview/art/fire_ring_r.png
+  kind: vfx
+  status: candidate
+  tool: numpy colour-key mask (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: warm-bright key inside a tight box, 1.2px blur
+  licence: as input_refs
+  sha256: fb862e5ce493c1bcf86a575ec1695597299e5a487319cbfa3037400b7d9b28d4
+  notes: Light mask for in-place flicker (dim/glow).
+- path: prototypes/art-preview/art/fire_mouth_r.png
+  kind: vfx
+  status: candidate
+  tool: numpy colour-key mask (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: warm-bright key inside a tight box, 1.2px blur
+  licence: as input_refs
+  sha256: 6eca82856ba9f054e76c37e0c2c583a9f6967ec5a432cac90072a8a2dd609058
+  notes: Light mask for in-place flicker (dim/glow).
+- path: prototypes/art-preview/art/lantern_0.png
+  kind: vfx
+  status: candidate
+  tool: numpy colour-key mask (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: warm-bright key inside a tight box, 1.2px blur
+  licence: as input_refs
+  sha256: 2886cab4ddf1eb64d2249819df23b1b84b1b01f5bdd170f0bc54c49515e3facb
+  notes: Light mask for in-place flicker (dim/glow).
+- path: prototypes/art-preview/art/lantern_1.png
+  kind: vfx
+  status: candidate
+  tool: numpy colour-key mask (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: warm-bright key inside a tight box, 1.2px blur
+  licence: as input_refs
+  sha256: ca634cb23f20b67680340747573019d0e931b8cae9c5a53eaa147591143c3096
+  notes: Light mask for in-place flicker (dim/glow).
+- path: prototypes/art-preview/art/lantern_2.png
+  kind: vfx
+  status: candidate
+  tool: numpy colour-key mask (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: warm-bright key inside a tight box, 1.2px blur
+  licence: as input_refs
+  sha256: 83a762ea1530264fc64f8dc38f89f2c8ce7581c8f96452caca062ac8d0708f58
+  notes: Light mask for in-place flicker (dim/glow).
+- path: prototypes/art-preview/art/lantern_3.png
+  kind: vfx
+  status: candidate
+  tool: numpy colour-key mask (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-balanced.png
+  cleaner: warm-bright key inside a tight box, 1.2px blur
+  licence: as input_refs
+  sha256: f3b061f53f7def91dbeb7b8a9647fd122bf9b319639b0b076eeef4ae470d7541
+  notes: Light mask for in-place flicker (dim/glow).
+- path: art-source/plate/plate-v9-cold-bright.png
+  kind: other
+  status: approved
+  tool: numpy exposure (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-cold.png
+  cleaner: linear gain 1.173 to the original v9 mean luminance (0.22), soft shoulder above 0.8
+  licence: as input_refs
+  sha256: ecd7055eba3404fa92e594a91bb6b3d1c6ee8d2ae9ed6a425b8032cb574aa2a2
+  notes: 'Owner: the picture lost brightness after cooling.'
+- path: art-source/plate/plate-v9-px6.png
+  kind: other
+  status: approved
+  tool: art-source/plate/bake_pixel_plate.py (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-cold-bright.png
+  cleaner: box downscale /6, unsharp 0.5, ink 0.18 on dark side of edges, 40 levels, nearest upscale x6
+  licence: as input_refs
+  sha256: 8d9985233efe0f261772cd1db23abde54545bb4ddc76f122e04d4f00ae3e1b8a
+  notes: 'Owner: soft crisp pixel look for the background only; characters and UI stay original.'
+- path: art-source/plate/plate-v9-px4.png
+  kind: other
+  status: approved
+  tool: art-source/plate/bake_pixel_plate.py (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-cold-bright.png
+  cleaner: cell 4
+  licence: as input_refs
+  sha256: 8058ab5994e955baa5e621f2437959384346f5e63e106df7f8e96d62584f701d
+  notes: 'Owner pick: sharp pixels, finer than px6.'
+- path: art-source/plate/plate-v9-px5-soft.png
+  kind: other
+  status: candidate
+  tool: art-source/plate/bake_pixel_plate.py (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v9-cold-bright.png
+  cleaner: cell 5
+  licence: as input_refs
+  sha256: a42a1d7452aedd78fb631b8165fa070e433f45f13460e881d8f826c049f6cf6d
+  notes: Soft variant (linear filter, no ink). Not picked.
+- path: art-source/plate/plate-v10-pixel-6f2915f1.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: nano_banana_pro @2k (service reports nano_banana_2)
+  job_id: 6f2915f1-d5c5-441c-bf0a-9596896f4a3a
+  date: '2026-10-01'
+  cost_credits: 2
+  prompt: Redraw this exact image as high-quality hand-made pixel art ... keep the composition 1:1 ... (session 6)
+  input_refs:
+  - art-source/plate/plate-v9-bbe1e1fd.png
+  cleaner: null
+  licence: Higgsfield terms — snapshot TO BE SAVED before ship
+  sha256: 3e82a0193c970bc9a8c7a2d14c139699590a3b87ded8277a653fd4d5db33481d
+  notes: Pixel-art redraw of v9. Awaiting owner approval.
+- path: art-source/plate/plate-v11-gpt-36d61dfc.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: gpt_image_2_5 (quality high, 2k)
+  job_id: 36d61dfc-cbab-4389-810a-74771c7708d1
+  date: '2026-10-01'
+  cost_credits: 2.75
+  prompt: 'Convert this exact image into crisp hand-made pixel art. STRICT: style conversion only ... overlay the input pixel-for-pixel
+    ... (session 6)'
+  input_refs:
+  - art-source/plate/plate-v9-bbe1e1fd.png
+  cleaner: null
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  sha256: e2caf4c95a2cb61467e2e2ee11b4f115af5096c8b5f64363eb624569ead0f6e5
+  notes: 1520x2688 (slightly different aspect than v9 1536x2752; needs resize to match). Awaiting owner approval.
+- path: art-source/plate/plate-v12-gpt-warm-e18375ea.png
+  kind: other
+  status: candidate
+  tool: Higgsfield MCP (claude.ai connector)
+  model: gpt_image_2_5 (quality high, 2k)
+  job_id: e18375ea-8a0c-444c-b443-bb451c528173
+  date: '2026-10-01'
+  cost_credits: 2.75
+  prompt: Edit image 1 (pixel art) ONLY in color and lighting ... warm cozy golden-hour mood of image 2 ... (session 6)
+  input_refs:
+  - art-source/plate/plate-v11-gpt-36d61dfc.png
+  - art-source/plate/plate-v9-bbe1e1fd.png
+  cleaner: null
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  sha256: f2da78e7d1b233ddb8a6660cbc7f8cc31c5993267a9c01505f3a5d9b1b2cab8c
+  notes: Warm relight of v11. Awaiting owner.
+- path: art-source/plate/plate-v11-gpt-warm-local.png
+  kind: other
+  status: candidate
+  tool: numpy per-luma-band balance toward v9 (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v11-gpt-36d61dfc.png
+  - art-source/plate/plate-v9-bbe1e1fd.png
+  cleaner: gain^0.6 toward v9 band balance
+  licence: as input_refs
+  sha256: 39f8dd87fb0c532b04bd09969f29ae14c4ceed5a02bdd61e0aa81c18ee9c105f
+  notes: Free warm variant. Awaiting owner.
+- path: art-source/plate/plate-v13-final.png
+  kind: other
+  status: candidate
+  tool: numpy (local)
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v11-gpt-warm-local.png
+  cleaner: contrast x0.86, resize to 1536x2752
+  licence: as input_refs
+  sha256: c45563c2135a4f0f2549ade0aa97c72fbf569bd415c83c4070dd6018f2624c57
+  notes: Owner pick E with less contrast; base for the outpaint.
+- path: art-source/plate/plate-v14-gpt-outpaint-88e4b403.png
+  kind: other
+  status: approved
+  tool: Higgsfield MCP (claude.ai connector)
+  model: gpt_image_2_5 (quality high, 2k)
+  job_id: 88e4b403-43f9-4605-8459-e030542ad622
+  date: '2026-10-01'
+  cost_credits: 2.75
+  prompt: 'Outpaint / extend this pixel-art scene ... keep the middle EXACTLY ... top: river between cliffs, bridge; sides:
+    cliffs, terrace (session 6)'
+  input_refs:
+  - art-source/plate/plate-v13-padded.png
+  cleaner: null
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  sha256: ee3743e52b0d0838eee1c1cb25057b7bb67b2e249714c98e55aba5199ea4c582
+  notes: 'Owner: use this whole image. Layout drift <1 px vs v13 at 10 probes.'
+- path: art-source/plate/plate-v14-full.png
+  kind: other
+  status: approved
+  tool: Pillow resize
+  model: null
+  job_id: null
+  date: '2026-10-01'
+  cost_credits: 0
+  prompt: null
+  input_refs:
+  - art-source/plate/plate-v14-gpt-outpaint-88e4b403.png
+  cleaner: LANCZOS 1360x2048 -> 2304x3456 (v9 frame at 384,704)
+  licence: as input_refs
+  sha256: 363907737e3508742625221129585da9a72a87de30e15f4d9fe24c45fdc5c2cb
+  notes: Shipped to prototypes/art-preview/art/plate.png.
+- path: art-source/plate/plate-v15-wide-0db9d786.png
+  kind: other
+  status: approved
+  date: '2026-10-01'
+  prompt: null
+  cleaner: null
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  sha256: 554548256e0b738c9bd1dc98c5347ded2145d5474f4df15a5a5b3566ba2ed285
+  tool: Higgsfield MCP (claude.ai connector)
+  model: gpt_image_2_5 (quality high, 2k)
+  job_id: 0db9d786-8d93-4eda-ac7c-7616385907a0
+  cost_credits: 2.75
+  input_refs:
+  - art-source/plate/plate-v14-wide-padded.png
+  notes: 16:9 outpaint of v14 for desktop windows; centre drift ~1.5 px at 2048 wide.
+- path: prototypes/art-preview/art/plate_wide.png
+  kind: other
+  status: approved
+  date: '2026-10-01'
+  prompt: null
+  cleaner: null
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  sha256: 9bc71b207b4e15c4575d0d1cddf1b21afd603a0def344405f81a5b393de2471a
+  tool: Pillow resize
+  model: null
+  job_id: null
+  cost_credits: 0
+  input_refs:
+  - art-source/plate/plate-v15-wide-0db9d786.png
+  notes: 2048x1152 backdrop behind the plate (WIDE_PX in view_fit.gd).
+- path: prototypes/art-preview/art/light_mask.png
+  kind: other
+  status: approved
+  date: '2026-10-01'
+  prompt: null
+  cleaner: null
+  licence: own work (procedural)
+  sha256: b8c71c0816a680ea0ca06bb27d24a282995194e305e9a6505d1aaafdf635da0a
+  tool: Pillow + numpy (prototypes/art-preview/tools/make_light_mask.py)
+  model: null
+  job_id: null
+  cost_credits: 0
+  input_refs: []
+  notes: Evening light mask (owner pick B) for art/grade.gdshader, plate space at 1/4; kitchen polygon + light pools.
+- path: prototypes/art-preview/art/kitchen_mask.png
+  kind: other
+  status: approved
+  date: '2026-10-01'
+  prompt: null
+  cleaner: null
+  licence: own work (procedural)
+  sha256: dae539e700d75337031b5883c8c3e7254e5b7c9743dfc5e4a21f26ff7b0c8308
+  tool: Pillow (prototypes/art-preview/tools/make_light_mask.py)
+  model: null
+  job_id: null
+  cost_credits: 0
+  input_refs: []
+  notes: 'Kitchen focus mask (plate space, 1/2): owner-approved rhombus C, soft edge sigma 60 px. Outside it art/grade.gdshader
+    blurs and dims the frame (characters included).'
+- path: art-source/ui/ui-s0-hud-pilot-21191be6.png
+  kind: ui
+  status: superseded
+  tool: Higgsfield MCP (claude.ai connector)
+  model: gpt_image_2_5 (quality high, 2k, background transparent)
+  job_id: 21191be6-357c-41ce-b334-2d012f4b2677
+  date: '2026-10-01'
+  cost_credits: 2.75
+  prompt: 'Pixel-art HUD sheet (stage 0 pilot): score/till plaque, 3 strike discs (lit/out guest head), pause/play/sound on/off
+    buttons, coin, star; chunky Ink outline + cream rim + hard drop shadow so UI pops off the plate; no text'
+  input_refs:
+  - crop of clean game frame 360x800 t52 (prototypes/art-preview --clean-ui), Higgsfield media b57fa6fb-6b65-41bd-b9dc-5728cc93030d
+  cleaner: null
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  sha256: cfdb58523854acee7c1fcd71d9a3a44f5a69467bad55d1cd21e378fef315f521
+  notes: 'Alpha has a soft halo (alpha 1-127) — threshold at 128 for crisp pixel edges. Owner: cream outer rim unwanted; strikes
+    -> hearts (see v2).'
+- path: art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png
+  kind: ui
+  status: approved
+  tool: Higgsfield MCP (claude.ai connector)
+  model: gpt_image_2_5 (quality high, 2k, background transparent)
+  job_id: d58bac66-f22c-42b7-a479-675ef635be70
+  date: '2026-10-01'
+  cost_credits: 2.75
+  prompt: 'Edit of pilot v1: remove cream outer rim (dark outline outermost); strikes -> pixel hearts, coral and red, full
+    + empty; rest unchanged; no text'
+  input_refs:
+  - art-source/ui/ui-s0-hud-pilot-21191be6.png
+  - Higgsfield media b57fa6fb-6b65-41bd-b9dc-5728cc93030d (clean frame crop)
+  cleaner: alpha threshold 128; empty hearts filled with parchment @70% locally for the mockup
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  sha256: a2eec41693fda13d913432ae85d75a86d1b08c9254df823a0c8f3b0051ed099f
+  notes: Drop shadow dropped by the model along with the rim. Owner approved 2026-10-01; coral hearts.
+- path: art-source/ui/ui-s1-world-ea631cbd.png
+  kind: ui
+  status: awaiting_owner
+  tool: Higgsfield MCP (claude.ai connector)
+  model: gpt_image_2_5 (quality high, 2k, 4:3, background transparent)
+  job_id: ea631cbd-de80-4da3-925a-5ac1e2a0e5f8
+  date: '2026-10-01'
+  cost_credits: 2.75
+  prompt: 'Stage 1 world overlays in pilot-v2 style: order slips (long/short, zig-zag), 7 step tokens with glyphs (art bible
+    §4 hexes), patience rings full/2-3/1-4, warn/urgent bubbles, cup empty/tea/ruined, check/cross badges, kettle gauge empty/half/full,
+    tag disc, leave puff; no text'
+  input_refs:
+  - art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png (style)
+  - Higgsfield media b57fa6fb-6b65-41bd-b9dc-5728cc93030d (clean frame crop)
+  cleaner: alpha threshold 128
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  sha256: b6699dc3aa3eb93cc308b84af0fecc8809934152926a260508a7ef91f816866b
+  notes: 'Mockup: production/qa/evidence/ui-s1-world-*.jpg (digits: Jersey 10, OFL).'
+- cleaner: alpha threshold 128
+  cost_credits: 2.75
+  date: '2026-10-01'
+  input_refs: &id001
+  - art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png (style)
+  - art-source/ui/ui-s1-world-ea631cbd.png (style)
+  - 'Higgsfield media cb50d068-6141-4077-80b3-082bf10538d1 (layout: art-source/ui/brief-s3/ui-topbar-phone.jpg)'
+  kind: ui
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  tool: Higgsfield MCP (claude.ai connector)
+  status: awaiting_owner
+  job_id: 9b5c3442-d704-4987-8bd8-3198fcc2a113
+  model: gpt_image_2_5 (quality high, 2k, 4:3, background transparent)
+  path: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  prompt: 'Brief s3 sheet A: 7 detailed step icons without discs (large + simplified small), 7 station signs on tall legs
+    in step colours; no text'
+  notes: 'Brief art-source/ui/brief-s3/README.md. Mockup: production/qa/evidence/ui-s3-mockup-*.jpg.'
+  sha256: b461ef3d782396c91064c2f0dc0df17a23f58784fde4f19333cb21ac61acf182
+- cleaner: alpha threshold 128
+  cost_credits: 2.75
+  date: '2026-10-01'
+  input_refs: *id001
+  kind: ui
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  tool: Higgsfield MCP (claude.ai connector)
+  status: awaiting_owner
+  job_id: 6e3c3a05-0962-49b2-895a-6402b0d8e623
+  model: gpt_image_2_5 (quality high, 2k, 3:2, background transparent)
+  path: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  prompt: 'Brief s3 sheet B: wooden HUD bar (3-slice), hanging order sign with timer band + ropes + ring knots, rope tile,
+    kettle gauge empty/half/full, warn/urgent bubbles; no text'
+  notes: 'Brief art-source/ui/brief-s3/README.md. Mockup: production/qa/evidence/ui-s3-mockup-*.jpg.'
+  sha256: 2ebb1a5bce64d61616cd7c14061a904c99bfe7e7be882317bdc850a018156205
+- path: prototypes/art-preview/art/ui_s3/bubble_urgent.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 4f39b346554647cf1750ec86995486ecec6831c445ee079da8bd0a63eb78e157
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/bubble_warn.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: c7b048d1d741bcd9ae037c510f3927ff049b9168bb031597fa3445c4a1c22ee1
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/gauge_empty.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: a9f71def1a37a1273797724f5607c384c6fbf124f3b993e4cfa520cfdee35626
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/gauge_full.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: d924cd255bc1cf2f0923a81c7770881a10f82dd152609793aac49e4d2729f930
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/gauge_half.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 59d258b3bed5699400b5dea41b4385ef10c9da945ad4b3d3bc1f19832e3a7b1a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/hud_bar.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: dfdf6bcffaa28b4428f464c5e812f06a1581df9eab3ae412bc98b5c558a66ec3
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_lg_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: ecb2efcfe3c1f4383f39f869e5b81cf65391997997371c20a306ab2920d2cb34
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_lg_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 446793315819375ecde964885c53834f26ee1b1fe10d43a9d91a4a019ba95b90
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_lg_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 049c10e4dc1b3f76592e4f56fa2f2ee0e69798843c474607b97b4668eed5b4a3
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_lg_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: fd1343c8b754aa3c0346a39ef2f16d67b07eb2a6bf36335c39a7c64e9227bd56
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_lg_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: c4b0a3078684597232cfda831303f577d69d6fe4421a6ee7c27069652c82c98d
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_lg_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: fe83fd8fc59761bdc730320a10dedbc54ed7cec4b693e04290692b35ae93a9c3
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_lg_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 69c2f5762b72dc38ed1ca8a6d8684127a3218995b1d8b68d27af02c14d79544a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_sm_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: a5f819983cd7661b1714726c87cba438ba028d8339885a946fd88361c382d269
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_sm_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: af9d4c981382a94298149e2a1376cd94b7ce326de3ac640a7ebb6659095fc5b2
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_sm_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 5a0ed6ab2c05e7942f19c1b53def173a8cdc3797085307150579c4468ef1354a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_sm_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 656256a61e156b1599abe0de985a5a60dc4cf943a090c72a4a71b75457fe8c88
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_sm_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 6f44a922222168aeb1befdf32da1d8b98da4547ce60aff39499afdb8c827f75a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_sm_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 9cd05713ccfe2f65b734cbbc10177dfff6c97402824d3f3c6d3f65adf73e7588
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/icon_sm_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 5b4e77cbb18f5e99c998d8366fab09a3f61b1fe850b16799d15f66278ba6bbad
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/order_sign_board.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: ebd10975e345983bf8b69bc85ecdb9821f733da66f69411d8db6dc819aef5a17
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/order_sign_full.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 6931de6a02ed337578d41a670e59b427b24809dec62a48181e661141fa57bff8
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/order_sign_ring.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: a1523059749154dd7eccedf95a9a87511e97c2fb36f7c2b7c0270eff810aa880
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/rope_tile.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 495d6fe1ab213ae06ede28d887d23ae7a25654cc92793066959a69294c2d82af
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/station_sign_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: b6361f14b60e507f6fbb1d224b833d8d1c42db3c4b70ba673277028070361fe5
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/station_sign_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 23638118abcf295af5c7025d3ca06367db6d1d398b7da7ae2005b0160d1ae078
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/station_sign_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: c40a3b7660d52dd967358024fa0252791dd24253e3265de3f931f86114edb1f5
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/station_sign_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: cf8dc15908cb04c17d238f62924657273176e90a466c1e482ff44a35ac6ec084
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/station_sign_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: e6deb8ecab5cf45a523667d9a0a7af4880119152b69862e621641910b09768a2
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/station_sign_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: 11e22bcf8d9a60ec946c082f7287566c46ecbfc9c439727ec3c98cc7036d1877
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/station_sign_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-a-icons-9b5c3442.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s3.py (alpha 128, component bbox)
+  cost_credits: 0
+  sha256: bdc83e93ef3856edd98a35a7627ed4eea452faf50093b548f87d064cb7bc745b
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/drink_black_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 6c5dfb0df38aa60204c901499c0492e832fd9f165c8cedbc789f17e6dc816abf
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/drink_black_tea_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 93c14a2155510d157a35cdccff47159f1fdf7851d93371a0654f226c70dc0718
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/drink_cold_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 293b67bb80a18a2d6581ba9ef621172a349b3214089261f6e4fefe2ce63a0b12
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/drink_green_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 11272c0ffa3fc452a3da96368a42370da3e6a31a3bcf50debf6663e3aabbe28e
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/drink_green_tea_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 1bffcc293666190367cd497f07c669198a8cd22dea2cd7ad25b3dfe7783ddf14
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/src_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: b6c8e3ac7725f93ee9019b32a9756c6e61da7c4507aab4b3f208603937110969
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/src_jar_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 90f9412ff7c9071ce7c72948f7baab49ae97e5ae86418bc8046edcab30253515
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/src_jar_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: a93beb96843c026f1f74372d34fd7604402e4d817e941915f4fc8575e116de37
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/src_jug.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'prototypes/art-preview/art/plate.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 68f81422122105e96c4d9d310c6024ccaed7fbe76071809ea064c445151d7a1c
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/src_kettle.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: fed9cbd0ab2806cb222c7eea39365dc77cf96963f30f251c9feb514b6edf9e40
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/src_lemon_bowl.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: acd9f45415da72d1e46c2193d182af0feee17e68870161d8f832a2f5a96abe13
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/stepL_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 424a22c3fc5057a96eb46ae88aaedfef5b62f551df97135959ade9bb6e04a3ee
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/stepL_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 0fdcade624c6a05329fc83708253bff129bdede43afd60a98e4bb79d72d6c4aa
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/stepL_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 2211a09c2a687743621eda17b8d95394c6d24bb1f03a58b783d15fca565dd4d2
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/stepL_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: ede48aac5ce9e89951effca7fefa593c6f229ea1c06b850412450d48d7aac1d1
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/stepL_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 6d883d3ec4e6e445f78bbe10a72c632eb3bd82dd7747215219c31ebb31a6e99c
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/stepL_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 4231bea043c911ace04c388ba58c0b110b616e7258bf9d29a7963efccb7921d1
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/stepL_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: af8346a24515bb51b96f8e5ae1da20dbc91b36064fedbd0e11f953d404097951
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/step_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 36be2f406812d2b51650b83b713e59cb371a659d5cadbed9f844eacf40726d1a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/step_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: cbef6c1504cd56b1146be6b8e78bf402750774cc306f5c21b1208285ed7d8973
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/step_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: c2e7c7bdbb16a4d00d079ed2c299ed12533826e5d7bab67390ef06162061992b
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/step_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 873eccc5fdce00453ef9ce3feba94ddca5eacc90b51d0e57cd41b6657a3bd762
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/step_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 30fcf4a41969d1caa1d2f378acc3e01d10d6239d062151a0f3820006b6517e52
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/step_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 90aa756d27692614d3d0c2861114582744669f0c29b4b3b1e90c68ec64c2309e
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s4/step_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: 'art-source/msr/msr-v1-props-materials.png (iced_tea step: plate.png jug)'
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_msr.py + icons_s4.py (GrabCut, pixelize to scene grid, procedural
+    tea/ice/lemon/drop)
+  cost_credits: 0
+  sha256: 1243dd3a99b3b8e72daa18c265cd50bf6d022b07ced6a034988358cfdb27d541
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s3/station_sign_leaf_black_v2.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: station_sign_leaf_green.png (leaf glyph, recoloured dark) + station_sign_leaf_black.png (board/face)
+  cleaner: 'local numpy recolour (owner: no coffee scoop, black tea = leaves)'
+  cost_credits: 0
+  sha256: f272a83478638eff3529df90d1ce2f808cf7eb6b0eaa52df261c566aa2e7f88a
+  status: awaiting_owner
+- cleaner: alpha threshold 128
+  cost_credits: 2.75
+  date: '2026-10-01'
+  kind: ui
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  tool: Higgsfield MCP (claude.ai connector)
+  status: awaiting_owner
+  model: gpt_image_2_5 (quality high, 2k, 3:2, background transparent)
+  notes: 'Owner feedback s5: scene-detailed style, no toy look; mockups production/qa/evidence/ui-s6-*.jpg'
+  path: art-source/ui/ui-s6-cups-ef090a85.png
+  job_id: ef090a85-7b51-4beb-ae84-0e0f4c874c49
+  prompt: 9 held-cup states, plate mug, scene style
+  input_refs:
+  - art-source/ui/brief-s6/ref-style-kitchen-closeup.png (Higgsfield media 7533b667, style)
+  - art-source/ui/brief-s6/ref-style-cups-x4.png (media 3b1ad572, style)
+  - art-source/ui/brief-s6/ref-content-drinks-signs.png (media a77b498c, content)
+  sha256: f73bfd0d0f69cd978fe7467529b417dc9c8e1d76a0a6395f00cb2ebe70fe50b4
+- cleaner: alpha threshold 128
+  cost_credits: 2.75
+  date: '2026-10-01'
+  kind: ui
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  tool: Higgsfield MCP (claude.ai connector)
+  status: awaiting_owner
+  model: gpt_image_2_5 (quality high, 2k, 3:2, background transparent)
+  notes: 'Owner feedback s5: scene-detailed style, no toy look; mockups production/qa/evidence/ui-s6-*.jpg'
+  path: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  job_id: 4b7ea211-bc9d-414c-8a2d-5158bd5bfb05
+  prompt: 7 station signs x 2 designs (A plank, B crest), station colours kept, smaller icons, black tea = leaves
+  input_refs:
+  - art-source/ui/brief-s6/ref-style-kitchen-closeup.png (Higgsfield media 7533b667, style)
+  - art-source/ui/brief-s6/ref-style-cups-x4.png (media 3b1ad572, style)
+  - art-source/ui/brief-s6/ref-content-drinks-signs.png (media a77b498c, content)
+  sha256: 6bfa6ee5385f058acedc626ae0a39b951e90432a0577bbd14d2f592865b0bedf
+- cleaner: alpha threshold 128
+  cost_credits: 2.75
+  date: '2026-10-01'
+  kind: ui
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  tool: Higgsfield MCP (claude.ai connector)
+  status: awaiting_owner
+  model: gpt_image_2_5 (quality high, 2k, 3:2, background transparent)
+  notes: 'Owner feedback s5: scene-detailed style, no toy look; mockups production/qa/evidence/ui-s6-*.jpg'
+  path: art-source/ui/ui-s6-order-plaques-d5912775.png
+  job_id: d5912775-8e63-476a-8859-db795a34dc5e
+  prompt: 3 hanging order plaques A/B/C, thick timer channel, interesting jute ropes + rope tiles
+  input_refs:
+  - art-source/ui/brief-s6/ref-style-kitchen-closeup.png (Higgsfield media 7533b667, style)
+  - art-source/ui/brief-s6/ref-style-cups-x4.png (media 3b1ad572, style)
+  - art-source/ui/brief-s6/ref-content-order-plaques.jpg (media dcf15167, content)
+  sha256: 7f576b67fba6dd04b704db53780478e6e3eca999a8bd7a81540a97bf1572b378
+- path: prototypes/art-preview/art/ui_s6/cup_black_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: be6684dacf2bfad61025af1090b33fe0444ea7655b60755bf56107f5272e3ecc
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/cup_black_tea_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 8bebfba8794164a21bbba0507e5fc4cf0534348686aab77a1a1bb2f1dde5e356
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/cup_cold_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 36c1eee0f21738484698bf47aa1661d07eb57b42546b9ebd3228e5de81b70f5f
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/cup_empty.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: e002aaec571155b686c8467d104931e92780fac95c930cf49dc364fd2fde7763
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/cup_green_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 8c38149ad2b96b291bdaf372c26cfce13256b734ab85aa18c831a4e1a50babb3
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/cup_green_tea_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 07b68e7a2d98577ce06fdf61285dd0b5498e3cc6ea165f830452a1edda592c5a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/cup_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: c88495a4e487ba7cdcfd511a680e8a03d87b0eaf9609fbf41fa1b4ec00fba353
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/cup_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: db9337f7df0b2ac0a0afdfdcc63e5b810ec78688bc2c8b9366f0e13686233d55
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/cup_ruined.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-cups-ef090a85.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 9d51823b31f32f315b44efc37bbfb416ab431075ac7a8fbb6ed7b438d8f76cdf
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/plaqueA.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-order-plaques-d5912775.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 6e72940c70e8da1a353694275146a2163550b4a3f8257e45e1e5bf44af67fdf3
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/plaqueB.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-order-plaques-d5912775.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 677bf16e04d901367be6077aa70aee7461d59c428ff4418b2961fce6ed5089b4
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/plaqueC.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-order-plaques-d5912775.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: cad3ccefafe6c9829ff0bc1336291e4d0749f02ecfe2f734f4b4ca4fe8400cbb
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/ropeA.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-order-plaques-d5912775.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 463fc8c059b238b15be21ec4a649fa13c9f455e26b179c1bffb89498e0bb6e8e
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/ropeB.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-order-plaques-d5912775.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: c25b6fcdd25502f419b25a929f99b601159f53e352fa5fd18f27cad8c40e86bc
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/ropeC.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-order-plaques-d5912775.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: c0fd4dc254c6743bbe356eaf52e60683ce6f7d20c643c90b15b45e88d3061e8c
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signA_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 159269244cc75f3a59b589119e3de66b1ab40e3fbbeabfc8aecdfbb1e9854d92
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signA_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 42f31362c900fc1ea96c77fb945c4f71bc74929c8f11b221783307f08cba71ca
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signA_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 9c16fc1001f19a8e3d0764b1508e53cb1a3505b4d68486b0ffe2aa1de69810c9
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signA_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 917309a437c57f7188a36934db20ff4eadaffeb8d1f8d11247d64bf5f9b835e4
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signA_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: b6ec4ceb7f71c0e28118f5308e1561e41b73215ec986feae2e307289ec7ec541
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signA_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 1def3f5f0a5e95ef57810dc402881d52cd880bf51c79dab86fbfc4af13ec93e2
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signA_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 16b1e84f5a5769bbf9f0ff99ae73cbf8d22dc4eee71d179bf91dcbc0eb8427dc
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signB_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: da213c65ad4ca033752e11b86c25ea84de0d42e98d6ad2570cf8bb33009d3ab2
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signB_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: caabea1af94d0ed301df3f606b595e6aea0daea50dbfa7258cf3e3fe301d48e0
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signB_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: aca24cbf38da8837ebeff8f3f838c84f2200e44e9d409467a8d45c4c02e30cad
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signB_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: e02273110ec2cedb4af34fe4c586a4d9f3e250f9fc19770273f45ad9c64f6eb3
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signB_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 9c7a2d6bafd6dc40f29c5d279858a7fb86eb1fd4ae5bd2c6c5a49a5c245811ae
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signB_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 93a758e1dc0d4b4da372eacaacd9961a98f0cbe2c5dd410da5ceb3ff681531a7
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s6/signB_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s6-station-signs-4b7ea211.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s6.py
+  cost_credits: 0
+  sha256: 286d74ea6891699e06958b18fe0265e3b0e924f41a0c08782988695700d4b9e6
+  status: awaiting_owner
+- cleaner: alpha threshold 128
+  cost_credits: 2.75
+  date: '2026-10-01'
+  kind: ui
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  tool: Higgsfield MCP (claude.ai connector)
+  status: awaiting_owner
+  model: gpt_image_2_5 (quality high, 2k, 3:2, background transparent)
+  notes: 'Owner feedback s6: too detailed -> chunky bright pixel art, playful, square signs, s3 brightness; mockups production/qa/evidence/ui-s7-*.jpg'
+  path: art-source/ui/ui-s7-cups-55c6b1ee.png
+  job_id: 55c6b1ee-4825-40e9-ad93-ef5c0ce6bb0e
+  prompt: 9 cups of s6 redrawn as chunky bright pixel art
+  input_refs:
+  - job ef090a85 (content)
+  - job 9b5c3442 (style/brightness)
+  sha256: fbc738105e1e644d07362a7439485a2990ef23828f43d8cbc8f54f7510ccd153
+- cleaner: alpha threshold 128
+  cost_credits: 2.75
+  date: '2026-10-01'
+  kind: ui
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  tool: Higgsfield MCP (claude.ai connector)
+  status: awaiting_owner
+  model: gpt_image_2_5 (quality high, 2k, 3:2, background transparent)
+  notes: 'Owner feedback s6: too detailed -> chunky bright pixel art, playful, square signs, s3 brightness; mockups production/qa/evidence/ui-s7-*.jpg'
+  path: art-source/ui/ui-s7-station-signs-239220e1.png
+  job_id: 239220e1-9703-4457-9801-32ebb81ef94e
+  prompt: 7 square station signs, s3 brightness, chunky pixel, smaller icons
+  input_refs:
+  - job 9b5c3442 (shape/colours)
+  - job 4b7ea211 (content)
+  - job ef090a85 (mug)
+  sha256: 67a9ac1075e9290a0cd1b4450a8aeb92ff5b38968e19a219fab6dc511433c295
+- cleaner: alpha threshold 128
+  cost_credits: 2.75
+  date: '2026-10-01'
+  kind: ui
+  licence: Higgsfield/OpenAI terms — snapshot TO BE SAVED before ship
+  tool: Higgsfield MCP (claude.ai connector)
+  status: awaiting_owner
+  model: gpt_image_2_5 (quality high, 2k, 3:2, background transparent)
+  notes: 'Owner feedback s6: too detailed -> chunky bright pixel art, playful, square signs, s3 brightness; mockups production/qa/evidence/ui-s7-*.jpg'
+  path: art-source/ui/ui-s7-order-plaques-3ed35b18.png
+  job_id: 3ed35b18-2d8a-44f8-a545-0b82ac4acea7
+  prompt: order plaques A/B/C of s6 in chunky bright pixel art + rope tiles
+  input_refs:
+  - job d5912775 (content)
+  - job 6e3c3a05 (style)
+  sha256: 5dbc32e4d75c9301b0a4a3036d0248ad3d17236c870eb6ca2ec7a0b4e609cb01
+- path: prototypes/art-preview/art/ui_s7/cup_black_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 704d03a87e5fff176db45e2d41e483d8d873b1028c26514d0fa7985dc556baad
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/cup_black_tea_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: f76c0d0e6cf552989e82eb5b48d1d3cdb7839116a1a67cfdc844a1515ac8536b
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/cup_cold_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 8fc59d0b14a13fc7c3611c2b5631c3c49af475c0950fa9ffa0167dc70b5c2e10
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/cup_empty.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: ac6b2f242ffb4c74eac88c80222204e66eb7d4b7ddb68c7d3766725d387006b4
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/cup_green_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 829415cf8135cc6a87d0f6af4be45dd704c9d24bbbf7dcdbe0e63cc5f44ae98f
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/cup_green_tea_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: da61cb091f36225f2e6a0d6960bc4c2394686f744bf409175c0a9c4d35d1b496
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/cup_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 0450b8dacb158ae088a500025a364258ec0bea135711bd8420044e6286b3e85a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/cup_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 0dbd59ee42d8333f4dc1eda47cf8c77157dc5ce2f8371db26f902f0ba066c00d
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/cup_ruined.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-cups-55c6b1ee.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: ab4fea02f14742df9537d88f1c0031623ebb6cdf7454006cad84f95562d9fa7b
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/plaqueA.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-order-plaques-3ed35b18.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: a9c1d35dfad5e48335d53c12e4fa81880f394a2a383977b16b148f2ed500c04a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/plaqueB.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-order-plaques-3ed35b18.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 61c19ba30f9e1734bf4d74ca068eee007452134656d763e20fa4a592ded60a98
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/plaqueC.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-order-plaques-3ed35b18.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 81d741a76aaabd459df54ebf782203d0fc4bc20ba9dbd3460af97753549b1a4c
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/ropeA.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-order-plaques-3ed35b18.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 1de6d286f51bba57db6eb44c0b9c2bdd24335bc7475486f9c82c3fb7489ea40b
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/ropeB.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-order-plaques-3ed35b18.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 4f4b91a2f5459753c9ddf1d8a1a1e45cc3430839ea57190ce9b9883d133557c3
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/ropeC.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-order-plaques-3ed35b18.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 46ed0341166210c26d8fc40f8ce2190e60a62a6b8e8f69daa3c09c029dee067b
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/signA_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-station-signs-239220e1.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: e9e5b049505a47c9e0bca962b84be471e147ef40d74975bbd7dea8916a81fb63
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/signA_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-station-signs-239220e1.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 7d0ff9620d57c9e89fec8c30dcb128799fd5fcb2114f689f12ae3ef2ad9d58aa
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/signA_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-station-signs-239220e1.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: b6491c2c1c4cea81f6cb19afab3930b587f37f7337b85dfe9fa6e66ea63ebb20
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/signA_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-station-signs-239220e1.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 161baf0f426e84073c0441917969ddec71b186fcd76f790efed83966dbdeef6d
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/signA_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-station-signs-239220e1.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 9985ab0de37dc6886333467be4328500a70478d40f6d899e5d2b4c3868d9e33a
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/signA_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-station-signs-239220e1.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: 83b1f2197c046ce1e77eaeaceb4c1937a44f01debbd28496d7ac58bcfb9fb070
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/signA_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s7-station-signs-239220e1.png
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/cut_s7.py
+  cost_credits: 0
+  sha256: f0e36ddf0d76732d437d61cee10efb2ddf5af18f4a26f5aafecb9be683aad039
+  status: awaiting_owner
+- path: prototypes/art-preview/art/ui_s7/hud_score_plaque.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: 601bab9bb64f6e65b221298aafd17c8332aa359b5c24b530826181f21554ea98
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/hud_heart_full.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: 8f5c2ddfb870ef2a519d601b9178304fe26f1d8b4f3b08f2a4620e78f402d622
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/hud_heart_empty.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: 253f2b010fb6f823890c98c26fe59362227775ded21a083e85d3cbf3daf98cbe
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/hud_btn_pause.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: e6bb54961d38a91eb8012c489ec25e0743b442c4cc5ab2f31752ad0b14335db4
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/hud_btn_sound.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: c9609c220b964f1aa59a6a95a036e84e858b6c257d93bcbdfe276f52a09472aa
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/hud_coin.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s0-hud-pilot-v2-d58bac66.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: 52ba8ffe98780ff00140f93fc7a0ed434df126db5abf95c6e6c16a258ba281e1
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/hud_bar.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: dfdf6bcffaa28b4428f464c5e812f06a1581df9eab3ae412bc98b5c558a66ec3
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/gauge_empty.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: a9f71def1a37a1273797724f5607c384c6fbf124f3b993e4cfa520cfdee35626
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/gauge_half.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: 59d258b3bed5699400b5dea41b4385ef10c9da945ad4b3d3bc1f19832e3a7b1a
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/gauge_full.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: d924cd255bc1cf2f0923a81c7770881a10f82dd152609793aac49e4d2729f930
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/bubble_warn.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: c7b048d1d741bcd9ae037c510f3927ff049b9168bb031597fa3445c4a1c22ee1
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/bubble_urgent.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: art-source/ui/ui-s3-sheet-b-structure-6e3c3a05.png
+  cleaner: alpha 128 crop (handoff export)
+  cost_credits: 0
+  sha256: 4f39b346554647cf1750ec86995486ecec6831c445ee079da8bd0a63eb78e157
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/sticker_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: code (mock12.sticker, owner-approved s7f-s7i stickers)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_stickers.py
+  cost_credits: 0
+  sha256: 075b32fdcc187f3f90f77b3168d8e399eaa0f415ff5073fc0dcef7010e1f278a
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/sticker_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: code (mock12.sticker, owner-approved s7f-s7i stickers)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_stickers.py
+  cost_credits: 0
+  sha256: e50b94726f1c0f984693cf13e2b6f2e211e0ae67d019f4f2c5f3b4fab87a22e2
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/sticker_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: code (mock12.sticker, owner-approved s7f-s7i stickers)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_stickers.py
+  cost_credits: 0
+  sha256: 96db2ba045f8fdd9a7a6c1bacee253eca28b306c81fbf92a1618fd1bd56e5f68
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/sticker_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: code (mock12.sticker, owner-approved s7f-s7i stickers)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_stickers.py
+  cost_credits: 0
+  sha256: 1d7512a3601a93b946ad8544e8e3c5e37c1913f8d6cba136f89fa6bd41b72080
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/sticker_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: code (mock12.sticker, owner-approved s7f-s7i stickers)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_stickers.py
+  cost_credits: 0
+  sha256: db27bf0547bbd3e4f402b6300a65365e85671c610a560604f23c78ee0d29e453
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/sticker_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: code (mock12.sticker, owner-approved s7f-s7i stickers)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_stickers.py
+  cost_credits: 0
+  sha256: 34f1a3ab13a7143d4632c2bface57236a07a22badd94af88a039e7a45c8f6ed0
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/sticker_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: code (mock12.sticker, owner-approved s7f-s7i stickers)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_stickers.py
+  cost_credits: 0
+  sha256: 4953cc8c51e4b4533a96f59f82a1007316938cbfd88ec9161512acb77ae2bc0c
+  status: approved
+- path: prototypes/art-preview/art/ui_s7/masks/mask_cup.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: prototypes/art-preview/tools/ui_mockup/ui/mask_*.npy (station item masks of the 360x800 game frame noguests-360x800-t52)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_masks.py
+  cost_credits: 0
+  sha256: 950a0c89fb577885a5eb1a70b8e0340a28afd805efc88105ce2966bcac59f0d3
+  status: tooling
+- path: prototypes/art-preview/art/ui_s7/masks/mask_iced_tea.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: prototypes/art-preview/tools/ui_mockup/ui/mask_*.npy (station item masks of the 360x800 game frame noguests-360x800-t52)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_masks.py
+  cost_credits: 0
+  sha256: b4b8e64730f9c992e506dc3db323b00f53660cf158dd9b15b7b896992350ed36
+  status: tooling
+- path: prototypes/art-preview/art/ui_s7/masks/mask_leaf_black.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: prototypes/art-preview/tools/ui_mockup/ui/mask_*.npy (station item masks of the 360x800 game frame noguests-360x800-t52)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_masks.py
+  cost_credits: 0
+  sha256: 22ff23e49804efe77694ed7c3be5fe5b9daf6f7a0757cd2d9b9ac03b2ea8b3f1
+  status: tooling
+- path: prototypes/art-preview/art/ui_s7/masks/mask_leaf_green.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: prototypes/art-preview/tools/ui_mockup/ui/mask_*.npy (station item masks of the 360x800 game frame noguests-360x800-t52)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_masks.py
+  cost_credits: 0
+  sha256: 7b570d567e1884e7dde6af873822862445bb93282d139d4e69b53d9f0dd94124
+  status: tooling
+- path: prototypes/art-preview/art/ui_s7/masks/mask_lemon.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: prototypes/art-preview/tools/ui_mockup/ui/mask_*.npy (station item masks of the 360x800 game frame noguests-360x800-t52)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_masks.py
+  cost_credits: 0
+  sha256: bb7574c3318b7eb15772c79775aca9cf4cfebff36819a724d1cb9f2f76806ec4
+  status: tooling
+- path: prototypes/art-preview/art/ui_s7/masks/mask_water_100.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: prototypes/art-preview/tools/ui_mockup/ui/mask_*.npy (station item masks of the 360x800 game frame noguests-360x800-t52)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_masks.py
+  cost_credits: 0
+  sha256: ebb4eeefcfffb89f11452f4825aa4cbc0cea05f23037ad058471567d3d2662b2
+  status: tooling
+- path: prototypes/art-preview/art/ui_s7/masks/mask_water_80.png
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: prototypes/art-preview/tools/ui_mockup/ui/mask_*.npy (station item masks of the 360x800 game frame noguests-360x800-t52)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_masks.py
+  cost_credits: 0
+  sha256: 6003802ad168ae365816b08b8d6a03b3dadcaa83af84c876ba7c4742d9aebb6f
+  status: tooling
+- path: prototypes/art-preview/art/ui_s7/masks/masks.json
+  kind: ui-derived
+  date: '2026-10-01'
+  derived_from: prototypes/art-preview/tools/ui_mockup/ui/mask_*.npy (station item masks of the 360x800 game frame noguests-360x800-t52)
+  cleaner: prototypes/art-preview/tools/ui_mockup/ui/export_masks.py
+  cost_credits: 0
+  sha256: be8758d74a99ff2abab99149165bca2f21e2322688e382e3022356b1b43d4849
+  status: tooling
+rejected_log:
+- what: style frame v1-b
+  model: gpt_image_2_5 high 2k
+  job_ids: 68f8a4c4-c612-4c49-9552-73967f291cc2
+  cost_credits: 2.75
+  why: owner preferred v1-a
+- what: style frame v2-b (edit of v1-b)
+  model: gpt_image_2_5 high 2k
+  job_ids: 85e979ad-e66e-4332-b212-28b03e56e06e
+  cost_credits: 2.75
+  why: base v1-b dropped
+- what: style frame v2-a (edit of v1-a)
+  model: nano_banana_pro
+  job_ids: 50571ef4-c154-441b-a283-064d699c8832
+  cost_credits: 2
+  why: flattened the look; v1-a kept unedited
+- what: MSR characters sheet (flat cel)
+  model: nano_banana_pro
+  job_ids: 8c894a91-18cb-45a9-bd7d-28896de11d71
+  cost_credits: 2
+  why: 'owner: not like v1-a'
+- what: barista idle flat
+  model: nano_banana_pro
+  job_ids: e4cd1c81-ed7e-41b7-9b4c-f22f451d27fb
+  cost_credits: 2
+  why: flat style dropped
+- what: barista walk flat ×3 sheets
+  model: nano_banana_pro
+  job_ids: ae72f4b1-…, eb2db468-…, dfc5dbb9-…
+  cost_credits: 6
+  why: 'flat style dropped (taught: model draws 3/4 diagonals → 2-diagonal scheme)'
+- what: kettle station sheet
+  model: nano_banana_pro
+  job_ids: f9a337ad-95f0-42c8-9e55-9dd0e358bb9c
+  cost_credits: 2
+  why: swatches copied from props ref
+- what: flame/steam sheet v1
+  model: nano_banana_pro
+  job_ids: 3461b8ac-b456-4bde-b428-73c604bd16e9
+  cost_credits: 2
+  why: 'operator error: failed sheet fed as ref'
+- what: barista idle "painted" + walk ×2 painted
+  model: nano_banana_pro
+  job_ids: 7abd2ecc-…, dff783d0-…, c3ead742-…
+  cost_credits: 6
+  why: 'owner: generic AI look, not v1-a'
+- what: flame/steam text-only
+  model: nano_banana_pro
+  job_ids: fad01f16-bbfe-4e2e-b0cb-f69b631d5503
+  cost_credits: 2
+  why: 'owner: does not fit the style'
+- what: barista isolated from v1-a (half body)
+  model: nano_banana_pro
+  job_ids: b309619a-499f-4304-94b6-c177ad72b0ca
+  cost_credits: 2
+  why: legs lost in fog (style was right)
+- what: barista full body v1
+  model: nano_banana_pro
+  job_ids: fbfa4b1a-d0d5-4e59-9621-beb626bb20c5
+  cost_credits: 2
+  why: legs fogged; its clean top reused for the canvas
