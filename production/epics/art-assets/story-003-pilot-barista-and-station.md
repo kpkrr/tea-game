@@ -1,7 +1,7 @@
 # Story 003: PILOT: chibi barista sprite set + one hearth station + a textured diorama corner through the full pipeline
 
 > **Epic**: Art Assets (MVP content)
-> **Status**: Ready
+> **Status**: In Progress (pilot sources generated 2026-10-01; engine look test next)
 > **Layer**: Presentation
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -32,7 +32,7 @@
 
 *From `design/art/art-bible.md` (revision 2026-10-01, A8–A12), scoped to this story:*
 
-- [ ] Barista pilot set in **chibi proportions** (head ≈ 1/2 of height, huge expressive face, tall bun with symmetric band, linen shirt + long espresso apron with mint leaf patch): idle + walk in 3 directions (front/back/side, left = flip_h), drawn in slightly high-angle 3/4 view; 192x256 cells, pivot 8 px above cell bottom, outline 6-7 px / 4 px, palette <= 12 colours, no baked shadows, symmetric details only; plus the carried-cup anchor data
+- [ ] Barista pilot set in **chibi proportions** (head ≈ 1/2 of height, huge expressive face, tall bun with symmetric band, linen shirt + long espresso apron with mint leaf patch): idle + walk in 2 diagonals (↘ toward camera, ↗ away; other side = flip_h — owner decision 2026-10-01, art bible §8.3), drawn in slightly high-angle 3/4 view; 192x256 cells, pivot 8 px above cell bottom, outline 6-7 px / 4 px, palette <= 12 colours, no baked shadows, symmetric details only; plus the carried-cup anchor data
 - [ ] One **kettle station** end to end: stone hearth base GLB (<= 1000 tris, baked vertex colour, UV0 on `env_arch_atlas`) + outlined 2D kettle item + small looping flame flipbook under it (decorative, not a state) and one steam-puff loop; provenance entries exist; validation script (story 002) passes
 - [ ] One **diorama corner**: ~2x2 m of stone-tile walkway at 128 px/m, a counter segment, a parapet section with a lantern post and 3–5 periphery clutter pieces (crate, closed tea sack, clay pot, plant) on a first cut of `env_arch_atlas` / `env_clutter_atlas`, plus a pre-blurred strip of surroundings (cliff + water) visible past the edge
 - [ ] In-engine screenshots with the **perspective camera (FOV ≈ 30°, pitch ≈ 52°)** in the greybox/test scene, toon shader, warm key light + lantern patch, real shadow (Mid) and blob (Low), day and evening light variants: barista reads at 48 dp in greyscale, flat look preserved, no halo, no shimmer on the far row (64 dp minimum, no mips); walkway texture under the character has no element < 24 dp with ΔL* > 8; till/kettle tokens not covered by steam/flame; **side-by-side with the approved style frame (story 001)** and owner says "matches"
@@ -41,6 +41,9 @@
 ---
 
 ## Implementation Notes
+
+- **Pilot sources ready (2026-10-01, all derived from style frame v1-a, see `art-source/provenance.yaml`)** — barista idle `art-source/pilot/barista-v1a-fullbody-idle-v2.png`, walk keys ↘ `barista-v1a-walk-se.png` / ↗ `barista-v1a-walk-ne.png` (4 keys each, other side = flip_h), guests `guests-v1a-isolated.png`, kettle on hearth `kettle-on-hearth-from-msr.png`, flame + steam `vfx-v1a-isolated.png`, clutter `clutter-v1a-isolated.png`, textures `tex-stone-floor-v1a.png`, `tex-wood-plank-v1a.png`, background `bg-cliffs-water-v1a.png`. Chibi proportions in the AC above are superseded by the v1-a look (art bible §5 owner note).
+- **First step (owner 2026-10-01):** quick look test in a COPY of the vertical slice (`prototypes/art-preview/`) before the full pipeline — see `production/session-state/active.md`.
 
 - Do not start stories 004-011 and 013 until this verdict is written.
 - Checklist for each asset: art bible §8.9; cleanup checklist §8.8 item 5.

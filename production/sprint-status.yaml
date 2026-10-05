@@ -73,7 +73,7 @@ stories:
     name: "Стайл-фрейм чайной-диорамы (ref-01) + спеки + MSR"
     file: "production/epics/art-assets/story-001-asset-specs-msr-provenance.md"
     priority: must-have
-    status: ready-for-dev
+    status: in-progress
     owner: "art-director"
     estimate_days: 1.0
     blocker: ""
@@ -91,7 +91,7 @@ stories:
     name: "ПИЛОТ: бариста + одна станция через весь пайплайн"
     file: "production/epics/art-assets/story-003-pilot-barista-and-station.md"
     priority: must-have
-    status: ready-for-dev
+    status: in-progress
     owner: "art-director + technical-artist"
     estimate_days: 1.0
     blocker: ""

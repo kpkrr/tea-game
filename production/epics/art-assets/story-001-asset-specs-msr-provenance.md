@@ -1,7 +1,7 @@
 # Story 001: Style frame (ref-01 → tea-house diorama), asset specs and Master Style Reference
 
 > **Epic**: Art Assets (MVP content)
-> **Status**: Ready
+> **Status**: In Progress (style frame + provenance done 2026-10-01; `/asset-spec` pending)
 > **Layer**: Presentation
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -32,11 +32,11 @@
 
 *From `design/art/art-bible.md` (revision 2026-10-01, A8–A12), scoped to this story:*
 
-- [ ] **Style frame first (deliverable #1, gates everything else):** using `design/art/references/ref-01-cozy-diorama-kitchen.png` as the model's image reference and master prompt §8.8-3a, produce a **portrait (9:19.5) frame of OUR game**: cozy tea-house terrace diorama with the fixed perspective camera look (≈ 52° pitch, narrow FOV), stone-tile walkways, thick wooden counters, 7 stations incl. two kettles on hearths with small flames, leaf jars, lemon, cup stack, the Till (brightest warm object), chibi barista + 2–3 chibi guests in the queue, dense cozy clutter only at the periphery, river/cliffs around the edges, steam puffs. Hand-corrected so recipe-step colours and Till Gold match §4 and nothing from the "do not take" list of §9 ref-01 remains (chef hats, tomatoes/red produce on counters, red banners, turquoise water, big flames over the play area)
-- [ ] Style frame passes the readability checks on the image itself: greyscale + 2 dp blur separates characters, cup/tokens and till from the background; clutter does not touch walkways, slots, queue points; **owner approval recorded (date + chosen iteration) before the MSR and before story 003 starts**; stored in `art-source/style-frame/` with provenance
+- [x] **Style frame first (deliverable #1, gates everything else):** *(done 2026-10-01: v1-a, Nano Banana Pro, unedited — `art-source/style-frame/style-frame-approved-v1a.png`)* using `design/art/references/ref-01-cozy-diorama-kitchen.png` as the model's image reference and master prompt §8.8-3a, produce a **portrait (9:19.5) frame of OUR game**: cozy tea-house terrace diorama with the fixed perspective camera look (≈ 52° pitch, narrow FOV), stone-tile walkways, thick wooden counters, 7 stations incl. two kettles on hearths with small flames, leaf jars, lemon, cup stack, the Till (brightest warm object), chibi barista + 2–3 chibi guests in the queue, dense cozy clutter only at the periphery, river/cliffs around the edges, steam puffs. Hand-corrected so recipe-step colours and Till Gold match §4 and nothing from the "do not take" list of §9 ref-01 remains (chef hats, tomatoes/red produce on counters, red banners, turquoise water, big flames over the play area)
+- [x] Style frame passes the readability checks *(greyscale check retained; till not separated by luminance — owner ruling: no extra highlight; approved 2026-10-01)* on the image itself: greyscale + 2 dp blur separates characters, cup/tokens and till from the background; clutter does not touch walkways, slots, queue points; **owner approval recorded (date + chosen iteration) before the MSR and before story 003 starts**; stored in `art-source/style-frame/` with provenance
 - [ ] `/asset-spec` run for barista, 4 guests, environment (architecture, clutter, surroundings, water), props, VFX, UI set; specs + the §8.8 master prompts (EN) saved under `design/art/specs/` (one file per asset group) with sizes, pivots, frame counts, texel density (§8.5) and budget per asset
-- [ ] Master Style Reference sheet (chibi barista + 2 guests turnarounds, cup, till, token, swatches, outline sample, 3–4 hand-painted material samples — stone, plank, sack, clay —, do/don't column) hand-cleaned, matches the approved style frame and is approved by the owner; stored in `art-source/msr/` with provenance entry
-- [ ] `art-source/provenance.yaml` schema created (path, tool+model version, date, prompt, seed, input refs, cleaner, licence snapshot, hash); **first entry is ref-01 itself** (generating tool + commercial-use terms); rule 'no entry = no asset in build' documented
+- [x] *(replaced 2026-10-01: props/materials sheet `art-source/msr/msr-v1-props-materials.png` approved; the character part is replaced by assets isolated from v1-a — art bible §8.8 п. 6a)* Master Style Reference sheet (chibi barista + 2 guests turnarounds, cup, till, token, swatches, outline sample, 3–4 hand-painted material samples — stone, plank, sack, clay —, do/don't column) hand-cleaned, matches the approved style frame and is approved by the owner; stored in `art-source/msr/` with provenance entry
+- [x] `art-source/provenance.yaml` schema created *(done 2026-10-01; rejected generations kept in `rejected_log`)* (path, tool+model version, date, prompt, seed, input refs, cleaner, licence snapshot, hash); **first entry is ref-01 itself** (generating tool + commercial-use terms); rule 'no entry = no asset in build' documented
 
 ---
 

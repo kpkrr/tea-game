@@ -15,7 +15,7 @@
 *(Requirement text lives in `docs/architecture/tr-registry.yaml` / art bible — read fresh at review time)*
 
 **ADR Governing Implementation**: ADR-0002: Viewport, camera fit & 2.5D presentation; ADR-0007: Performance & load budgets
-**ADR Decision Summary**: Barista: 81 frames (idle/idle_carry 4, walk/walk_carry 8, action 3) x 3 directions; atlases `chr_barista_move_atlas` 2048^2 + `chr_barista_action_atlas` 2048x1024, no mips.
+**ADR Decision Summary**: Barista: 54 frames (idle/idle_carry 4, walk/walk_carry 8, action 3) x 2 diagonals + flip_h (owner decision 2026-10-01, art bible §8.3); atlases `chr_barista_move_atlas` 2048^2 + `chr_barista_action_atlas` 2048x1024, no mips.
 **ADR Version**: ADR-0002 2026-09-30, ADR-0007 2026-09-30
 
 **Engine**: Godot 4.7.2 (Compatibility / WebGL2) | **Risk**: HIGH
@@ -32,7 +32,7 @@
 
 *From `design/art/art-bible.md` / ADR amendments of 2026-10-01, scoped to this story:*
 
-- [ ] All 81 barista frames delivered in the two atlases (10 columns x 256 px, 4 px padding, edge-colour bleed 2 px) in the **chibi design approved in the pilot** (head ≈ 1/2 of height, huge expressive face, tall bun with symmetric band, linen shirt, long espresso apron with mint leaf patch), drawn in slightly high-angle 3/4 view; pivot and cup-anchor identical per frame, squash/stretch <= +-15 % with constant outline width, bun silhouette readable at 48 dp
+- [ ] All 54 barista frames (2 diagonals + flip_h, art bible §8.3) delivered in the two atlases (10 columns x 256 px, 4 px padding, edge-colour bleed 2 px) in the **chibi design approved in the pilot** (head ≈ 1/2 of height, huge expressive face, tall bun with symmetric band, linen shirt, long espresso apron with mint leaf patch), drawn in slightly high-angle 3/4 view; pivot and cup-anchor identical per frame, squash/stretch <= +-15 % with constant outline width, bun silhouette readable at 48 dp
 - [ ] Poses are dynamic (body lean up to ±15 °, idle never stiff); emotion reads on the face (eager, never panicked — art bible §9 ref-01 "do not take")
 - [ ] SpriteFrames/animation resources built with fps per art bible §5 (idle 8, walk 14, action 12); `_carry` frames have hand anchors; `flip_h` mirror has no asymmetric marks
 - [ ] In-engine screenshots (perspective camera, Low/Mid, day + evening, toon shader with warm rim) of each animation, near and far row; no shimmer on the far row without mips; file sizes and texture memory recorded against the 24 MB no-mip line; validator passes

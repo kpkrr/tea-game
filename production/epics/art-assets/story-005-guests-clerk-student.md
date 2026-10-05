@@ -15,7 +15,7 @@
 *(Requirement text lives in `docs/architecture/tr-registry.yaml` / art bible — read fresh at review time)*
 
 **ADR Governing Implementation**: ADR-0002: Viewport, camera fit & 2.5D presentation; ADR-0007: Performance & load budgets
-**ADR Decision Summary**: Each guest archetype: 2048x1536 atlas, 55 frames, 192x256 cells; silhouettes differ and never resemble cup/token/till.
+**ADR Decision Summary**: Each guest archetype: 2048x1536 atlas, 43 frames (2 diagonals + flip_h, owner decision 2026-10-01), 192x256 cells; silhouettes differ and never resemble cup/token/till.
 **ADR Version**: ADR-0002 2026-09-30, ADR-0007 2026-09-30
 
 **Engine**: Godot 4.7.2 (Compatibility / WebGL2) | **Risk**: HIGH
